@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://meslang.dev/schema/medo.schema.json",
+  "title": "Medo",
+  "description": "MesLang の中間データ。実験的で破壊的変更があり得る。",
+  "type": "object",
+  "required": ["version", "header", "body"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "medo/0.0"
+    },
+    "header": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string"
+      },
+      "properties": {
+        "raw": { "type": "string" },
+        "profile": {
+          "type": "string",
+          "enum": ["audio", "manga", "anime", "vn", "unknown"]
+        },
+        "title": { "type": "string" }
+      }
+    },
+    "body": {
+      "type": "object",
+      "required": ["sections"],
+      "additionalProperties": false,
+      "properties": {
+        "sections": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/section" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "section": {
+      "type": "object",
+      "required": ["title", "pieces"],
+      "additionalProperties": false,
+      "properties": {
+        "title": { "type": "string" },
+        "pieces": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/piece" }
+        }
+      }
+    },
+    "piece": {
+      "type": "object",
+      "required": ["dialogue", "decorators"],
+      "additionalProperties": false,
+      "properties": {
+        "dialogue": { "type": "string" },
+        "decorators": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/decorator" }
+        }
+      }
+    },
+    "decorator": {
+      "type": "object",
+      "required": ["kind", "value", "attrs"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "character",
+            "comment",
+            "sound",
+            "position",
+            "timing",
+            "ext",
+            "frame",
+            "camera",
+            "beat",
+            "unknown"
+          ]
+        },
+        "rawMark": { "type": "string" },
+        "value": { "type": "string" },
+        "attrs": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    }
+  }
+}

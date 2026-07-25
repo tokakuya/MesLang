@@ -1,0 +1,14 @@
+{
+  "name": "meslang-ref",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Minimal experimental reference parser for MesLang v0",
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "parse": "node --experimental-strip-types src/cli.ts"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}
