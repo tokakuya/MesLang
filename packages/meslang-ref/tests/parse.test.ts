@@ -91,6 +91,28 @@ title: テスト
   assert.deepEqual(kinds, ["frame", "camera", "comment", "character"]);
 });
 
+test("ADR 0003: #第一章 stays comment; == is the only section mark", () => {
+  const asComment = parseMesLang(`#第一章
+
+@にか
+セリフ
+`);
+  assert.equal(asComment.body.sections.length, 1);
+  assert.equal(asComment.body.sections[0]!.title, "");
+  assert.equal(
+    asComment.body.sections[0]!.pieces[0]!.decorators.find((d) => d.kind === "comment")?.value,
+    "第一章",
+  );
+
+  const asSection = parseMesLang(`== 第一章
+
+@にか
+セリフ
+`);
+  assert.equal(asSection.body.sections[0]!.title, "第一章");
+  assert.equal(asSection.body.sections[0]!.pieces[0]!.dialogue, "セリフ");
+});
+
 test("fullwidth marks accepted", () => {
   const medo = parseMesLang(`＠にか
 ＃ト書き
