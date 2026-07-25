@@ -15,6 +15,7 @@ MesLang は、セリフを中心に置き、その前後に意味（発言者・
 | [02-decorators.md](02-decorators.md) | デコレーターと属性 |
 | [03-media-profiles.md](03-media-profiles.md) | 音声 / 漫画 / アニメの拡張 |
 | [04-ai-reading.md](04-ai-reading.md) | AI が読むときの約束 |
+| [05-glossary.md](05-glossary.md) | 用語の統一（ピース / ト書き / Medo など） |
 | [../philosophy.md](../philosophy.md) | なぜこうするか |
 
 ## 旧 Mes からの継承
