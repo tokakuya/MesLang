@@ -1,13 +1,12 @@
 # 漫画ネーム サンプル
 
-`profile: manga` の実例。本文は `.mes`、コマの感触は参考画像で補う。
-
-参考画像は原稿の一部ではない（[ADR 0004](../../docs/decisions/0004-manga-reference-images.md)）。  
-サンプルテキストの各 `%` に対応する画像を、その説明の直下に置く。
+`profile: manga` の1ページ分ネーム。  
+参考画像は原稿の一部ではない（[ADR 0004](../../docs/decisions/0004-manga-reference-images.md)）。サンプルテキストと見比べる用で、**1ページ＝1枚**。
 
 ## station-name.mes — 駅前の二人（1ページ）
 
-ソース: [station-name.mes](./station-name.mes)
+ソース: [station-name.mes](./station-name.mes)  
+仕様書: [03-media-profiles.md](../../docs/spec/03-media-profiles.md)
 
 ```mes
 profile: manga
@@ -16,54 +15,30 @@ title: 駅前の二人（ネーム）
 == 1ページ
 
 %1
-^俯瞰ぎみ・広目
+^俯瞰ぎみ 1/2コマ
 #夕方の改札前。人波。にかが焦って入ってくる
 $雑踏（小さく）
-```
 
-![%1 参考画像](./refs/station-name-1.jpg)
-
-```mes
 %2
-^にかバストアップ
+^にかバストアップ 1/2コマ
 @にか :表情 焦り
-おくれた……！
-```
+待たせたな……！
 
-![%2 参考画像](./refs/station-name-2.jpg)
-
-```mes
 %3
 ^二人を入れる引き
 #こいとが柱の陰から半歩出る
 @こいと :表情 呆れ
-そういうニカちゃんも、ついさっき来たばかりじゃないですか。
-```
+待ちくたびれましたよ
 
-![%3 参考画像](./refs/station-name-3.jpg)
-
-```mes
 %4
-^にか寄り（汗）
-@にか :表情 苦笑
-#視線を逸らしながらボソッ
-そういう時は……ランチを奢らせるのがだな…
-```
+^こいと寄り（汗） 2/3コマ
+@こいと :表情 からかうように
+罰として、今日は奢ってくださいね
 
-![%4 参考画像](./refs/station-name-4.jpg)
-
-```mes
 %5
-^こいと寄り
-@こいと :表情 真顔
-今日はだめです。
+^にか寄り 1/3コマ
+@にか :表情 苦笑い
+お手柔らかにお願いします
 ```
 
-![%5 参考画像](./refs/station-name-5.jpg)
-
-## refs/
-
-| ファイル | 対応 |
-|----------|------|
-| `refs/profile-sample-*.jpg` | 仕様書 `03-media-profiles.md` の短いサンプル |
-| `refs/station-name-*.jpg` | 本ディレクトリの `station-name.mes` |
+![1ページ参考画像](./refs/station-name-page.jpg)
