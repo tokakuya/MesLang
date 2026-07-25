@@ -23,6 +23,7 @@
 | 糖衣 | sugar | パース前に正規形へ直す入力短縮（`名前「セリフ」` など） |
 | DoFlat | `doFlat` | 糖衣展開処理の呼び名（参照パーサ関数名） |
 | プロファイル | profile | メディア固有の記号・慣習（`audio` / `manga` / `anime`） |
+| 参考画像 | reference image | 漫画サンプルの `%` から生成した二次画像。原稿外でサンプル直下に置く（[ADR 0004](../decisions/0004-manga-reference-images.md)） |
 
 ## `#` まわり（混同しやすい）
 
