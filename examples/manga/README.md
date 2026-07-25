@@ -1,13 +1,14 @@
 # 漫画ネーム サンプル
 
-`profile: manga` の実例。本文は `.mes`、コマの感触は参考画像で補う。
+`profile: manga` の1ページ分ネーム。本文は `.mes`、コマの感触は参考画像で補う。
 
 参考画像は原稿の一部ではない（[ADR 0004](../../docs/decisions/0004-manga-reference-images.md)）。  
-サンプルテキストの各 `%` に対応する画像を、その説明の直下に置く。
+仕様書の漫画プロファイル・サンプルと同じ原稿を使う。
 
-## station-name.mes — 駅前の二人（1ページ）
+## station-name.mes — 駅前の二人（1ページ / 5コマ）
 
-ソース: [station-name.mes](./station-name.mes)
+ソース: [station-name.mes](./station-name.mes)  
+仕様書: [03-media-profiles.md](../../docs/spec/03-media-profiles.md)
 
 ```mes
 profile: manga
@@ -63,7 +64,6 @@ $雑踏（小さく）
 
 ## refs/
 
-| ファイル | 対応 |
-|----------|------|
-| `refs/profile-sample-*.jpg` | 仕様書 `03-media-profiles.md` の短いサンプル |
-| `refs/station-name-*.jpg` | 本ディレクトリの `station-name.mes` |
+| ファイル | 対応コマ |
+|----------|----------|
+| `refs/station-name-1.jpg` … `5.jpg` | `%1` … `%5`（仕様書サンプルと共通） |
