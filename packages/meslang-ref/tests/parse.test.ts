@@ -40,7 +40,7 @@ test("attributes on character and attr-only lines", () => {
   assert.equal(ch2.attrs["表情"], "微笑");
 });
 
-test("bracket sugar maps to 表情 / 姿勢", () => {
+test("bracket sugar maps to 表情 / 姿勢 / 表情N (ADR 0005)", () => {
   const medo = parseMesLang(`@にか[泣][前傾]
 セリフ
 `);
@@ -48,6 +48,15 @@ test("bracket sugar maps to 表情 / 姿勢", () => {
   assert.equal(ch.value, "にか");
   assert.equal(ch.attrs["表情"], "泣");
   assert.equal(ch.attrs["姿勢"], "前傾");
+
+  const medo3 = parseMesLang(`@にか[泣][前傾][汗]
+セリフ
+`);
+  const ch3 = firstCharacter(medo3.body.sections[0]!.pieces[0]!)!;
+  assert.equal(ch3.attrs["表情"], "泣");
+  assert.equal(ch3.attrs["姿勢"], "前傾");
+  assert.equal(ch3.attrs["表情2"], "汗");
+  assert.equal(ch3.attrs["表情3"], undefined);
 });
 
 test("blank line splits pieces; postfix decorators ok", () => {

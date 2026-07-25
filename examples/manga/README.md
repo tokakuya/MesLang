@@ -1,6 +1,6 @@
-# 漫画ネーム サンプル
+# 漫画ネーム用途のサンプル
 
-`profile: manga` の1ページ分ネーム。  
+`profile: manga` の1ページ分 **原稿**（ネーム用途の記述）。  
 参考画像は原稿の一部ではない（[ADR 0004](../../docs/decisions/0004-manga-reference-images.md)）。サンプルテキストと見比べる用で、**1ページ＝1枚**。
 
 ## station-name.mes — 駅前の二人（1ページ）

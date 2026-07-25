@@ -36,11 +36,11 @@ $雑踏。遠くで電車の発車ベル
 
 ## profile: manga（優先度 1）
 
-ネーム・コンテ的なページ/コマ記述。
+ネーム用途のページ/コマ記述（書くのは **原稿**。二次出力の完成ネームではない → [用語集](05-glossary.md)）。
 
 重視するデコレーター: `@ # % ^ *`（`$ !` も可）
 
-1ページ分のネーム例（実ファイル: [examples/manga/station-name.mes](../../examples/manga/station-name.mes)）:
+1ページ分のネーム用途の原稿例（実ファイル: [examples/manga/station-name.mes](../../examples/manga/station-name.mes)）:
 
 ```mes
 profile: manga
