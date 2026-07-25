@@ -76,10 +76,7 @@ function parseHeader(headerRaw: string): Record<string, string> {
 
 function extractInlineAttrs(rest: string): { value: string; attrs: Attrs } {
   const attrs: Attrs = {};
-  // Bracket sugar: Name[泣][前傾] → first key 表情, subsequent also 表情_n or keep as 表情 joined?
-  // ADR: each bracket → :表情 by default; multiple → 表情, 表情2 or join.
-  // Use 表情 for first, then pose-like: if multiple, first 表情, rest numbered 表情2...
-  // Simpler: join multiple bracket values into 表情 with 、
+  // Bracket sugar (ADR 0005): 1st→表情, 2nd→姿勢, 3rd+→表情2, 表情3, …
   let working = rest;
   const brackets: string[] = [];
   working = working.replace(BRACKET_RE, (_, inner: string) => {
@@ -90,8 +87,7 @@ function extractInlineAttrs(rest: string): { value: string; attrs: Attrs } {
   else if (brackets.length > 1) {
     attrs[BRACKET_DEFAULT_KEY] = brackets[0]!;
     for (let i = 1; i < brackets.length; i++) {
-      // second+ brackets: treat as 姿勢 for the common two-arg case, else 表情N
-      const key = i === 1 ? "姿勢" : `${BRACKET_DEFAULT_KEY}${i + 1}`;
+      const key = i === 1 ? "姿勢" : `${BRACKET_DEFAULT_KEY}${i}`;
       attrs[key] = brackets[i]!;
     }
   }
