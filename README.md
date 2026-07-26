@@ -77,6 +77,7 @@ $雑踏のざわめき
 cd packages/meslang-ref
 npm test
 node --experimental-strip-types src/cli.ts ../../examples/audio/station.mes
+npm run count -- ../../examples/audio/station.mes   # セリフ文字数（Medo から）
 ```
 
 ## 旧 Mes との関係

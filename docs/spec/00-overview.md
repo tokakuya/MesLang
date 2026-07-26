@@ -13,7 +13,7 @@ MesLang は、セリフを中心に置き、その前後に意味（だれが話
 |------|------|
 | [01-core.md](01-core.md) | 文書の組み立て方・ピース・行の種類 |
 | [02-decorators.md](02-decorators.md) | 記号（デコレーター）と属性 |
-| [03-media-profiles.md](03-media-profiles.md) | 漫画・音声・アニメ向けの書き方と記号の見比べ表 |
+| [03-media-profiles.md](03-media-profiles.md) | 漫画・音声・アニメ向けの書き方、記号の見比べ表、音と位置の語彙ガイド |
 | [04-ai-reading.md](04-ai-reading.md) | AI に読んでもらうときの約束 |
 | [05-glossary.md](05-glossary.md) | ことばの整理（ピース / ト書き / 原稿と二次出力 など） |
 | [06-mes-compat.md](06-mes-compat.md) | 旧 Mes 原稿の取り込み手順 |
