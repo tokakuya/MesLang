@@ -22,7 +22,7 @@ docs/
   philosophy.md          # 大切にしている考え方
   roadmap.md             # これから進めること
   spec/                  # 言語の書き方（v0）
-  decisions/             # ADR（決めたことの記録）
+  decisions/             # ADR（決めたこと・見送った案の記録）
 examples/                # 各メディアの見本
 schema/                  # 中間データ（Medo）の形
 automation/              # 日々の改善用プロンプト
@@ -65,6 +65,8 @@ $雑踏のざわめき
 
 - 考え方: [docs/philosophy.md](docs/philosophy.md)
 - 仕様の入口: [docs/spec/00-overview.md](docs/spec/00-overview.md)
+- ことばの整理: [docs/spec/05-glossary.md](docs/spec/05-glossary.md)
+- ADR 一覧: [docs/decisions/](docs/decisions/README.md)
 - 見本: [examples/](examples/)
 - 日々の改善の回し方: [automation/DAILY.md](automation/DAILY.md)
 - エージェント向けの案内: [AGENTS.md](AGENTS.md)
