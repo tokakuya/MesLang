@@ -100,6 +100,20 @@ title: テスト
   assert.deepEqual(kinds, ["frame", "camera", "comment", "character"]);
 });
 
+test("rejected ::img= is not attribute syntax (ADR 0002 / glossary wont)", () => {
+  const medo = parseMesLang(`@にか
+::img=face.png
+セリフ
+`);
+  const piece = medo.body.sections[0]!.pieces[0]!;
+  const ch = firstCharacter(piece)!;
+  assert.equal(ch.value, "にか");
+  assert.equal(ch.attrs["img"], undefined);
+  // 行頭が : でもキーが空／不正なら属性にせずセリフ側へ残す
+  assert.match(piece.dialogue, /::img=face\.png/);
+  assert.match(piece.dialogue, /セリフ/);
+});
+
 test("ADR 0003: #第一章 stays comment; == is the only section mark", () => {
   const asComment = parseMesLang(`#第一章
 

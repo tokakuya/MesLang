@@ -123,6 +123,8 @@ function parseDecoratorLine(line: string): Decorator | null {
 }
 
 function isAttrOnlyLine(line: string): boolean {
+  // ADR 0002: `::img=` などの二重コロンは属性構文ではない
+  if (line.startsWith("::") || line.startsWith("：：")) return false;
   return line.startsWith(":") || line.startsWith("：");
 }
 
@@ -157,14 +159,18 @@ function parsePiece(block: string): Piece | null {
   for (const line of rawLines) {
     if (isAttrOnlyLine(line)) {
       const attrs = parseAttrOnlyLine(line);
-      if (lastDecorator) Object.assign(lastDecorator.attrs, attrs);
-      continue;
-    }
-    const dec = parseDecoratorLine(line);
-    if (dec) {
-      decorators.push(dec);
-      lastDecorator = dec;
-      continue;
+      if (Object.keys(attrs).length > 0) {
+        if (lastDecorator) Object.assign(lastDecorator.attrs, attrs);
+        continue;
+      }
+      // 属性として読めない `:…` 行はセリフ側に残す（飲み込み防止）
+    } else {
+      const dec = parseDecoratorLine(line);
+      if (dec) {
+        decorators.push(dec);
+        lastDecorator = dec;
+        continue;
+      }
     }
     dialogueLines.push(line);
     lastDecorator = null;
