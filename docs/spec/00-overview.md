@@ -13,7 +13,7 @@ MesLang は、セリフを中心に置き、その前後に意味（発言者・
 |------|------|
 | [01-core.md](01-core.md) | 文書構造・ピース・行の分類 |
 | [02-decorators.md](02-decorators.md) | デコレーターと属性 |
-| [03-media-profiles.md](03-media-profiles.md) | 音声 / 漫画 / アニメの拡張 |
+| [03-media-profiles.md](03-media-profiles.md) | メディア拡張とデコレーター横断表（audio / manga / anime） |
 | [04-ai-reading.md](04-ai-reading.md) | AI が読むときの約束 |
 | [05-glossary.md](05-glossary.md) | 用語の統一（ピース / ト書き / 原稿と二次出力 / 属性キーなど） |
 | [../philosophy.md](../philosophy.md) | なぜこうするか |
