@@ -16,6 +16,7 @@ MesLang は、セリフを中心に置き、その前後に意味（だれが話
 | [03-media-profiles.md](03-media-profiles.md) | 漫画・音声・アニメ向けの書き方と記号の見比べ表 |
 | [04-ai-reading.md](04-ai-reading.md) | AI に読んでもらうときの約束 |
 | [05-glossary.md](05-glossary.md) | ことばの整理（ピース / ト書き / 原稿と二次出力 など） |
+| [06-mes-compat.md](06-mes-compat.md) | 旧 Mes 原稿の取り込み手順 |
 | [../decisions/](../decisions/README.md) | ADR（決めたこと・見送った案の記録） |
 | [../philosophy.md](../philosophy.md) | なぜこうするか |
 
@@ -35,6 +36,8 @@ MesLang は、セリフを中心に置き、その前後に意味（だれが話
 - メディアプロファイル（とくに `%` コマ / カット）
 - AI 向けの語彙と読み方ガイド
 - 中間データ Medo の明示的な形
+
+旧原稿の移し方は [取り込みガイド](06-mes-compat.md)（[ADR 0006](../decisions/0006-mes-compat-import.md)）をどうぞ。
 
 ## v0 ではやらないこと
 
