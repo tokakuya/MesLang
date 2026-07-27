@@ -64,6 +64,7 @@ test("examples/audio mes-import before→after path", () => {
   const before = readFileSync(join(root, "examples/audio/mes-import-before.mes"), "utf8");
   const afterRewrite = rewriteMesCompat(before);
   const medo = parseMesLang(afterRewrite);
+  assert.equal(medo.header.title, "駅前（取り込み前）");
   const pieces = medo.body.sections.flatMap((s) => s.pieces);
   assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "comment" && d.value === "駅前")));
   assert.ok(pieces.some((p) => p.dialogue.includes("キタキタ")));
