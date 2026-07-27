@@ -89,9 +89,10 @@ function extractInlineAttrs(rest: string, bracketKeys: readonly string[]): { val
     attrs[bracketKeyAt(bracketKeys, i)] = brackets[i]!;
   }
 
-  // :key value tokens — scan and cut from value
+  // :key value tokens — keys must start with a letter / CJK / underscore
+  // so timecodes like &0:08 are not split into attrs.
   const attrStarts: { index: number; key: string; markLen: number }[] = [];
-  const re = /([:：])(\S+)/g;
+  const re = /([:：])([A-Za-z_\u3040-\u30ff\u4e00-\u9fff][\w\u3040-\u30ff\u4e00-\u9fff-]*)/g;
   let m: RegExpExecArray | null;
   while ((m = re.exec(working)) !== null) {
     attrStarts.push({ index: m.index, key: m[2]!, markLen: m[0].length });

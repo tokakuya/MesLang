@@ -123,6 +123,47 @@ test("sugar 名前「セリフ」", () => {
   assert.equal(medo.body.sections[0]!.pieces[0]!.dialogue, "りんご剥いたよ");
 });
 
+test("header $key value form (Mes-style) and body $ sound stay distinct", () => {
+  const medo = parseMesLang(`$title 駅前の二人
+$profile audio
+----
+@にか
+$雑踏
+!正面
+セリフ
+`);
+  assert.equal(medo.header.title, "駅前の二人");
+  assert.equal(medo.header.profile, "audio");
+  const piece = medo.body.sections[0]!.pieces[0]!;
+  assert.equal(piece.decorators.find((d) => d.kind === "sound")?.value, "雑踏");
+  assert.equal(piece.decorators.find((d) => d.kind === "position")?.value, "正面");
+  assert.equal(piece.dialogue, "セリフ");
+});
+
+test("audio: multiple $ / ! keep document order (pairing is authoring hint)", () => {
+  const medo = parseMesLang(`profile: audio
+----
+@にか
+$発車ベル
+!遠方
+$靴音
+!近づく
+&0:08
+あ。
+`);
+  const piece = medo.body.sections[0]!.pieces[0]!;
+  assert.deepEqual(
+    piece.decorators.filter((d) => d.kind === "sound" || d.kind === "position" || d.kind === "timing").map((d) => [d.kind, d.value]),
+    [
+      ["sound", "発車ベル"],
+      ["position", "遠方"],
+      ["sound", "靴音"],
+      ["position", "近づく"],
+      ["timing", "0:08"],
+    ],
+  );
+});
+
 test("header profile and sections", () => {
   const medo = parseMesLang(`profile: manga
 title: テスト
