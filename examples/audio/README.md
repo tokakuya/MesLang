@@ -13,7 +13,7 @@
 
 ## 旧 Mes 取り込みの前後
 
-- [mes-import-before.mes](./mes-import-before.mes) … 行頭 `○` が残ったままの例
-- [mes-import-after.mes](./mes-import-after.mes) … 互換レイヤで `#` にしたあとの例
+- [mes-import-before.mes](./mes-import-before.mes) … 行頭 `○` と、旧流儀の `$ヒソヒソ声` が残ったままの例
+- [mes-import-after.mes](./mes-import-after.mes) … 互換レイヤで `#` にし、話者の声を `:声質` へ移したあとの例
 
-手順は [06-mes-compat.md](../../docs/spec/06-mes-compat.md) をどうぞ。
+手順は [06-mes-compat.md](../../docs/spec/06-mes-compat.md)、`$` と `:声質` の分け方は [音声プロファイル](../../docs/spec/03-media-profiles.md#音声作品profile-audio) をどうぞ。

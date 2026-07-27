@@ -67,9 +67,31 @@ test("examples/audio mes-import before→after path", () => {
   const pieces = medo.body.sections.flatMap((s) => s.pieces);
   assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "comment" && d.value === "駅前")));
   assert.ok(pieces.some((p) => p.dialogue.includes("キタキタ")));
+  // Old-style voice note stays as $ until a human moves it to :声質
+  assert.ok(
+    pieces.some((p) => p.decorators.some((d) => d.kind === "sound" && d.value.includes("ヒソヒソ"))),
+  );
 
   const after = readFileSync(join(root, "examples/audio/mes-import-after.mes"), "utf8");
   const polished = parseMesLang(after);
   assert.equal(polished.header.profile, "audio");
   assert.equal(polished.body.sections[0]!.title, "駅前");
+  const nika = polished.body.sections[0]!.pieces.find((p) => p.dialogue.includes("キタキタ"));
+  assert.equal(firstCharacter(nika!)?.attrs["声質"], "ヒソヒソ");
+  assert.equal(firstCharacter(nika!)?.attrs["表情"], "焦り");
+});
+
+test("audio: speaker 声質 is attr; ambient voice stays $", () => {
+  const medo = parseMesLang(`profile: audio
+----
+@にか :声質 ヒソヒソ
+$呼びかける声（やや遠く）
+!遠方
+……だれか呼んでない？
+`);
+  const piece = medo.body.sections[0]!.pieces[0]!;
+  assert.equal(firstCharacter(piece)?.attrs["声質"], "ヒソヒソ");
+  const sounds = piece.decorators.filter((d) => d.kind === "sound").map((d) => d.value);
+  assert.deepEqual(sounds, ["呼びかける声（やや遠く）"]);
+  assert.ok(piece.decorators.some((d) => d.kind === "position" && d.value === "遠方"));
 });
