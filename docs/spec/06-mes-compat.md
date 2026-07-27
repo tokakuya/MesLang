@@ -98,6 +98,13 @@ const medo = parseMesLang(rewriteMesCompat(oldText));
 
 `parseMesLang` 単体では `○` を直しません。取り込みツールだけが `rewriteMesCompat` を挟みます。
 
+参照パーサの CLI では `--compat` で同じ変換をかけられます。
+
+```bash
+cd packages/meslang-ref
+node --experimental-strip-types src/cli.ts --compat ../../examples/audio/mes-import-before.mes
+```
+
 ## いまはやらないこと
 
 - コア DoFlat への `○` 変換の内蔵（境界がにじむため）
