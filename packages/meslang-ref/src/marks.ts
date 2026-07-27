@@ -21,5 +21,12 @@ export const MARK_TO_KIND: Record<string, DecoratorKind> = {
 
 export const DECORATOR_MARKS = new Set(Object.keys(MARK_TO_KIND));
 
-/** Bracket shorthand default key (ADR 0002). */
+/** Bracket shorthand first-key default (ADR 0002 / 0005). Prefer resolveBracketKeys. */
 export const BRACKET_DEFAULT_KEY = "表情";
+
+export {
+  BRACKET_CORE_DEFAULT,
+  BRACKET_PROFILE_KEYS,
+  bracketKeyAt,
+  resolveBracketKeys,
+} from "./bracketKeys.ts";

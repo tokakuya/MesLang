@@ -1,5 +1,7 @@
-import { BRACKET_DEFAULT_KEY, DECORATOR_MARKS, MARK_TO_KIND } from "./marks.ts";
+import { bracketKeyAt, DECORATOR_MARKS, MARK_TO_KIND, resolveBracketKeys } from "./marks.ts";
 import type { Attrs, Decorator, Medo, Piece, Section } from "./types.ts";
+
+export { bracketKeyAt, resolveBracketKeys } from "./bracketKeys.ts";
 
 const HEADER_DELIM = /^----\s*$/;
 const SECTION_RE = /^==\s*(.*)$/;
@@ -74,22 +76,17 @@ function parseHeader(headerRaw: string): Record<string, string> {
   return header;
 }
 
-function extractInlineAttrs(rest: string): { value: string; attrs: Attrs } {
+function extractInlineAttrs(rest: string, bracketKeys: readonly string[]): { value: string; attrs: Attrs } {
   const attrs: Attrs = {};
-  // Bracket sugar (ADR 0005): 1st→表情, 2nd→姿勢, 3rd+→表情2, 表情3, …
+  // Bracket sugar (ADR 0005 / 0007): keys from resolveBracketKeys
   let working = rest;
   const brackets: string[] = [];
   working = working.replace(BRACKET_RE, (_, inner: string) => {
     brackets.push(inner.trim());
     return "";
   });
-  if (brackets.length === 1) attrs[BRACKET_DEFAULT_KEY] = brackets[0]!;
-  else if (brackets.length > 1) {
-    attrs[BRACKET_DEFAULT_KEY] = brackets[0]!;
-    for (let i = 1; i < brackets.length; i++) {
-      const key = i === 1 ? "姿勢" : `${BRACKET_DEFAULT_KEY}${i}`;
-      attrs[key] = brackets[i]!;
-    }
+  for (let i = 0; i < brackets.length; i++) {
+    attrs[bracketKeyAt(bracketKeys, i)] = brackets[i]!;
   }
 
   // :key value tokens — scan and cut from value
@@ -114,11 +111,11 @@ function extractInlineAttrs(rest: string): { value: string; attrs: Attrs } {
   return { value, attrs };
 }
 
-function parseDecoratorLine(line: string): Decorator | null {
+function parseDecoratorLine(line: string, bracketKeys: readonly string[]): Decorator | null {
   const mark = line[0]!;
   if (!DECORATOR_MARKS.has(mark)) return null;
   const kind = MARK_TO_KIND[mark] ?? "unknown";
-  const { value, attrs } = extractInlineAttrs(line.slice(1).trim());
+  const { value, attrs } = extractInlineAttrs(line.slice(1).trim(), bracketKeys);
   return { kind, rawMark: mark, value, attrs };
 }
 
@@ -128,8 +125,8 @@ function isAttrOnlyLine(line: string): boolean {
   return line.startsWith(":") || line.startsWith("：");
 }
 
-function parseAttrOnlyLine(line: string): Attrs {
-  const { attrs } = extractInlineAttrs(line);
+function parseAttrOnlyLine(line: string, bracketKeys: readonly string[]): Attrs {
+  const { attrs } = extractInlineAttrs(line, bracketKeys);
   // extractInlineAttrs expects optional leading value; for `:表情 泣` value empty and attrs filled
   // But our regex needs space after key — `:表情 泣` works via tokenizing from start.
   // If line is only attrs, prepend fake to reuse? Actually extractInlineAttrs on `:表情 泣`:
@@ -141,7 +138,7 @@ function parseAttrOnlyLine(line: string): Attrs {
   return {};
 }
 
-function parsePiece(block: string): Piece | null {
+function parsePiece(block: string, bracketKeys: readonly string[]): Piece | null {
   const rawLines = block
     .split("\n")
     .map((l) => l.trimEnd())
@@ -158,14 +155,14 @@ function parsePiece(block: string): Piece | null {
 
   for (const line of rawLines) {
     if (isAttrOnlyLine(line)) {
-      const attrs = parseAttrOnlyLine(line);
+      const attrs = parseAttrOnlyLine(line, bracketKeys);
       if (Object.keys(attrs).length > 0) {
         if (lastDecorator) Object.assign(lastDecorator.attrs, attrs);
         continue;
       }
       // 属性として読めない `:…` 行はセリフ側に残す（飲み込み防止）
     } else {
-      const dec = parseDecoratorLine(line);
+      const dec = parseDecoratorLine(line, bracketKeys);
       if (dec) {
         decorators.push(dec);
         lastDecorator = dec;
@@ -193,6 +190,7 @@ export function parseMesLang(input: string): Medo {
   const flat = doFlat(input);
   const { headerRaw, body } = splitHeaderBody(flat);
   const header = parseHeader(headerRaw);
+  const bracketKeys = resolveBracketKeys(header);
 
   const sections: Section[] = [];
   let current: Section = { title: "", pieces: [] };
@@ -217,14 +215,14 @@ export function parseMesLang(input: string): Medo {
         i++;
         const rest = blockLines.slice(i).join("\n").trim();
         if (rest) {
-          const piece = parsePiece(rest);
+          const piece = parsePiece(rest, bracketKeys);
           if (piece) current.pieces.push(piece);
         }
         return;
       }
       break;
     }
-    const piece = parsePiece(block);
+    const piece = parsePiece(block, bracketKeys);
     if (piece) current.pieces.push(piece);
   };
 

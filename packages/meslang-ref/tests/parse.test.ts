@@ -40,8 +40,12 @@ test("attributes on character and attr-only lines", () => {
   assert.equal(ch2.attrs["表情"], "微笑");
 });
 
-test("bracket sugar maps to 表情 / 姿勢 / 表情N (ADR 0005)", () => {
-  const medo = parseMesLang(`@にか[泣][前傾]
+test("bracket sugar maps to 表情 / 姿勢 / 表情N without profile (ADR 0005)", () => {
+  // No header → profile defaults to audio, which uses 声質 for 2nd (ADR 0007).
+  // Force core-like keys via bracket-keys override for this legacy assertion.
+  const medo = parseMesLang(`bracket-keys: 表情, 姿勢
+----
+@にか[泣][前傾]
 セリフ
 `);
   const ch = firstCharacter(medo.body.sections[0]!.pieces[0]!)!;
@@ -49,7 +53,9 @@ test("bracket sugar maps to 表情 / 姿勢 / 表情N (ADR 0005)", () => {
   assert.equal(ch.attrs["表情"], "泣");
   assert.equal(ch.attrs["姿勢"], "前傾");
 
-  const medo3 = parseMesLang(`@にか[泣][前傾][汗]
+  const medo3 = parseMesLang(`bracket-keys: 表情, 姿勢
+----
+@にか[泣][前傾][汗]
 セリフ
 `);
   const ch3 = firstCharacter(medo3.body.sections[0]!.pieces[0]!)!;
@@ -59,6 +65,42 @@ test("bracket sugar maps to 表情 / 姿勢 / 表情N (ADR 0005)", () => {
   assert.equal(ch3.attrs["表情3"], undefined);
 });
 
+test("audio profile: 2nd bracket → 声質 (ADR 0007)", () => {
+  const medo = parseMesLang(`profile: audio
+----
+@にか[焦り][ヒソヒソ]
+セリフ
+`);
+  const ch = firstCharacter(medo.body.sections[0]!.pieces[0]!)!;
+  assert.equal(ch.attrs["表情"], "焦り");
+  assert.equal(ch.attrs["声質"], "ヒソヒソ");
+  assert.equal(ch.attrs["姿勢"], undefined);
+});
+
+test("manga profile: 3rd bracket → 吹き出し (ADR 0007)", () => {
+  const medo = parseMesLang(`profile: manga
+----
+@こいと[呆れ][腕組み][心の声]
+セリフ
+`);
+  const ch = firstCharacter(medo.body.sections[0]!.pieces[0]!)!;
+  assert.equal(ch.attrs["表情"], "呆れ");
+  assert.equal(ch.attrs["姿勢"], "腕組み");
+  assert.equal(ch.attrs["吹き出し"], "心の声");
+});
+
+test("header bracket-keys overrides profile table (ADR 0007)", () => {
+  const medo = parseMesLang(`profile: audio
+bracket-keys: 表情, 姿勢
+----
+@にか[微笑][前傾]
+やあ。
+`);
+  const ch = firstCharacter(medo.body.sections[0]!.pieces[0]!)!;
+  assert.equal(ch.attrs["表情"], "微笑");
+  assert.equal(ch.attrs["姿勢"], "前傾");
+  assert.equal(ch.attrs["声質"], undefined);
+});
 test("blank line splits pieces; postfix decorators ok", () => {
   const medo = parseMesLang(`こんにちは。
 @にか
