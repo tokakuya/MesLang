@@ -247,3 +247,37 @@ test("examples/manga/station-name.mes parses frames", () => {
     .filter((d) => d.kind === "frame");
   assert.ok(frames.length >= 4);
 });
+
+test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () => {
+  const text = readFileSync(join(root, "examples/manga/silent-panels.mes"), "utf8");
+  const medo = parseMesLang(text);
+  assert.equal(medo.header.profile, "manga");
+  assert.equal(medo.body.sections.length, 1);
+  assert.equal(medo.body.sections[0]!.title, "1ページ");
+  const pieces = medo.body.sections[0]!.pieces;
+  assert.ok(pieces.length >= 5);
+  for (const p of pieces) {
+    assert.equal(p.dialogue.trim(), "");
+    assert.ok(p.decorators.some((d) => d.kind === "frame"));
+    assert.ok(p.decorators.some((d) => d.kind === "camera"));
+  }
+});
+
+test("manga: :吹き出し and 3rd bracket land on the same key", () => {
+  const viaAttr = parseMesLang(`profile: manga
+----
+@こいと :表情 からかうように :姿勢 少し前傾 :吹き出し 心の声
+セリフ
+`);
+  const viaBracket = parseMesLang(`profile: manga
+----
+@こいと[からかうように][少し前傾][心の声]
+セリフ
+`);
+  const a = firstCharacter(viaAttr.body.sections[0]!.pieces[0]!)!;
+  const b = firstCharacter(viaBracket.body.sections[0]!.pieces[0]!)!;
+  assert.equal(a.attrs["表情"], "からかうように");
+  assert.equal(a.attrs["姿勢"], "少し前傾");
+  assert.equal(a.attrs["吹き出し"], "心の声");
+  assert.deepEqual(a.attrs, b.attrs);
+});
