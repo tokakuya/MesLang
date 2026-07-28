@@ -263,6 +263,25 @@ test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () 
   }
 });
 
+test("examples/manga/cafe-pose.mes: 表情 and 姿勢 on speakers", () => {
+  const text = readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8");
+  const medo = parseMesLang(text);
+  assert.equal(medo.header.profile, "manga");
+  assert.equal(medo.header.title, "カフェ・表情と姿勢の練習");
+  assert.equal(medo.body.sections[0]!.title, "1ページ");
+  const pieces = medo.body.sections[0]!.pieces;
+  assert.ok(pieces.length >= 6);
+  const withAttrs = pieces
+    .map((p) => firstCharacter(p))
+    .filter((ch): ch is NonNullable<typeof ch> => ch != null && Object.keys(ch.attrs).length > 0);
+  assert.ok(withAttrs.length >= 4);
+  assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "ほっとした" && ch.attrs["姿勢"] === "椅子に沈む"));
+  assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "微笑" && ch.attrs["姿勢"] === "肘をついて顎を支える"));
+  assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "困り" && ch.attrs["姿勢"] === "前のめり"));
+  assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "楽しそう" && ch.attrs["姿勢"] === "少し身を乗り出す"));
+  assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "苦笑い" && ch.attrs["姿勢"] === "後ずさり気味"));
+});
+
 test("manga: :吹き出し and 3rd bracket land on the same key", () => {
   const viaAttr = parseMesLang(`profile: manga
 ----
