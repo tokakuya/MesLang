@@ -46,14 +46,16 @@ MesLang は、ツールだけでなく、ネーム生成・字コンテ起こし
 ```
 次の MesLang（profile: manga）を、ページごとのネーム概要にして。
 - == はページ区切り、% はそのページ内のコマ。混同しない
-- 各コマについて: 構図（^） / 状況（#） / キャラ配置 / 表情 / セリフ を短く
+- 各コマについて: 構図（^） / 状況（#） / キャラ配置 / 表情 / 姿勢 / セリフ を短く
+- :表情 とかぎかっこ 1 個目、:姿勢 とかぎかっこ 2 個目は同じ行き先（話者に紐づく）
 - セリフが無いコマ（dialogue 空）もコマとして扱い、「無言」「間」と明記する
 - :吹き出し とかぎかっこ 3 個目は同じ意味（心の声など）
 - 原文にない設定は「提案:」と印をつけて分けて書く
 ```
 
 入力例（セリフなしページ）: [examples/manga/silent-panels.mes](../../examples/manga/silent-panels.mes)  
-入力例（会話あり）: [examples/manga/station-name.mes](../../examples/manga/station-name.mes)
+入力例（会話あり）: [examples/manga/station-name.mes](../../examples/manga/station-name.mes)  
+入力例（表情・姿勢の練習）: [examples/manga/cafe-pose.mes](../../examples/manga/cafe-pose.mes)
 
 ### 漫画参考画像（サンプル提示・ネーム確認）
 
