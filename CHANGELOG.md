@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.14 — 2026-07-29
+
+- Medo schema: decorator の `rawMark` を必須に（参照パーサ出力と揃える）
+- 参照パーサ: schema 形チェック `validateMedo` / `assertValidMedo` と固定テストを追加
+- `?`（ext）の実務例を仕様に追加。字コンテ見本 `station-conte.mes` を5カット＋ツール用 `?` メモで厚くする
+
 ## 0.0.13 — 2026-07-28
 
 - 漫画プロファイル: `#` / `:表情` / `:姿勢` / `^` の分け方を表で明確化
