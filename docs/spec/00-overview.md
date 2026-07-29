@@ -17,6 +17,7 @@ MesLang は、セリフを中心に置き、その前後に意味（だれが話
 | [04-ai-reading.md](04-ai-reading.md) | AI に読んでもらうときの約束 |
 | [05-glossary.md](05-glossary.md) | ことばの整理（ピース / ト書き / 原稿と二次出力 など） |
 | [06-mes-compat.md](06-mes-compat.md) | 旧 Mes 原稿の取り込み手順 |
+| [07-conte-table.md](07-conte-table.md) | 絵コンテ／カット表の二次出力（仮） |
 | [../decisions/](../decisions/README.md) | ADR（決めたこと・見送った案の記録） |
 | [../philosophy.md](../philosophy.md) | なぜこうするか |
 

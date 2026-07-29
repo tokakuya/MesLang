@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://meslang.dev/schema/conte-table.schema.json",
+  "title": "ConteTable",
+  "description": "MesLang / Medo からの絵コンテ・カット表二次出力（実験・conte-table/0.0）。",
+  "type": "object",
+  "required": ["version", "title", "profile", "cuts"],
+  "additionalProperties": false,
+  "properties": {
+    "version": {
+      "type": "string",
+      "const": "conte-table/0.0"
+    },
+    "title": { "type": "string" },
+    "profile": { "type": "string" },
+    "cuts": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/cut" }
+    }
+  },
+  "$defs": {
+    "dialogueLine": {
+      "type": "object",
+      "required": ["speaker", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "speaker": { "type": "string" },
+        "text": { "type": "string" }
+      }
+    },
+    "cut": {
+      "type": "object",
+      "required": [
+        "cut",
+        "camera",
+        "timing",
+        "action",
+        "sound",
+        "position",
+        "beat",
+        "ext",
+        "dialogues"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "cut": {
+          "type": "string",
+          "description": "最初の %（frame）の値。番号なしのときは空文字。"
+        },
+        "camera": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "timing": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "action": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "sound": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "position": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "beat": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "ext": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "dialogues": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/dialogueLine" }
+        }
+      }
+    }
+  }
+}

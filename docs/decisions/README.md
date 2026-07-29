@@ -20,6 +20,7 @@
 | [0005](0005-bracket-default-keys.md) | かぎかっこ速記の既定キー順 | 2026-07-25 |
 | [0006](0006-mes-compat-import.md) | 旧 Mes テキストの取り込み方針 | 2026-07-26 |
 | [0007](0007-profile-bracket-keys.md) | プロファイル別のかぎかっこキー表 | 2026-07-27 |
+| [0008](0008-conte-table-secondary.md) | 絵コンテ／カット表は二次出力 | 2026-07-29 |
 
 Superseded / Rejected の ADR は、いまのところありません。
 
