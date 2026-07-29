@@ -7,7 +7,8 @@
   "scripts": {
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "parse": "node --experimental-strip-types src/cli.ts",
-    "count": "node --experimental-strip-types src/cli.ts --count"
+    "count": "node --experimental-strip-types src/cli.ts --count",
+    "conte": "node --experimental-strip-types src/cli.ts --conte"
   },
   "engines": {
     "node": ">=22"
