@@ -64,7 +64,7 @@
     },
     "decorator": {
       "type": "object",
-      "required": ["kind", "value", "attrs"],
+      "required": ["kind", "rawMark", "value", "attrs"],
       "additionalProperties": false,
       "properties": {
         "kind": {
@@ -82,7 +82,10 @@
             "unknown"
           ]
         },
-        "rawMark": { "type": "string" },
+        "rawMark": {
+          "type": "string",
+          "description": "原稿上の記号（半角・全角をそのまま保持）。参照パーサは常に出力する。"
+        },
         "value": { "type": "string" },
         "attrs": {
           "type": "object",
