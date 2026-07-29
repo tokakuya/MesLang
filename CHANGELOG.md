@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.15 — 2026-07-29
+
+- ADR 0008: 絵コンテ／カット表は二次出力。仮形 `conte-table/0.0`（仕様・JSON Schema）
+- 参照パーサ: Medo からカット表を組み立てる `toConteTable` と CLI `--conte` / `npm run conte`
+- アニメプロファイル: `^`（カメラ）／`&`（尺）の語彙ガイドを追加
+
 ## 0.0.14 — 2026-07-29
 
 - Medo schema: decorator の `rawMark` を必須に（参照パーサ出力と揃える）
