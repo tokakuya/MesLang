@@ -33,7 +33,7 @@ npm run conte -- ../../examples/animation/station-conte.mes
 出てきた JSON で、だいたい次を確認します。
 
 - `version` が `conte-table/0.0`
-- カットが5行（`%CUT-01` … `%CUT-05`）
+- カットが5行（`CUT-001` … `CUT-005`）
 - 各行にカメラ（`^`）・尺（`&`）が入っている
 - `?bg` や `?layout` は `ext` 側に残り、カメラ欄へ混ざっていない
 
