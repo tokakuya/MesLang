@@ -19,3 +19,7 @@
 
 手順は [06-mes-compat.md](../../docs/spec/06-mes-compat.md)、`$` と `:声質` の分け方は [音声プロファイル](../../docs/spec/03-media-profiles.md#音声作品profile-audio) をどうぞ。  
 ヘッダーの `$title` は変数で、本文の `$音` とは別ものです（[コア仕様](../../docs/spec/01-core.md#ヘッダー変数任意)）。
+
+## AI に頼むとき
+
+台本化・音声原稿の下書き・旧 Mes 取り込みの手伝いは、[AI 向けガイド](../../docs/spec/04-ai-reading.md#音声台本化) のひな形をコピーしてください。

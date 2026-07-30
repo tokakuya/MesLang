@@ -20,3 +20,21 @@
 くわしい記号の見比べは [メディアプロファイル](../../docs/spec/03-media-profiles.md) をどうぞ。  
 カット表の仮形（二次出力）は [絵コンテ／カット表](../../docs/spec/07-conte-table.md) と、参照パーサの `npm run conte` をどうぞ。  
 AI に字コンテ起こしやカット表整理を頼むときのひな形は [AI 向けガイド](../../docs/spec/04-ai-reading.md#アニメ字コンテ起こし) にあります。
+
+## カット表 JSON の目視（任意）
+
+見本を二次出力の形で一度眺めるとき:
+
+```bash
+cd packages/meslang-ref
+npm run conte -- ../../examples/animation/station-conte.mes
+```
+
+出てきた JSON で、だいたい次を確認します。
+
+- `version` が `conte-table/0.0`
+- カットが5行（`CUT-001` … `CUT-005`）
+- 各行にカメラ（`^`）・尺（`&`）が入っている
+- `?bg` や `?layout` は `ext` 側に残り、カメラ欄へ混ざっていない
+
+機械形の本命はツールです。AI には人向けの表だけ頼む、という分担は [AI 向けガイド](../../docs/spec/04-ai-reading.md#カット表への整理二次出力の補助) と同じです。
