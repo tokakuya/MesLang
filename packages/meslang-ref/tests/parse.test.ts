@@ -238,6 +238,38 @@ test("examples/audio/station.mes parses", () => {
   assert.ok(pieces.some((p) => p.dialogue.includes("キタキタ")));
 });
 
+test("examples/audio/station.mes: $ / ! / & / :声質 coexist in 改札を出て", () => {
+  const text = readFileSync(join(root, "examples/audio/station.mes"), "utf8");
+  const medo = parseMesLang(text);
+  assert.equal(medo.body.sections.length, 2);
+  assert.equal(medo.body.sections[1]!.title, "改札を出て");
+  const pieces = medo.body.sections[1]!.pieces;
+  assert.ok(pieces.length >= 3);
+
+  const walk = pieces.find((p) => p.dialogue.includes("やっと会えた"));
+  assert.ok(walk);
+  const nika = firstCharacter(walk!)!;
+  assert.equal(nika.attrs["表情"], "ほっとした");
+  assert.equal(nika.attrs["声質"], "少し声を落として");
+  assert.ok(walk!.decorators.some((d) => d.kind === "sound" && d.value.includes("靴音")));
+  assert.ok(walk!.decorators.some((d) => d.kind === "position" && d.value === "近づく"));
+  assert.ok(walk!.decorators.some((d) => d.kind === "timing" && d.value === "約2秒"));
+
+  const koitoPiece = pieces.find((p) => p.dialogue.includes("逃げないで"));
+  assert.ok(koitoPiece);
+  const koito = firstCharacter(koitoPiece!)!;
+  assert.equal(koito.attrs["表情"], "微笑");
+  assert.equal(koito.attrs["声質"], "普通");
+  assert.ok(koitoPiece!.decorators.some((d) => d.kind === "sound" && d.value.includes("呼びかける声")));
+  assert.ok(koitoPiece!.decorators.some((d) => d.kind === "timing" && d.value === "少し間を置いて"));
+
+  const last = pieces.find((p) => p.dialogue.includes("逃げるわけない"));
+  assert.ok(last);
+  assert.equal(firstCharacter(last!)?.attrs["声質"], "地声");
+  assert.ok(last!.decorators.some((d) => d.kind === "sound" && d.value === "発車ベル"));
+  assert.ok(last!.decorators.some((d) => d.kind === "position" && d.value === "遠方"));
+});
+
 test("examples/manga/station-name.mes parses frames", () => {
   const text = readFileSync(join(root, "examples/manga/station-name.mes"), "utf8");
   const medo = parseMesLang(text);
