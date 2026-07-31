@@ -365,8 +365,7 @@ $発車ベル
 あ、キタキタ。
 ```
 
-見本全体は [examples/audio/station.mes](../../examples/audio/station.mes) をどうぞ。
-
+`$` / `!` / `&` と `:声質` を同じ場面で並べた例は、見本 [station.mes](../../examples/audio/station.mes) の「改札を出て」をどうぞ。
 ## アニメ（profile: anime）
 
 字コンテやカット表の下書き向けです。
