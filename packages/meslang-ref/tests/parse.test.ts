@@ -287,12 +287,21 @@ test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () 
   assert.equal(medo.body.sections.length, 1);
   assert.equal(medo.body.sections[0]!.title, "1ページ");
   const pieces = medo.body.sections[0]!.pieces;
-  assert.ok(pieces.length >= 5);
+  assert.ok(pieces.length >= 6);
   for (const p of pieces) {
     assert.equal(p.dialogue.trim(), "");
     assert.ok(p.decorators.some((d) => d.kind === "frame"));
     assert.ok(p.decorators.some((d) => d.kind === "camera"));
   }
+  const last = pieces[pieces.length - 1]!;
+  assert.ok(last.decorators.some((d) => d.kind === "frame" && d.value === "6"));
+  assert.ok(
+    last.decorators.some(
+      (d) => d.kind === "camera" && d.value.includes("にか横顔と柱の隙間"),
+    ),
+  );
+  assert.ok(last.decorators.some((d) => d.kind === "beat" && d.value.includes("見つける直前")));
+  assert.ok(last.decorators.some((d) => d.kind === "sound" && d.value.includes("雑踏")));
 });
 
 test("examples/manga/cafe-pose.mes: 表情 and 姿勢 on speakers", () => {
