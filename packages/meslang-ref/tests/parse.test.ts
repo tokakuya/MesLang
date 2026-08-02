@@ -311,16 +311,20 @@ test("examples/manga/cafe-pose.mes: 表情 and 姿勢 on speakers", () => {
   assert.equal(medo.header.title, "カフェ・表情と姿勢の練習");
   assert.equal(medo.body.sections[0]!.title, "1ページ");
   const pieces = medo.body.sections[0]!.pieces;
-  assert.ok(pieces.length >= 6);
+  assert.ok(pieces.length >= 7);
   const withAttrs = pieces
     .map((p) => firstCharacter(p))
     .filter((ch): ch is NonNullable<typeof ch> => ch != null && Object.keys(ch.attrs).length > 0);
-  assert.ok(withAttrs.length >= 4);
+  assert.ok(withAttrs.length >= 5);
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "ほっとした" && ch.attrs["姿勢"] === "椅子に沈む"));
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "微笑" && ch.attrs["姿勢"] === "肘をついて顎を支える"));
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "困り" && ch.attrs["姿勢"] === "前のめり"));
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "楽しそう" && ch.attrs["姿勢"] === "少し身を乗り出す"));
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "苦笑い" && ch.attrs["姿勢"] === "後ずさり気味"));
+  assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "にやり" && ch.attrs["姿勢"] === "指を一本立てる"));
+  const reaction = pieces[6]!;
+  assert.ok(reaction.decorators.some((d) => d.kind === "frame" && d.value === "7"));
+  assert.ok(reaction.decorators.some((d) => d.kind === "comment" && d.value.includes("くすっと笑う")));
 });
 
 test("manga: :吹き出し and 3rd bracket land on the same key", () => {
