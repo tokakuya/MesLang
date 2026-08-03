@@ -3,7 +3,10 @@
  * Not part of core doFlat / parseMesLang.
  */
 
-/** Row-start ○ / ◯ (old Mes hashira) → # stage direction. */
+/**
+ * Row-start ○ (U+25CB) / ◯ (U+25EF) → # stage direction.
+ * Does NOT match 〇 (U+3007 ideographic number zero) — lookalike, not old Mes hashira.
+ */
 const HASHIRA_RE = /^[○◯]/u;
 
 /**

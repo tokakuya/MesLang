@@ -113,7 +113,7 @@ MesLang まわりの話は、だいたい次の三層に分かれます。
 | `::img=` のような HTML 風属性 | **採用しない** | [ADR 0002](../decisions/0002-attribute-syntax.md)。正本は `:key value`。アイコンは `:img …` で足りる |
 | 属性キー名としての「ポーズ」 | **使わない** | [ADR 0005](../decisions/0005-bracket-default-keys.md)。正は **姿勢**（英語エイリアス `pose` は可） |
 | コアの `#第一章` → `==` 自動昇格 | **コアではしない** | [ADR 0003](../decisions/0003-hash-is-comment-not-section.md)。互換取り込み側の任意処理 |
-| 旧 Mes の `○` / `◯` 柱 | **コア外** | 取り込み時に `#` へ（[ADR 0006](../decisions/0006-mes-compat-import.md) / [ガイド](06-mes-compat.md)）。コア DoFlat には入れない |
+| 旧 Mes の `○` / `◯` 柱 | **コア外** | 取り込み時に `#` へ（[ADR 0006](../decisions/0006-mes-compat-import.md) / [ガイド](06-mes-compat.md)）。コア DoFlat には入れない。似た形の `〇`（U+3007）は柱ではないので公式互換でも直さない |
 | `（ト書き）` / `【ト書き】` 行の自動変換 | **コア／公式互換には入れない** | [ADR 0006](../decisions/0006-mes-compat-import.md)。旧 Mes のツール固有のまま |
 | 原稿への画像埋め込み（必須欄） | **しない** | [ADR 0004](../decisions/0004-manga-reference-images.md)。参考画像は二次成果物 |
 | ゲーム（VN）の選択肢・分岐 DSL | **コアに入れない** | [概要](00-overview.md) / ロードマップ M4。必要なら別プロファイル |
