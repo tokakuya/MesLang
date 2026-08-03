@@ -17,9 +17,10 @@
 
 ## 旧 Mes 取り込みの前後
 
-- [mes-import-before.mes](./mes-import-before.mes) … ヘッダー `$title`、行頭 `○`、旧流儀の `$ヒソヒソ声` が残ったままの例
-- [mes-import-after.mes](./mes-import-after.mes) … 互換レイヤで `#` にし、話者の声を `:声質` へ移したあとの例
+- [mes-import-before.mes](./mes-import-before.mes) … ヘッダー `$title`、章らしい `#オープニング`、行頭 `○` / `◯`、旧流儀の `$ヒソヒソ声`、場の `$` / `!` が混ざった例
+- [mes-import-after.mes](./mes-import-after.mes) … 章を `==` にし、柱をト書きへ、話者の声だけ `:声質` へ移したあとの例（場の音と位置はそのまま）
 
+機械が直すのは行頭の `○` / `◯` → `#` だけです。`#オープニング` を `==` にするか、`$ヒソヒソ声` を `:声質` へ移すかは人の判断です。  
 手順は [06-mes-compat.md](../../docs/spec/06-mes-compat.md)、`$` と `:声質` の分け方は [音声プロファイル](../../docs/spec/03-media-profiles.md#音声作品profile-audio) をどうぞ。  
 ヘッダーの `$title` は変数で、本文の `$音` とは別ものです（[コア仕様](../../docs/spec/01-core.md#ヘッダー変数任意)）。
 

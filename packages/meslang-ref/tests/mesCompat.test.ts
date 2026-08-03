@@ -63,23 +63,52 @@ test("rewriteMesCompat does not promote #第一章 to section", () => {
 test("examples/audio mes-import before→after path", () => {
   const before = readFileSync(join(root, "examples/audio/mes-import-before.mes"), "utf8");
   const afterRewrite = rewriteMesCompat(before);
+  assert.match(afterRewrite, /^#駅前$/m);
+  assert.match(afterRewrite, /^#改札の外$/m);
+  assert.doesNotMatch(afterRewrite, /^[○◯]/m);
+  // Chapter-like # stays comment until a human promotes it to ==
+  assert.match(afterRewrite, /^#オープニング$/m);
+
   const medo = parseMesLang(afterRewrite);
   assert.equal(medo.header.title, "駅前（取り込み前）");
+  // Mechanical rewrite does not create == sections from #オープニング
+  assert.equal(medo.body.sections.length, 1);
+  assert.equal(medo.body.sections[0]!.title, "");
   const pieces = medo.body.sections.flatMap((s) => s.pieces);
-  assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "comment" && d.value === "駅前")));
+  const comments = pieces.flatMap((p) => p.decorators.filter((d) => d.kind === "comment")).map((d) => d.value);
+  assert.ok(comments.includes("オープニング"));
+  assert.ok(comments.includes("駅前"));
+  assert.ok(comments.includes("改札の外"));
   assert.ok(pieces.some((p) => p.dialogue.includes("キタキタ")));
   // Old-style voice note stays as $ until a human moves it to :声質
   assert.ok(
     pieces.some((p) => p.decorators.some((d) => d.kind === "sound" && d.value.includes("ヒソヒソ"))),
   );
+  // Ambient sound / position stay as $ / !
+  assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "sound" && d.value === "雑踏")));
+  assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "position" && d.value === "正面")));
 
   const after = readFileSync(join(root, "examples/audio/mes-import-after.mes"), "utf8");
   const polished = parseMesLang(after);
   assert.equal(polished.header.profile, "audio");
-  assert.equal(polished.body.sections[0]!.title, "駅前");
+  assert.equal(polished.body.sections[0]!.title, "オープニング");
   const nika = polished.body.sections[0]!.pieces.find((p) => p.dialogue.includes("キタキタ"));
   assert.equal(firstCharacter(nika!)?.attrs["声質"], "ヒソヒソ");
   assert.equal(firstCharacter(nika!)?.attrs["表情"], "焦り");
+  assert.ok(nika!.decorators.some((d) => d.kind === "sound" && d.value === "雑踏"));
+  assert.ok(nika!.decorators.some((d) => d.kind === "position" && d.value === "正面"));
+  const reunion = polished.body.sections[0]!.pieces.find((p) => p.dialogue.includes("久しぶり"));
+  assert.ok(reunion!.decorators.some((d) => d.kind === "sound" && d.value.includes("呼びかける声")));
+  assert.ok(reunion!.decorators.some((d) => d.kind === "position" && d.value === "右寄り"));
+});
+
+test("rewriteMesCompat: indented ○ is not rewritten (row-start only)", () => {
+  const rewritten = rewriteMesCompat(`  ○インデント付き
+
+○行頭
+`);
+  assert.match(rewritten, /^  ○インデント付き$/m);
+  assert.match(rewritten, /^#行頭$/m);
 });
 
 test("audio: speaker 声質 is attr; ambient voice stays $", () => {
