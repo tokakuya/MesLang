@@ -111,6 +111,27 @@ test("rewriteMesCompat: indented ○ is not rewritten (row-start only)", () => {
   assert.match(rewritten, /^#行頭$/m);
 });
 
+test("rewriteMesCompat: 〇 (U+3007) is not hashira — left alone", () => {
+  // Ideographic number zero looks like ○/◯ but is not old Mes hashira.
+  const rewritten = rewriteMesCompat(`〇似た形
+
+○本物
+◯大きい丸
+`);
+  assert.match(rewritten, /^〇似た形$/m);
+  assert.match(rewritten, /^#本物$/m);
+  assert.match(rewritten, /^#大きい丸$/m);
+  assert.doesNotMatch(rewritten, /^#似た形$/m);
+
+  const medo = parseMesLang(rewritten);
+  const pieces = medo.body.sections[0]!.pieces;
+  const comments = pieces.flatMap((p) => p.decorators.filter((d) => d.kind === "comment")).map((d) => d.value);
+  assert.ok(comments.includes("本物"));
+  assert.ok(comments.includes("大きい丸"));
+  assert.equal(comments.includes("似た形"), false);
+  assert.ok(pieces.some((p) => p.dialogue.includes("〇似た形")));
+});
+
 test("audio: speaker 声質 is attr; ambient voice stays $", () => {
   const medo = parseMesLang(`profile: audio
 ----
