@@ -12,6 +12,7 @@ const EXAMPLE_FILES = [
   "examples/audio/station.mes",
   "examples/audio/mes-import-after.mes",
   "examples/manga/station-name.mes",
+  "examples/manga/station-two-pages.mes",
   "examples/manga/silent-panels.mes",
   "examples/manga/cafe-pose.mes",
   "examples/animation/station-conte.mes",
