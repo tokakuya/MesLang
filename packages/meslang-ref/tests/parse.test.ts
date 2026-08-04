@@ -304,6 +304,32 @@ test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () 
   assert.ok(last.decorators.some((d) => d.kind === "sound" && d.value.includes("雑踏")));
 });
 
+test("examples/manga/station-two-pages.mes: == pages and % renumber", () => {
+  const text = readFileSync(join(root, "examples/manga/station-two-pages.mes"), "utf8");
+  const medo = parseMesLang(text);
+  assert.equal(medo.header.profile, "manga");
+  assert.equal(medo.header.title, "駅前の二人（2ページ）");
+  assert.equal(medo.body.sections.length, 2);
+  assert.equal(medo.body.sections[0]!.title, "1ページ");
+  assert.equal(medo.body.sections[1]!.title, "2ページ");
+  const page1 = medo.body.sections[0]!.pieces;
+  const page2 = medo.body.sections[1]!.pieces;
+  assert.ok(page1.length >= 4);
+  assert.ok(page2.length >= 4);
+  assert.ok(page1[0]!.decorators.some((d) => d.kind === "frame" && d.value === "1"));
+  assert.ok(page2[0]!.decorators.some((d) => d.kind === "frame" && d.value === "1"));
+  assert.ok(page2[0]!.decorators.some((d) => d.kind === "camera" && d.value.includes("改札を出て")));
+  const nika = firstCharacter(page1[1]!)!;
+  assert.equal(nika.attrs["表情"], "焦り");
+  assert.equal(nika.attrs["姿勢"], "前のめり");
+  const koitoThought = firstCharacter(page1[3]!)!;
+  assert.equal(koitoThought.attrs["吹き出し"], "心の声");
+  const last = page2[page2.length - 1]!;
+  assert.equal(last.dialogue.trim(), "");
+  assert.ok(last.decorators.some((d) => d.kind === "frame" && d.value === "4"));
+  assert.ok(last.decorators.some((d) => d.kind === "beat"));
+});
+
 test("examples/manga/cafe-pose.mes: 表情 and 姿勢 on speakers", () => {
   const text = readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8");
   const medo = parseMesLang(text);
