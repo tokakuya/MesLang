@@ -448,6 +448,7 @@ $街の環境音を少し絞る
 
 見本全体は [examples/animation/station-conte.mes](../../examples/animation/station-conte.mes) をどうぞ。  
 参照パーサでカット表の仮形を見るときは `npm run conte -- ../../examples/animation/station-conte.mes` です。  
+形チェックまで含めるときは `--conte --validate`（`validateConteTable`）です。  
 AI に字コンテ起こしを頼むときのひな形は [AI 向けガイド](04-ai-reading.md#アニメ字コンテ起こし) にあります。
 
 ## ゲーム（VN）（profile: vn）— まだ手をつけていません

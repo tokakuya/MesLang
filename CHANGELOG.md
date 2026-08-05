@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.28 — 2026-08-05
+
+- 参照パーサ: カット表二次出力の形チェック `validateConteTable` / `assertValidConteTable` を追加（`schema/conte-table.schema.json` に合わせた軽量チェック）
+- CLI: `--conte --validate` で Medo のあとカット表も検証。仕様・アニメ見本 README・ルート README を追随
+
 ## 0.0.27 — 2026-08-05
 
 - 参照パーサ CLI に `--validate`（Medo 形チェック）を追加。`npm run validate` でも呼べる

@@ -29,11 +29,13 @@ AI に字コンテ起こしやカット表整理を頼むときのひな形は [
 ```bash
 cd packages/meslang-ref
 npm run conte -- ../../examples/animation/station-conte.mes
+# 形チェック込み（Medo → カット表）
+node --experimental-strip-types src/cli.ts --conte --validate ../../examples/animation/station-conte.mes
 ```
 
 出てきた JSON で、だいたい次を確認します。
 
-- `version` が `conte-table/0.0`
+- `version` が `conte-table/0.0`（`--validate` でも同じ形を見ます）
 - カットが5行（`CUT-001` … `CUT-005`）
 - 各行にカメラ（`^`）・尺（`&`）が入っている
 - `?bg` や `?layout` は `ext` 側に残り、カメラ欄へ混ざっていない

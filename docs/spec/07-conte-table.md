@@ -56,6 +56,9 @@ MesLang の原稿（字コンテ下地）からつくった **Medo** を、カ�
 機械向けの定義は [schema/conte-table.schema.json](../../schema/conte-table.schema.json) です。  
 参照パーサでは `toConteTable` と CLI の `--conte` で同じ形を出せます。
 
+形チェックは `validateConteTable`（Medo の `validateMedo` と同じく、小さな参照実装。ajv などは使いません）です。  
+CLI では `--conte --validate` で、まず Medo、つづけてカット表の形を見ます。
+
 ## やらないこと（いま）
 
 - 原稿への表レイアウトの強制
