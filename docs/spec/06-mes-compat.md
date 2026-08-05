@@ -141,12 +141,26 @@ const medo = parseMesLang(rewriteMesCompat(oldText));
 
 `parseMesLang` 単体では `○` を直しません。取り込みツールだけが `rewriteMesCompat` を挟みます。
 
-参照パーサの CLI では `--compat` で同じ変換をかけられます。
+参照パーサの CLI では `--compat` で同じ変換をかけられます。  
+形が Medo として通るかは、あわせて `--validate` で確かめられます。
 
 ```bash
 cd packages/meslang-ref
-node --experimental-strip-types src/cli.ts --compat ../../examples/audio/mes-import-before.mes
+node --experimental-strip-types src/cli.ts --compat --validate ../../examples/audio/mes-import-before.mes
 ```
+
+### 取り込み後 Medo の目視（任意）
+
+機械変換のあと、出てきた JSON でだいたい次を確認します。
+
+- `version` が `medo/0.0`
+- セクションはまだ 1 つで、`title` が空（`#オープニング` は人手で `==` にするまでト書きのまま）
+- 行頭だった `○` / `◯` は `kind: "comment"`（`rawMark: "#"`）になっている
+- `$ヒソヒソ声` はまだ `kind: "sound"`（話者の `:声質` へ移すのは任意の人手）
+- 場の `$雑踏` や `!正面` はそのまま `sound` / `position`
+
+見本の「直しあと」は [mes-import-after.mes](../../examples/audio/mes-import-after.mes) です。  
+カット表の目視と同じく、機械形の本命はツール側です。
 
 ## いまはやらないこと
 
