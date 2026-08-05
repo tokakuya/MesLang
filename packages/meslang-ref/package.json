@@ -8,7 +8,8 @@
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "parse": "node --experimental-strip-types src/cli.ts",
     "count": "node --experimental-strip-types src/cli.ts --count",
-    "conte": "node --experimental-strip-types src/cli.ts --conte"
+    "conte": "node --experimental-strip-types src/cli.ts --conte",
+    "validate": "node --experimental-strip-types src/cli.ts --validate"
   },
   "engines": {
     "node": ">=22"

@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.27 — 2026-08-05
+
+- 参照パーサ CLI に `--validate`（Medo 形チェック）を追加。`npm run validate` でも呼べる
+- 旧 Mes 取り込み後の Medo 目視手順を README・取り込みガイド・音声見本 README に追加（`--compat --validate`）
+- `validateMedo` 固定テストに `mes-import-before`（互換変換後）と `station-two-pages.mes` を追加
+
 ## 0.0.26 — 2026-08-04
 
 - 漫画見本 `station-two-pages.mes` を追加（2ページ通し。`==` でページ、各ページの `%` は 1 から数え直し）

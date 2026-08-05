@@ -83,8 +83,10 @@ npm test
 node --experimental-strip-types src/cli.ts ../../examples/audio/station.mes
 npm run count -- ../../examples/audio/station.mes   # セリフ文字数（Medo から）
 npm run conte -- ../../examples/animation/station-conte.mes  # カット表の仮形（Medo から）
-node --experimental-strip-types src/cli.ts --compat ../../examples/audio/mes-import-before.mes  # 旧 Mes 柱→#
+node --experimental-strip-types src/cli.ts --compat --validate ../../examples/audio/mes-import-before.mes  # 旧 Mes 柱→# のあと Medo 形チェック
 ```
+
+取り込み直後の JSON を目で見る手順は、[旧 Mes 取り込みガイドの「取り込み後 Medo の目視」](docs/spec/06-mes-compat.md#取り込み後-medo-の目視任意) にあります。
 
 ## 旧 Mes との関係
 

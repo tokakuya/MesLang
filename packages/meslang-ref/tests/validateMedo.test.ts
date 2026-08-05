@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { rewriteMesCompat } from "../src/mesCompat.ts";
 import { parseMesLang } from "../src/parse.ts";
 import { assertValidMedo, validateMedo } from "../src/validateMedo.ts";
 
@@ -14,6 +15,7 @@ const EXAMPLE_FILES = [
   "examples/manga/station-name.mes",
   "examples/manga/silent-panels.mes",
   "examples/manga/cafe-pose.mes",
+  "examples/manga/station-two-pages.mes",
   "examples/animation/station-conte.mes",
 ];
 
@@ -24,6 +26,22 @@ test("validateMedo accepts reference parser output for all examples", () => {
     const issues = validateMedo(medo);
     assert.deepEqual(issues, [], `${rel} failed schema shape:\n${issues.map((i) => `${i.path}: ${i.message}`).join("\n")}`);
   }
+});
+
+test("validateMedo accepts mes-import-before after rewriteMesCompat", () => {
+  const before = readFileSync(join(root, "examples/audio/mes-import-before.mes"), "utf8");
+  const medo = parseMesLang(rewriteMesCompat(before));
+  assertValidMedo(medo);
+  assert.equal(medo.header.title, "駅前（取り込み前）");
+  // Mechanical path: one untitled section; #オープニング stays comment
+  assert.equal(medo.body.sections.length, 1);
+  assert.equal(medo.body.sections[0]!.title, "");
+  const comments = medo.body.sections[0]!.pieces
+    .flatMap((p) => p.decorators.filter((d) => d.kind === "comment"))
+    .map((d) => d.value);
+  assert.ok(comments.includes("オープニング"));
+  assert.ok(comments.includes("駅前"));
+  assert.ok(comments.includes("改札の外"));
 });
 
 test("validateMedo rejects missing rawMark (schema required)", () => {
