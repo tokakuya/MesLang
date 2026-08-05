@@ -83,6 +83,7 @@ npm test
 node --experimental-strip-types src/cli.ts ../../examples/audio/station.mes
 npm run count -- ../../examples/audio/station.mes   # セリフ文字数（Medo から）
 npm run conte -- ../../examples/animation/station-conte.mes  # カット表の仮形（Medo から）
+node --experimental-strip-types src/cli.ts --conte --validate ../../examples/animation/station-conte.mes  # カット表の形チェック込み
 node --experimental-strip-types src/cli.ts --compat --validate ../../examples/audio/mes-import-before.mes  # 旧 Mes 柱→# のあと Medo 形チェック
 ```
 

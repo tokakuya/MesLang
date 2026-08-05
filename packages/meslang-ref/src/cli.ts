@@ -4,6 +4,7 @@ import { toConteTable } from "./conteTable.ts";
 import { countDialogueChars } from "./countDialogue.ts";
 import { rewriteMesCompat } from "./mesCompat.ts";
 import { parseMesLang } from "./parse.ts";
+import { validateConteTable } from "./validateConteTable.ts";
 import { validateMedo } from "./validateMedo.ts";
 
 const args = process.argv.slice(2);
@@ -39,7 +40,17 @@ if (countMode) {
   const counts = countDialogueChars(medo);
   console.log(JSON.stringify(counts, null, 2));
 } else if (conteMode) {
-  console.log(JSON.stringify(toConteTable(medo), null, 2));
+  const table = toConteTable(medo);
+  if (validateMode) {
+    const issues = validateConteTable(table);
+    if (issues.length > 0) {
+      console.error(
+        issues.map((i) => `${i.path || "(root)"}: ${i.message}`).join("\n"),
+      );
+      process.exit(1);
+    }
+  }
+  console.log(JSON.stringify(table, null, 2));
 } else {
   console.log(JSON.stringify(medo, null, 2));
 }
