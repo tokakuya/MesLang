@@ -9,11 +9,10 @@
 - [ ] station-two-pages の参考画像（任意・ADR 0004。`==` ごとに1枚）
 - [ ] `toConteTable` の Markdown／CSV 整形は二次ツール側の候補（コアには入れない）
 
-## 次の候補（火曜: 漫画 / 金曜: サンプル）
+## 次の候補（金曜: サンプル / 火曜: 漫画）
 
-- 漫画参考画像を silent-panels / cafe-pose / station-two-pages にも任意で足す（ready と同じ・任意）
-- 木曜向け: AI ガイドに「〇 を柱と誤認していないか」の不足チェック一行（任意）
 - 金曜向け: 音声見本の一場面をもう少し厚くする候補を拾う（任意）
+- 漫画参考画像を silent-panels / cafe-pose / station-two-pages にも任意で足す（ready と同じ・任意）
 
 ## parking（先送り・まだ手をつけない）
 
@@ -66,3 +65,4 @@
 - [x] 火曜: 複数ページのネーム見本 `station-two-pages.mes`（`==` ページ／`%` 数え直し）（2026-08-04）
 - [x] 水曜: 取り込み後 Medo 目視手順 + CLI `--validate`（2026-08-05）
 - [x] 水曜夜: カット表形チェック `validateConteTable` + `--conte --validate`（2026-08-05）
+- [x] 木曜: AI 不足チェックに「〇 を柱と誤認していないか」＋ `--validate` 導線（2026-08-06）
