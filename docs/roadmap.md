@@ -53,6 +53,7 @@
 - [x] 複数ページのネーム見本（`station-two-pages.mes`。`==` ごと・`%` 数え直し）（2026-08-04）
 - [x] 取り込み後 Medo の目視手順と CLI `--validate`（2026-08-05）
 - [x] カット表二次出力の形チェック `validateConteTable` と `--conte --validate`（2026-08-05 夜）
+- [x] AI 不足チェックに「〇 を柱と誤認していないか」＋形チェック CLI への導線（2026-08-06）
 - [ ] cafe-pose / silent-panels / station-two-pages の参考画像を任意で足す（ADR 0004）
 
 ## M4 — ゲーム（VN）※あとまわし
@@ -62,9 +63,8 @@
 
 ## 次に小さく進めやすいこと（M3.5 のあと）
 
-- 火曜／金曜向け: cafe-pose / silent-panels / station-two-pages の参考画像（任意・ADR 0004。`==` ごとに1枚）
-- 木曜向け: AI ガイドに「〇 を柱と誤認していないか」の不足チェック一行（任意）
 - 金曜向け: 音声見本の一場面をもう少し厚くする候補（任意）
+- 火曜／金曜向け: cafe-pose / silent-panels / station-two-pages の参考画像（任意・ADR 0004。`==` ごとに1枚）
 - コアには入れない: カット表 Markdown／CSV（二次ツール）、VN 分岐 DSL
 
 ## 変更するときの流れ

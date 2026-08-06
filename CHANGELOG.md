@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.0.29 — 2026-08-06
+
+- AI 向けガイド: 不足情報の洗い出しに「〇（U+3007）を柱と誤認していないか」を追加
+- 同節に Medo / カット表の形チェック（`--validate` / `--conte --validate`）への導線を追記
+
 ## 0.0.28 — 2026-08-05
 
 - 参照パーサ: カット表二次出力の形チェック `validateConteTable` / `assertValidConteTable` を追加（`schema/conte-table.schema.json` に合わせた軽量チェック）
