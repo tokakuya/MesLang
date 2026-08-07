@@ -241,7 +241,7 @@ test("examples/audio/station.mes parses", () => {
 test("examples/audio/station.mes: $ / ! / & / :声質 coexist in 改札を出て", () => {
   const text = readFileSync(join(root, "examples/audio/station.mes"), "utf8");
   const medo = parseMesLang(text);
-  assert.equal(medo.body.sections.length, 2);
+  assert.ok(medo.body.sections.length >= 2);
   assert.equal(medo.body.sections[1]!.title, "改札を出て");
   const pieces = medo.body.sections[1]!.pieces;
   assert.ok(pieces.length >= 3);
@@ -268,6 +268,33 @@ test("examples/audio/station.mes: $ / ! / & / :声質 coexist in 改札を出て
   assert.equal(firstCharacter(last!)?.attrs["声質"], "地声");
   assert.ok(last!.decorators.some((d) => d.kind === "sound" && d.value === "発車ベル"));
   assert.ok(last!.decorators.some((d) => d.kind === "position" && d.value === "遠方"));
+});
+
+test("examples/audio/station.mes: ランチへ has dialogue-less sound beat", () => {
+  const text = readFileSync(join(root, "examples/audio/station.mes"), "utf8");
+  const medo = parseMesLang(text);
+  assert.equal(medo.body.sections.length, 3);
+  assert.equal(medo.body.sections[2]!.title, "ランチへ");
+  const pieces = medo.body.sections[2]!.pieces;
+  assert.ok(pieces.length >= 4);
+
+  const silence = pieces.find((p) => p.dialogue.trim() === "");
+  assert.ok(silence);
+  assert.ok(silence!.decorators.some((d) => d.kind === "sound" && d.value.includes("雑踏")));
+  assert.ok(silence!.decorators.some((d) => d.kind === "sound" && d.value.includes("信号")));
+  assert.ok(silence!.decorators.some((d) => d.kind === "position" && d.value === "右寄り"));
+  assert.ok(silence!.decorators.some((d) => d.kind === "timing" && d.value === "約1.5秒"));
+  assert.ok(silence!.decorators.some((d) => d.kind === "comment" && d.value.includes("信号待ち")));
+
+  const ask = pieces.find((p) => p.dialogue.includes("海鮮丼"));
+  assert.ok(ask);
+  assert.equal(firstCharacter(ask!)?.attrs["表情"], "微笑");
+  assert.equal(firstCharacter(ask!)?.attrs["声質"], "普通");
+
+  const reply = pieces.find((p) => p.dialogue.includes("例の店"));
+  assert.ok(reply);
+  assert.equal(firstCharacter(reply!)?.attrs["声質"], "少し高め");
+  assert.ok(reply!.decorators.some((d) => d.kind === "timing" && d.value === "0:10"));
 });
 
 test("examples/manga/station-name.mes parses frames", () => {
