@@ -342,7 +342,7 @@ test("examples/manga/station-two-pages.mes: == pages and % renumber", () => {
   const page1 = medo.body.sections[0]!.pieces;
   const page2 = medo.body.sections[1]!.pieces;
   assert.ok(page1.length >= 4);
-  assert.ok(page2.length >= 4);
+  assert.ok(page2.length >= 5);
   assert.ok(page1[0]!.decorators.some((d) => d.kind === "frame" && d.value === "1"));
   assert.ok(page2[0]!.decorators.some((d) => d.kind === "frame" && d.value === "1"));
   assert.ok(page2[0]!.decorators.some((d) => d.kind === "camera" && d.value.includes("改札を出て")));
@@ -351,9 +351,19 @@ test("examples/manga/station-two-pages.mes: == pages and % renumber", () => {
   assert.equal(nika.attrs["姿勢"], "前のめり");
   const koitoThought = firstCharacter(page1[3]!)!;
   assert.equal(koitoThought.attrs["吹き出し"], "心の声");
+  const silentBeat = page2[3]!;
+  assert.equal(silentBeat.dialogue.trim(), "");
+  assert.ok(silentBeat.decorators.some((d) => d.kind === "frame" && d.value === "4"));
+  assert.ok(
+    silentBeat.decorators.some((d) => d.kind === "camera" && d.value.includes("信号待ち")),
+  );
+  assert.ok(silentBeat.decorators.some((d) => d.kind === "beat"));
+  assert.ok(
+    silentBeat.decorators.some((d) => d.kind === "sound" && d.value.includes("歩行者信号")),
+  );
   const last = page2[page2.length - 1]!;
   assert.equal(last.dialogue.trim(), "");
-  assert.ok(last.decorators.some((d) => d.kind === "frame" && d.value === "4"));
+  assert.ok(last.decorators.some((d) => d.kind === "frame" && d.value === "5"));
   assert.ok(last.decorators.some((d) => d.kind === "beat"));
 });
 
