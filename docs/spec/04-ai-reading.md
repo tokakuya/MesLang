@@ -102,7 +102,8 @@ $ と ! は音響メモ欄へ（環境音・効果音・BGM・場の声）。同
 # はト書き欄へ。セリフ本文は装飾記号を付けない。
 ```
 
-入力例: [examples/audio/station.mes](../../examples/audio/station.mes)
+入力例: [examples/audio/station.mes](../../examples/audio/station.mes)  
+呼び分け: [用語集（音・声質・ヘッダー変数）](05-glossary.md#音声質ヘッダー変数まぎらわしいことば)
 
 ### セリフ文字数の照合（音声）
 
@@ -133,7 +134,7 @@ AI に目標字数との照合や、話者ごとの偏りを見てもらうと�
 ```
 
 見本の雰囲気: [examples/audio/station.mes](../../examples/audio/station.mes)（「ランチへ」＝音だけの間）  
-語彙: [メディアプロファイル（音声）](03-media-profiles.md#音声作品profile-audio) / [用語集（音だけの間 / 無言コマ）](05-glossary.md#セリフのない間音だけの間--無言コマ)
+語彙: [メディアプロファイル（音声）](03-media-profiles.md#音声作品profile-audio) / [用語集（音・声質・ヘッダー変数）](05-glossary.md#音声質ヘッダー変数まぎらわしいことば) / [用語集（音だけの間 / 無言コマ）](05-glossary.md#セリフのない間音だけの間--無言コマ)
 
 ### 漫画ネーム原稿を書かせるとき
 
