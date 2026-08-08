@@ -134,10 +134,31 @@ $雑踏
 `);
   assert.equal(medo.header.title, "駅前の二人");
   assert.equal(medo.header.profile, "audio");
+  // Header keys are meta only — body sounds must not leak into header.
+  assert.equal(medo.header["雑踏"], undefined);
   const piece = medo.body.sections[0]!.pieces[0]!;
   assert.equal(piece.decorators.find((d) => d.kind === "sound")?.value, "雑踏");
   assert.equal(piece.decorators.find((d) => d.kind === "position")?.value, "正面");
   assert.equal(piece.dialogue, "セリフ");
+});
+
+test("glossary: header $ / body $ / :声質 / # stay on different shelves", () => {
+  // docs/spec/05-glossary.md「音・声質・ヘッダー変数」
+  const medo = parseMesLang(`$title 駅前
+profile: audio
+----
+@にか :声質 ヒソヒソ
+#少し呆れた感じ
+$呼びかける声（やや遠く）
+ヒソヒソ……。
+`);
+  assert.equal(medo.header.title, "駅前");
+  assert.equal(medo.header["呼びかける声（やや遠く）"], undefined);
+  const piece = medo.body.sections[0]!.pieces[0]!;
+  assert.equal(firstCharacter(piece)?.attrs["声質"], "ヒソヒソ");
+  assert.equal(piece.decorators.find((d) => d.kind === "comment")?.value, "少し呆れた感じ");
+  assert.equal(piece.decorators.find((d) => d.kind === "sound")?.value, "呼びかける声（やや遠く）");
+  assert.equal(piece.dialogue, "ヒソヒソ……。");
 });
 
 test("audio: multiple $ / ! keep document order (pairing is authoring hint)", () => {
