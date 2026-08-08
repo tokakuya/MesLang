@@ -15,7 +15,7 @@ MesLang は、セリフを中心に置き、その前後に意味（だれが話
 | [02-decorators.md](02-decorators.md) | 記号（デコレーター）と属性 |
 | [03-media-profiles.md](03-media-profiles.md) | 漫画・音声・アニメ向けの書き方、記号の見比べ表、音と位置の語彙ガイド |
 | [04-ai-reading.md](04-ai-reading.md) | AI に読んでもらうときの約束 |
-| [05-glossary.md](05-glossary.md) | ことばの整理（三層: 原稿 / Medo / カット表、ネーム・字コンテの用途と二次出力、ピース / ト書き など） |
+| [05-glossary.md](05-glossary.md) | ことばの整理（三層、ネーム・字コンテの用途と二次出力、音だけの間 / 無言コマ、ピース / ト書き など） |
 | [06-mes-compat.md](06-mes-compat.md) | 旧 Mes 原稿の取り込み手順 |
 | [07-conte-table.md](07-conte-table.md) | 絵コンテ／カット表の二次出力（仮） |
 | [../decisions/](../decisions/README.md) | ADR（決めたこと・見送った案の記録） |
