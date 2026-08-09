@@ -161,6 +161,34 @@ $呼びかける声（やや遠く）
   assert.equal(piece.dialogue, "ヒソヒソ……。");
 });
 
+test("glossary: manga コマ and anime カット share kind frame", () => {
+  // docs/spec/05-glossary.md「コマとカット（まぎらわしいことば）」
+  const manga = parseMesLang(`profile: manga
+----
+== 1ページ
+
+%1
+^俯瞰
+#改札前
+`);
+  const anime = parseMesLang(`profile: anime
+----
+%CUT-001
+^寄り
+&2s
+#立ち止まる
+`);
+  const mangaFrame = manga.body.sections[0]!.pieces[0]!.decorators.find((d) => d.kind === "frame");
+  const animeFrame = anime.body.sections[0]!.pieces[0]!.decorators.find((d) => d.kind === "frame");
+  assert.equal(mangaFrame?.kind, "frame");
+  assert.equal(animeFrame?.kind, "frame");
+  assert.equal(mangaFrame?.value, "1");
+  assert.equal(animeFrame?.value, "CUT-001");
+  assert.equal(manga.body.sections[0]!.title, "1ページ");
+  assert.equal(manga.header.profile, "manga");
+  assert.equal(anime.header.profile, "anime");
+});
+
 test("audio: multiple $ / ! keep document order (pairing is authoring hint)", () => {
   const medo = parseMesLang(`profile: audio
 ----
