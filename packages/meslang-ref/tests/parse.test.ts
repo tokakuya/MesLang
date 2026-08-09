@@ -189,6 +189,32 @@ test("glossary: manga コマ and anime カット share kind frame", () => {
   assert.equal(anime.header.profile, "anime");
 });
 
+test("glossary: & timing and * beat stay on different shelves", () => {
+  // docs/spec/05-glossary.md「タイミングとビート（まぎらわしいことば）」
+  const audio = parseMesLang(`profile: audio
+----
+$信号待ち
+!正面
+&約1.5秒
+#赤信号のあいだ、ふたり無言
+`);
+  const manga = parseMesLang(`profile: manga
+----
+%4
+^信号越しの引き
+#赤信号。横断歩道の手前で立ち止まる
+*間
+$遠くの車の走行音
+`);
+  const audioPiece = audio.body.sections[0]!.pieces[0]!;
+  const mangaPiece = manga.body.sections[0]!.pieces[0]!;
+  assert.equal(audioPiece.decorators.find((d) => d.kind === "timing")?.value, "約1.5秒");
+  assert.equal(audioPiece.decorators.find((d) => d.kind === "beat"), undefined);
+  assert.equal(mangaPiece.decorators.find((d) => d.kind === "beat")?.value, "間");
+  assert.equal(mangaPiece.decorators.find((d) => d.kind === "timing"), undefined);
+  assert.equal(mangaPiece.decorators.find((d) => d.kind === "frame")?.value, "4");
+});
+
 test("audio: multiple $ / ! keep document order (pairing is authoring hint)", () => {
   const medo = parseMesLang(`profile: audio
 ----
