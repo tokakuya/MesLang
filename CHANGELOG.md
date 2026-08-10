@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.38 — 2026-08-10
+
+- 月曜夜: 旧 Mes 取り込みの **機械変換直後** 見本 `mes-import-compat-only.mes` を追加（before → compat-only → after の三段階）
+- 取り込みガイド・音声 README・AI 取り込みプロンプト・用語集・ADR 0006 から三段階へ導線
+- 参照パーサに、compat-only が `rewriteMesCompat(before)` と一致することを固定するテストを追加
+
 ## 0.0.37 — 2026-08-10
 
 - 月曜: 旧 Mes 取り込み見本に `&少し間を置いて` を追加（`*` は混ぜない。音声は `&` 側）

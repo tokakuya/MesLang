@@ -115,7 +115,7 @@ MesLang まわりの話は、だいたい次の三層に分かれます。
 
 | 使ってよい語 | 記号 / kind | 意味 | 見本 |
 |--------------|-------------|------|------|
-| **タイミング** / 尺 | `&` / `timing` | 秒数・字幕時刻・尺の目安 | [station.mes](../../examples/audio/station.mes) の `&0:08` / `&約1.5秒`、[mes-import-after.mes](../../examples/audio/mes-import-after.mes) の `&少し間を置いて`、[station-conte.mes](../../examples/animation/station-conte.mes) の `&4s` |
+| **タイミング** / 尺 | `&` / `timing` | 秒数・字幕時刻・尺の目安 | [station.mes](../../examples/audio/station.mes) の `&0:08` / `&約1.5秒`、取り込み三段階の `&少し間を置いて`、[station-conte.mes](../../examples/animation/station-conte.mes) の `&4s` |
 | **ビート** / 間のメモ | `*` / `beat` | テンポや間の感じ（測らなくてよい） | [silent-panels.mes](../../examples/manga/silent-panels.mes) の `*間`、[station-two-pages.mes](../../examples/manga/station-two-pages.mes) の `%4` の `*間` |
 
 文書では次のように呼び分けます。
@@ -128,7 +128,7 @@ MesLang まわりの話は、だいたい次の三層に分かれます。
 
 どちらも必須ではありません。なくて大丈夫です。  
 音声・アニメでは `&` をよく使い、漫画の無言コマでは `*` がよく出ます。同じ「間」でも、記号はメディアの慣習に合わせて選んでください。  
-旧音声原稿の取り込み見本（[mes-import-before.mes](../../examples/audio/mes-import-before.mes) / [mes-import-after.mes](../../examples/audio/mes-import-after.mes)）でも、間は `&` 側だけで `*` は混ぜていません。
+旧音声原稿の取り込み見本は三段階です（[before](../../examples/audio/mes-import-before.mes) → [compat-only](../../examples/audio/mes-import-compat-only.mes) → [after](../../examples/audio/mes-import-after.mes)）。間はどの段階でも `&` 側だけで、`*` は混ぜていません。
 
 ## 音・声質・ヘッダー変数（まぎらわしいことば）
 
@@ -154,7 +154,7 @@ MesLang まわりの話は、だいたい次の三層に分かれます。
 旧 Mes の `$ヒソヒソ声` は、**本文の `$` のまま残しても誤りではありません**。  
 話者に紐づけたいときだけ `:声質` へ移します（[取り込みガイド](06-mes-compat.md) / [音声プロファイルの分け方](03-media-profiles.md#音声質ト書きの分け方)）。
 
-見本: [station.mes](../../examples/audio/station.mes) の「改札を出て」（`$` / `!` / `&` と `:声質` の共存）、[mes-import-before.mes](../../examples/audio/mes-import-before.mes)（ヘッダー `$title` と旧流儀の `$ヒソヒソ声`）。
+見本: [station.mes](../../examples/audio/station.mes) の「改札を出て」（`$` / `!` / `&` と `:声質` の共存）、取り込みの三段階（[before](../../examples/audio/mes-import-before.mes) → [compat-only](../../examples/audio/mes-import-compat-only.mes) → [after](../../examples/audio/mes-import-after.mes)。compat-only では `$ヒソヒソ声` がまだ `$`）。
 
 ## `#` まわり（まぎらわしいことば）
 

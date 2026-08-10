@@ -118,9 +118,32 @@ test("examples/audio mes-import before→after path", () => {
   assert.ok(reunion!.decorators.some((d) => d.kind === "position" && d.value === "右寄り"));
 });
 
+test("mes-import-compat-only.mes matches rewriteMesCompat(before)", () => {
+  // docs/spec/06-mes-compat.md「三段階」: mechanical mid file is exactly --compat output
+  const before = readFileSync(join(root, "examples/audio/mes-import-before.mes"), "utf8");
+  const mid = readFileSync(join(root, "examples/audio/mes-import-compat-only.mes"), "utf8");
+  assert.equal(rewriteMesCompat(before), mid);
+
+  const medo = parseMesLang(mid);
+  assert.equal(medo.body.sections.length, 1);
+  assert.equal(medo.body.sections[0]!.title, "");
+  const pieces = medo.body.sections[0]!.pieces;
+  const comments = pieces.flatMap((p) => p.decorators.filter((d) => d.kind === "comment")).map((d) => d.value);
+  assert.ok(comments.includes("オープニング"));
+  assert.ok(comments.includes("駅前"));
+  assert.ok(comments.includes("改札の外"));
+  assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "sound" && d.value.includes("ヒソヒソ"))));
+  assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "timing" && d.value === "少し間を置いて")));
+  assert.equal(pieces.some((p) => p.decorators.some((d) => d.kind === "beat")), false);
+});
+
 test("mes-import samples keep & timing and leave * beat unused", () => {
   // docs/spec/06-mes-compat.md「機械変換が触らないもの」+ glossary タイミングとビート
-  for (const rel of ["examples/audio/mes-import-before.mes", "examples/audio/mes-import-after.mes"]) {
+  for (const rel of [
+    "examples/audio/mes-import-before.mes",
+    "examples/audio/mes-import-compat-only.mes",
+    "examples/audio/mes-import-after.mes",
+  ]) {
     const text = readFileSync(join(root, rel), "utf8");
     const source = rel.endsWith("before.mes") ? rewriteMesCompat(text) : text;
     const medo = parseMesLang(source);
