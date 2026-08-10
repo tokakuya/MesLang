@@ -201,8 +201,8 @@ AI に目標字数との照合や、話者ごとの偏りを見てもらうと�
 ```
 
 手順の本編: [旧 Mes 取り込みガイド](06-mes-compat.md)（`○`/`◯` と似た形の `〇` の注意あり）  
-前後の見本: [mes-import-before.mes](../../examples/audio/mes-import-before.mes) / [mes-import-after.mes](../../examples/audio/mes-import-after.mes)
-（見本では `#オープニング`→`==`、`$ヒソヒソ声`→`:声質`、場の `$`/`!` と `&少し間を置いて` はそのまま、の対比が分かります）  
+三段階の見本: [mes-import-before.mes](../../examples/audio/mes-import-before.mes) → [mes-import-compat-only.mes](../../examples/audio/mes-import-compat-only.mes)（機械だけ）→ [mes-import-after.mes](../../examples/audio/mes-import-after.mes)（人手）  
+（compat-only と after を見ると、`#オープニング`→`==`、`$ヒソヒソ声`→`:声質`、場の `$`/`!` と `&少し間を置いて` はそのまま、の対比が分かります）  
 呼び分け: [用語集（タイミングとビート）](05-glossary.md#タイミングとビートまぎらわしいことば)
 
 ### アニメ字コンテ起こし

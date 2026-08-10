@@ -104,7 +104,15 @@ $雑踏
 話者に紐づけたいときだけ、上のように `:声質` へ移します（`$` のまま残しても誤りではありません）。  
 場の音（`$雑踏`）や位置（`!正面`）は、もともと聞こえる出来事なので `$` / `!` のまま残します。
 
-見本ファイル: [examples/audio/mes-import-before.mes](../../examples/audio/mes-import-before.mes) → 変換後のイメージ [examples/audio/mes-import-after.mes](../../examples/audio/mes-import-after.mes)
+見本は **三段階** です。機械のあとと、人手のあとを分けて開けます。
+
+| 段階 | ファイル | 中身 |
+|------|----------|------|
+| 1. 取り込み前 | [mes-import-before.mes](../../examples/audio/mes-import-before.mes) | 行頭 `○` / `◯`、章らしい `#`、旧流儀の `$ヒソヒソ声`、`&少し間を置いて` |
+| 2. 機械変換だけ | [mes-import-compat-only.mes](../../examples/audio/mes-import-compat-only.mes) | `rewriteMesCompat` / `--compat` のあと。柱だけ `#`。章も声質もまだ直していない |
+| 3. 人手のあと | [mes-import-after.mes](../../examples/audio/mes-import-after.mes) | `==` 化、`:声質` 移動、属性など。場の `$` / `!` と `&` はそのまま |
+
+段階2は、段階1に `--compat` をかけた結果と **同じ文面** になるように揃えてあります（参照パーサの固定テストでも確認）。
 
 ### 機械変換が触らないもの（よくある勘違い）
 
@@ -162,7 +170,7 @@ node --experimental-strip-types src/cli.ts --compat --validate ../../examples/au
 - 場の `$雑踏` や `!正面` はそのまま `sound` / `position`
 - `&少し間を置いて` は `kind: "timing"` のまま（`beat` / `*` へ直っていない）
 
-見本の「直しあと」は [mes-import-after.mes](../../examples/audio/mes-import-after.mes) です。  
+機械変換直後の文面は [mes-import-compat-only.mes](../../examples/audio/mes-import-compat-only.mes)、人手の「直しあと」は [mes-import-after.mes](../../examples/audio/mes-import-after.mes) です。  
 カット表の目視と同じく、機械形の本命はツール側です。
 
 ## いまはやらないこと

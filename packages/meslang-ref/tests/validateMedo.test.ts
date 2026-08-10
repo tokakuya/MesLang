@@ -11,6 +11,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
 const EXAMPLE_FILES = [
   "examples/audio/station.mes",
+  "examples/audio/mes-import-compat-only.mes",
   "examples/audio/mes-import-after.mes",
   "examples/manga/station-name.mes",
   "examples/manga/silent-panels.mes",
