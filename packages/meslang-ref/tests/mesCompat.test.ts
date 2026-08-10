@@ -87,6 +87,14 @@ test("examples/audio mes-import before→after path", () => {
   // Ambient sound / position stay as $ / !
   assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "sound" && d.value === "雑踏")));
   assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "position" && d.value === "正面")));
+  // Soft audio pause stays as & (timing); do not mix * (beat) into import samples
+  assert.ok(
+    pieces.some((p) => p.decorators.some((d) => d.kind === "timing" && d.value === "少し間を置いて")),
+  );
+  assert.equal(
+    pieces.some((p) => p.decorators.some((d) => d.kind === "beat")),
+    false,
+  );
 
   const after = readFileSync(join(root, "examples/audio/mes-import-after.mes"), "utf8");
   const polished = parseMesLang(after);
@@ -97,9 +105,36 @@ test("examples/audio mes-import before→after path", () => {
   assert.equal(firstCharacter(nika!)?.attrs["表情"], "焦り");
   assert.ok(nika!.decorators.some((d) => d.kind === "sound" && d.value === "雑踏"));
   assert.ok(nika!.decorators.some((d) => d.kind === "position" && d.value === "正面"));
+  const pause = polished.body.sections[0]!.pieces.find((p) =>
+    p.decorators.some((d) => d.kind === "timing" && d.value === "少し間を置いて"),
+  );
+  assert.ok(pause);
+  assert.equal(
+    polished.body.sections[0]!.pieces.some((p) => p.decorators.some((d) => d.kind === "beat")),
+    false,
+  );
   const reunion = polished.body.sections[0]!.pieces.find((p) => p.dialogue.includes("久しぶり"));
   assert.ok(reunion!.decorators.some((d) => d.kind === "sound" && d.value.includes("呼びかける声")));
   assert.ok(reunion!.decorators.some((d) => d.kind === "position" && d.value === "右寄り"));
+});
+
+test("mes-import samples keep & timing and leave * beat unused", () => {
+  // docs/spec/06-mes-compat.md「機械変換が触らないもの」+ glossary タイミングとビート
+  for (const rel of ["examples/audio/mes-import-before.mes", "examples/audio/mes-import-after.mes"]) {
+    const text = readFileSync(join(root, rel), "utf8");
+    const source = rel.endsWith("before.mes") ? rewriteMesCompat(text) : text;
+    const medo = parseMesLang(source);
+    const pieces = medo.body.sections.flatMap((s) => s.pieces);
+    assert.ok(
+      pieces.some((p) => p.decorators.some((d) => d.kind === "timing" && d.value === "少し間を置いて")),
+      `${rel} should keep &少し間を置いて as timing`,
+    );
+    assert.equal(
+      pieces.some((p) => p.decorators.some((d) => d.kind === "beat")),
+      false,
+      `${rel} should not mix * beat into audio import samples`,
+    );
+  }
 });
 
 test("rewriteMesCompat: indented ○ is not rewritten (row-start only)", () => {
