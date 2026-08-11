@@ -64,6 +64,7 @@
 - [x] 月曜: 旧 Mes 取り込み見本で `&`（尺）と `*`（ビート）を混ぜないことを明示（`&少し間を置いて`＋ガイド・固定テスト）（2026-08-10）
 - [x] 月曜夜: 取り込みの機械変換直後見本 `mes-import-compat-only.mes`（三段階: before → compat-only → after）（2026-08-10）
 - [x] 火曜: cafe-pose に `:吹き出し` 属性の心の声コマ `%8`（かぎかっこ側は station-name と対比）（2026-08-11）
+- [x] 火曜夜: 漫画 `^` 構図の語彙ガイド＋ silent-panels `%7`（目が合う無言）（2026-08-11）
 - [ ] cafe-pose / silent-panels / station-two-pages の参考画像を任意で足す（ADR 0004）
 
 ## M4 — ゲーム（VN）※あとまわし
@@ -73,9 +74,9 @@
 
 ## 次に小さく進めやすいこと（M3.5 のあと）
 
-- 火曜／金曜向け: cafe-pose / silent-panels / station-two-pages の参考画像（任意・ADR 0004。`==` ごとに1枚）
+- 金曜向け: cafe-pose / silent-panels / station-two-pages の参考画像（任意・ADR 0004。`==` ごとに1枚）
 - 水曜向け: schema / validate の説明を著者向けに一文だけ厚くする（任意）
-- 木曜向け: AI ネーム起こしひな形に cafe-pose `%8`（`:吹き出し`）への短い言及を確認（任意）
+- 木曜向け: AI ネーム起こしひな形に cafe-pose `%8`（`:吹き出し`）と silent-panels `%7`（構図）への短い言及を確認（任意）
 - コアには入れない: カット表 Markdown／CSV（二次ツール）、VN 分岐 DSL
 
 ## 変更するときの流れ
