@@ -153,10 +153,10 @@ AI に目標字数との照合や、話者ごとの偏りを見てもらうと�
 - きれいな完成ネームや画像は二次の仕事。ここでは原稿テキストだけを出す
 ```
 
-入力の参考（会話・1ページ）: [examples/manga/cafe-pose.mes](../../examples/manga/cafe-pose.mes)  
-入力の参考（2ページ通し）: [examples/manga/station-two-pages.mes](../../examples/manga/station-two-pages.mes)  
+入力の参考（会話・1ページ。表情／姿勢／`:吹き出し`）: [examples/manga/cafe-pose.mes](../../examples/manga/cafe-pose.mes)  
+入力の参考（2ページ通し。かぎかっこでの心の声あり）: [examples/manga/station-two-pages.mes](../../examples/manga/station-two-pages.mes)  
 入力の参考（無言コマ）: [examples/manga/silent-panels.mes](../../examples/manga/silent-panels.mes)  
-呼び分け: [用語集（音だけの間 / 無言コマ）](05-glossary.md#セリフのない間音だけの間--無言コマ) / [用語集（コマとカット）](05-glossary.md#コマとカットまぎらわしいことば) / [用語集（タイミングとビート）](05-glossary.md#タイミングとビートまぎらわしいことば)
+呼び分け: [用語集（音だけの間 / 無言コマ）](05-glossary.md#セリフのない間音だけの間--無言コマ) / [用語集（コマとカット）](05-glossary.md#コマとカットまぎらわしいことば) / [用語集（タイミングとビート）](05-glossary.md#タイミングとビートまぎらわしいことば) / [表情・姿勢・吹き出し](03-media-profiles.md#表情姿勢吹き出しの分け方--表情--姿勢--吹き出し)
 
 ### 不足情報の洗い出し（原稿チェック）
 
