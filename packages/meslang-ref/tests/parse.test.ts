@@ -389,21 +389,30 @@ test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () 
   assert.equal(medo.body.sections.length, 1);
   assert.equal(medo.body.sections[0]!.title, "1ページ");
   const pieces = medo.body.sections[0]!.pieces;
-  assert.ok(pieces.length >= 6);
+  assert.ok(pieces.length >= 7);
   for (const p of pieces) {
     assert.equal(p.dialogue.trim(), "");
     assert.ok(p.decorators.some((d) => d.kind === "frame"));
     assert.ok(p.decorators.some((d) => d.kind === "camera"));
   }
-  const last = pieces[pieces.length - 1]!;
-  assert.ok(last.decorators.some((d) => d.kind === "frame" && d.value === "6"));
+  const findBeat = pieces[5]!;
+  assert.ok(findBeat.decorators.some((d) => d.kind === "frame" && d.value === "6"));
   assert.ok(
-    last.decorators.some(
+    findBeat.decorators.some(
       (d) => d.kind === "camera" && d.value.includes("にか横顔と柱の隙間"),
     ),
   );
-  assert.ok(last.decorators.some((d) => d.kind === "beat" && d.value.includes("見つける直前")));
-  assert.ok(last.decorators.some((d) => d.kind === "sound" && d.value.includes("雑踏")));
+  assert.ok(findBeat.decorators.some((d) => d.kind === "beat" && d.value.includes("見つける直前")));
+  assert.ok(findBeat.decorators.some((d) => d.kind === "sound" && d.value.includes("雑踏")));
+  const last = pieces[pieces.length - 1]!;
+  assert.ok(last.decorators.some((d) => d.kind === "frame" && d.value === "7"));
+  assert.ok(
+    last.decorators.some(
+      (d) => d.kind === "camera" && d.value.includes("目線の高さ") && d.value.includes("1/2コマ"),
+    ),
+  );
+  assert.ok(last.decorators.some((d) => d.kind === "beat" && d.value.includes("見つけた直後")));
+  assert.ok(last.decorators.some((d) => d.kind === "comment" && d.value.includes("目が合う")));
 });
 
 test("examples/manga/station-two-pages.mes: == pages and % renumber", () => {
