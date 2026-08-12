@@ -152,7 +152,8 @@ const medo = parseMesLang(rewriteMesCompat(oldText));
 `parseMesLang` 単体では `○` を直しません。取り込みツールだけが `rewriteMesCompat` を挟みます。
 
 参照パーサの CLI では `--compat` で同じ変換をかけられます。  
-形が Medo として通るかは、あわせて `--validate` で確かめられます。
+形が Medo として通るかは、あわせて `--validate` で確かめられます。  
+`--validate` が見るのは **箱の名前と型** だけです（話の良し悪しや、柱の直し残しは見ません → [用語集](05-glossary.md#構造)）。
 
 ```bash
 cd packages/meslang-ref
@@ -161,7 +162,7 @@ node --experimental-strip-types src/cli.ts --compat --validate ../../examples/au
 
 ### 取り込み後 Medo の目視（任意）
 
-機械変換のあと、出てきた JSON でだいたい次を確認します。
+`--validate` が通ったあとに、出てきた JSON でだいたい次を確認します（形チェックの外側の目視です）。
 
 - `version` が `medo/0.0`
 - セクションはまだ 1 つで、`title` が空（`#オープニング` は人手で `==` にするまでト書きのまま）
