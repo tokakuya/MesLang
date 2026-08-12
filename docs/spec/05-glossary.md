@@ -33,6 +33,7 @@ MesLang まわりの話は、だいたい次の三層に分かれます。
 | ピース | piece | 空行で区切る、いちばん小さな意味のまとまり |
 | セリフ | dialogue | ピース内の、記号でも属性でもない行 |
 | 中間データ | Medo | ツールが吐き出す構造化 JSON（`medo/0.0`）。上の三層の **層2** |
+| 形チェック | validate / schema | Medo やカット表の **箱の名前と型** が揃っているかの確認（`--validate` / `--conte --validate`）。話の良し悪しや不足は見ません（[schema/medo.schema.json](../../schema/medo.schema.json)） |
 | kind | kind | Medo 上の記号の種類 ID（`character` / `comment` など）。著者向け文書では下表の日本語を優先 |
 
 ## 記法

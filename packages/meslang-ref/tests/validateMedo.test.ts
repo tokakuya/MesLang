@@ -66,6 +66,53 @@ test("validateMedo rejects missing rawMark (schema required)", () => {
   assert.ok(issues.some((i) => i.path.includes("rawMark")));
 });
 
+test("validateMedo rejects unknown header.profile", () => {
+  const issues = validateMedo({
+    version: "medo/0.0",
+    header: { profile: "novel", raw: "" },
+    body: { sections: [] },
+  });
+  assert.ok(issues.some((i) => i.path === "header.profile"));
+});
+
+test("validateMedo rejects unexpected top-level property", () => {
+  const issues = validateMedo({
+    version: "medo/0.0",
+    header: { profile: "audio", raw: "" },
+    body: { sections: [] },
+    extra: true,
+  });
+  assert.ok(issues.some((i) => i.message.includes("unexpected property")));
+});
+
+test("validateMedo accepts Japanese attr keys such as 吹き出し", () => {
+  const issues = validateMedo({
+    version: "medo/0.0",
+    header: { profile: "manga", raw: "" },
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "…",
+              decorators: [
+                {
+                  kind: "character",
+                  rawMark: "@",
+                  value: "こいと",
+                  attrs: { 吹き出し: "心の声", 表情: "ほっとした" },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.deepEqual(issues, []);
+});
+
 test("validateMedo rejects unknown decorator kind", () => {
   const issues = validateMedo({
     version: "medo/0.0",

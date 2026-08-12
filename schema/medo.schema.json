@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://meslang.dev/schema/medo.schema.json",
   "title": "Medo",
-  "description": "MesLang の中間データ。実験的で破壊的変更があり得る。",
+  "description": "MesLang の中間データ（medo/0.0）。実験的で破壊的変更があり得る。形チェックは欄の名前と型だけを見る（話の良し悪しは見ない）。",
   "type": "object",
   "required": ["version", "header", "body"],
   "additionalProperties": false,
