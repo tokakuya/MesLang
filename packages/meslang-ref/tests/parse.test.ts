@@ -304,6 +304,28 @@ test("fullwidth marks accepted", () => {
   assert.equal(p.decorators.find((d) => d.kind === "comment")?.value, "ト書き");
 });
 
+test("fullwidth profile marks % ^ * map to frame/camera/beat and keep rawMark", () => {
+  const medo = parseMesLang(`profile: manga
+----
+％3
+＾寄り
+＊ため
+＠にか
+セリフ
+`);
+  const p = medo.body.sections[0]!.pieces[0]!;
+  const frame = p.decorators.find((d) => d.kind === "frame");
+  const camera = p.decorators.find((d) => d.kind === "camera");
+  const beat = p.decorators.find((d) => d.kind === "beat");
+  assert.equal(frame?.value, "3");
+  assert.equal(frame?.rawMark, "％");
+  assert.equal(camera?.value, "寄り");
+  assert.equal(camera?.rawMark, "＾");
+  assert.equal(beat?.value, "ため");
+  assert.equal(beat?.rawMark, "＊");
+  assert.equal(firstCharacter(p)?.rawMark, "＠");
+});
+
 test("examples/audio/station.mes parses", () => {
   const text = readFileSync(join(root, "examples/audio/station.mes"), "utf8");
   const medo = parseMesLang(text);
