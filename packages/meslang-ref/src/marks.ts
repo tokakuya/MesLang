@@ -15,8 +15,11 @@ export const MARK_TO_KIND: Record<string, DecoratorKind> = {
   "?": "ext",
   "？": "ext",
   "%": "frame",
+  "％": "frame",
   "^": "camera",
+  "＾": "camera",
   "*": "beat",
+  "＊": "beat",
 };
 
 export const DECORATOR_MARKS = new Set(Object.keys(MARK_TO_KIND));
