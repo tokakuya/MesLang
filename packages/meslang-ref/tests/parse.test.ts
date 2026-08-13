@@ -551,3 +551,34 @@ test("AI ネーム起こしガイド: cafe-pose %8 / silent-panels %7 fixtures s
   );
   assert.equal(silentLast.dialogue.trim(), "");
 });
+
+test("AI ガイド: 全角行頭記号（％＾＊含む）を半角と同じと明記", () => {
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const basic = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basic, /全角の行頭記号/);
+  assert.match(basic, /％＾＊/);
+  assert.match(basic, /半角と同じ意味/);
+
+  const writing = guide.slice(
+    guide.indexOf("## AI に MesLang を書かせるとき"),
+    guide.indexOf("## おすすめの実務の順番"),
+  );
+  assert.match(writing, /半角/);
+  assert.match(writing, /誤り/);
+
+  const gap = guide.slice(
+    guide.indexOf("### 不足情報の洗い出し"),
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+  );
+  assert.match(gap, /全角の行頭記号/);
+  assert.match(gap, /未知の記号/);
+
+  const importHelp = guide.slice(
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+    guide.indexOf("### アニメ字コンテ起こし"),
+  );
+  assert.match(importHelp, /全角の行頭記号/);
+});
