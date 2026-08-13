@@ -522,3 +522,32 @@ test("manga: :吹き出し and 3rd bracket land on the same key", () => {
   assert.equal(a.attrs["吹き出し"], "心の声");
   assert.deepEqual(a.attrs, b.attrs);
 });
+
+test("AI ネーム起こしガイド: cafe-pose %8 / silent-panels %7 fixtures stay linked", () => {
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const nameRaising = guide.slice(
+    guide.indexOf("### 漫画ネーム起こし"),
+    guide.indexOf("### 漫画参考画像"),
+  );
+  assert.match(nameRaising, /吹き出し種別/);
+  assert.match(nameRaising, /cafe-pose\.mes/);
+  assert.match(nameRaising, /%8/);
+  assert.match(nameRaising, /silent-panels\.mes/);
+  assert.match(nameRaising, /%7/);
+  assert.match(nameRaising, /勝手にセリフを足さない/);
+
+  const cafe = parseMesLang(readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8"));
+  const cafeLast = cafe.body.sections[0]!.pieces.at(-1)!;
+  assert.ok(cafeLast.decorators.some((d) => d.kind === "frame" && d.value === "8"));
+  assert.equal(firstCharacter(cafeLast)!.attrs["吹き出し"], "心の声");
+
+  const silent = parseMesLang(readFileSync(join(root, "examples/manga/silent-panels.mes"), "utf8"));
+  const silentLast = silent.body.sections[0]!.pieces.at(-1)!;
+  assert.ok(silentLast.decorators.some((d) => d.kind === "frame" && d.value === "7"));
+  assert.ok(
+    silentLast.decorators.some(
+      (d) => d.kind === "camera" && d.value.includes("目線の高さ") && d.value.includes("1/2コマ"),
+    ),
+  );
+  assert.equal(silentLast.dialogue.trim(), "");
+});

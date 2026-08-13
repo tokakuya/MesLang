@@ -202,6 +202,7 @@ $店内BGM（小さく）
 ## AI に頼むとき
 
 ネーム起こし・参考画像・ネーム原稿の下書きは、[AI 向けガイド](../../docs/spec/04-ai-reading.md#漫画ネーム起こし) のひな形をどうぞ。  
+渡す見本の目安: 無言の構図は [silent-panels.mes](./silent-panels.mes) の `%7`、属性の心の声は [cafe-pose.mes](./cafe-pose.mes) の `%8`、かぎかっこの心の声は [station-name.mes](./station-name.mes)。  
 複数ページなら [station-two-pages.mes](./station-two-pages.mes) を渡し、ページごとに `%` を数え直す前提で頼むと伝わりやすいです。  
 不足情報だけの洗い出しや、形チェック→洗い出し→起こしの順番も、同じ文書にあります。
 
