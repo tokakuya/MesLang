@@ -192,7 +192,7 @@ MesLang まわりの話は、だいたい次の三層に分かれます。
 | `衣装` | `costume` | |
 | `視線` | `gaze` | |
 | `img` | — | アイコン参照など |
-| `吹き出し` | — | 漫画。心の声など。漫画のかぎかっこ 3 個目。属性例は [cafe-pose.mes](../../examples/manga/cafe-pose.mes) の `%8`、かぎかっこ例は [station-name.mes](../../examples/manga/station-name.mes) の `%4`（[分け方](03-media-profiles.md#表情姿勢吹き出しの分け方--表情--姿勢--吹き出し)） |
+| `吹き出し` | — | 漫画。心の声など。漫画のかぎかっこ 3 個目。属性例は [cafe-pose.mes](../../examples/manga/cafe-pose.mes) の `%8`（戻す例は `%9`）、かぎかっこ例は [station-name.mes](../../examples/manga/station-name.mes) の `%4`（[分け方](03-media-profiles.md#表情姿勢吹き出しの分け方--表情--姿勢--吹き出し)） |
 
 かぎかっこ速記のコア既定は [ADR 0005](../decisions/0005-bracket-default-keys.md)、プロファイル別の行き先は [ADR 0007](../decisions/0007-profile-bracket-keys.md) です。
 

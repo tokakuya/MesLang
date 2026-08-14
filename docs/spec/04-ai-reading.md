@@ -83,7 +83,7 @@ AI に渡す前に、形だけはツールへ任せると安心です。
 入力例（セリフなしページ）: [examples/manga/silent-panels.mes](../../examples/manga/silent-panels.mes)（`%7`＝目が合う無言。`%8`＝声を出す直前。どちらもセリフなし）  
 入力例（会話あり・1ページ）: [examples/manga/station-name.mes](../../examples/manga/station-name.mes)（かぎかっこ 3 個目の心の声）  
 入力例（2ページ通し・`%` 数え直し）: [examples/manga/station-two-pages.mes](../../examples/manga/station-two-pages.mes)  
-入力例（表情・姿勢・`:吹き出し`）: [examples/manga/cafe-pose.mes](../../examples/manga/cafe-pose.mes)（`%8`＝属性の心の声）  
+入力例（表情・姿勢・`:吹き出し`）: [examples/manga/cafe-pose.mes](../../examples/manga/cafe-pose.mes)（`%8`＝属性の心の声。`%9`＝そのあとふつうのセリフに戻る）  
 呼び分け: [用語集（コマとカット）](05-glossary.md#コマとカットまぎらわしいことば)  
 構図の言い方: [メディアプロファイル（構図の語彙）](03-media-profiles.md#構図の語彙ガイドよく使う書き方)  
 吹き出しの書き方: [メディアプロファイル（吹き出し）](03-media-profiles.md#吹き出しの書き方吹き出し-とかぎかっこ)
@@ -163,7 +163,7 @@ AI に目標字数との照合や、話者ごとの偏りを見てもらうと�
 - きれいな完成ネームや画像は二次の仕事。ここでは原稿テキストだけを出す
 ```
 
-入力の参考（会話・1ページ。表情／姿勢／`%8`＝`:吹き出し`）: [examples/manga/cafe-pose.mes](../../examples/manga/cafe-pose.mes)  
+入力の参考（会話・1ページ。表情／姿勢／`%8`＝`:吹き出し`／`%9`＝ふつうのセリフに戻る）: [examples/manga/cafe-pose.mes](../../examples/manga/cafe-pose.mes)  
 入力の参考（2ページ通し。かぎかっこでの心の声あり）: [examples/manga/station-two-pages.mes](../../examples/manga/station-two-pages.mes)  
 入力の参考（無言コマ。`%7`＝目が合う、`%8`＝声を出す直前）: [examples/manga/silent-panels.mes](../../examples/manga/silent-panels.mes)  
 呼び分け: [用語集（音だけの間 / 無言コマ）](05-glossary.md#セリフのない間音だけの間--無言コマ) / [用語集（コマとカット）](05-glossary.md#コマとカットまぎらわしいことば) / [用語集（タイミングとビート）](05-glossary.md#タイミングとビートまぎらわしいことば) / [表情・姿勢・吹き出し](03-media-profiles.md#表情姿勢吹き出しの分け方--表情--姿勢--吹き出し) / [構図の語彙](03-media-profiles.md#構図の語彙ガイドよく使う書き方)
