@@ -73,7 +73,7 @@ MesLang まわりの話は、だいたい次の三層に分かれます。
 | 使ってよい語 | メディア | 意味 | 見本 |
 |--------------|----------|------|------|
 | **音だけの間** | 音声 | セリフのないピース。`$` / `!` / `&` / `#` などで音と状況だけを置く | [station.mes](../../examples/audio/station.mes) の「ランチへ」 |
-| **無言コマ** / セリフなしコマ | 漫画 | セリフのない `%` コマ。`^` / `#` / `*` / `$` などで構図と状況だけを置く | [silent-panels.mes](../../examples/manga/silent-panels.mes)（`%7`＝目が合う）、[station-two-pages.mes](../../examples/manga/station-two-pages.mes) の2ページ目 `%4` |
+| **無言コマ** / セリフなしコマ | 漫画 | セリフのない `%` コマ。`^` / `#` / `*` / `$` などで構図と状況だけを置く | [silent-panels.mes](../../examples/manga/silent-panels.mes)（`%7`＝目が合う、`%8`＝声を出す直前）、[station-two-pages.mes](../../examples/manga/station-two-pages.mes) の2ページ目 `%4` |
 
 同じ信号待ちの拍を、音声では音だけの間、漫画では無言コマにした対比もあります（「ランチへ」↔ `station-two-pages` の `%4`）。  
 文書では次のように呼び分けます。
