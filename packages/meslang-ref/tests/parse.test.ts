@@ -490,17 +490,18 @@ test("examples/manga/cafe-pose.mes: 表情 and 姿勢 on speakers", () => {
   assert.equal(medo.header.title, "カフェ・表情と姿勢の練習");
   assert.equal(medo.body.sections[0]!.title, "1ページ");
   const pieces = medo.body.sections[0]!.pieces;
-  assert.ok(pieces.length >= 8);
+  assert.ok(pieces.length >= 9);
   const withAttrs = pieces
     .map((p) => firstCharacter(p))
     .filter((ch): ch is NonNullable<typeof ch> => ch != null && Object.keys(ch.attrs).length > 0);
-  assert.ok(withAttrs.length >= 6);
+  assert.ok(withAttrs.length >= 7);
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "ほっとした" && ch.attrs["姿勢"] === "椅子に沈む"));
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "微笑" && ch.attrs["姿勢"] === "肘をついて顎を支える"));
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "困り" && ch.attrs["姿勢"] === "前のめり"));
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "楽しそう" && ch.attrs["姿勢"] === "少し身を乗り出す"));
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "苦笑い" && ch.attrs["姿勢"] === "後ずさり気味"));
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "にやり" && ch.attrs["姿勢"] === "指を一本立てる"));
+  assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "照れ" && ch.attrs["姿勢"] === "メニューに視線を落とす"));
   const reaction = pieces[6]!;
   assert.ok(reaction.decorators.some((d) => d.kind === "frame" && d.value === "7"));
   assert.ok(reaction.decorators.some((d) => d.kind === "comment" && d.value.includes("くすっと笑う")));
@@ -512,6 +513,14 @@ test("examples/manga/cafe-pose.mes: 表情 and 姿勢 on speakers", () => {
   assert.equal(thoughtCh.attrs["姿勢"], "肩をすくめる");
   assert.equal(thoughtCh.attrs["吹き出し"], "心の声");
   assert.match(thought.dialogue, /甘いものなら負けてもいいか/);
+  const spoken = pieces[8]!;
+  assert.ok(spoken.decorators.some((d) => d.kind === "frame" && d.value === "9"));
+  const spokenCh = firstCharacter(spoken)!;
+  assert.equal(spokenCh.value, "にか");
+  assert.equal(spokenCh.attrs["表情"], "照れ");
+  assert.equal(spokenCh.attrs["姿勢"], "メニューに視線を落とす");
+  assert.equal(spokenCh.attrs["吹き出し"], undefined);
+  assert.match(spoken.dialogue, /じゃあ、任せた/);
 });
 
 test("manga: :吹き出し and 3rd bracket land on the same key", () => {
@@ -533,7 +542,7 @@ test("manga: :吹き出し and 3rd bracket land on the same key", () => {
   assert.deepEqual(a.attrs, b.attrs);
 });
 
-test("AI ネーム起こしガイド: cafe-pose %8 / silent-panels %7–%8 fixtures stay linked", () => {
+test("AI ネーム起こしガイド: cafe-pose %8–%9 / silent-panels %7–%8 fixtures stay linked", () => {
   const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
   const nameRaising = guide.slice(
     guide.indexOf("### 漫画ネーム起こし"),
@@ -542,15 +551,22 @@ test("AI ネーム起こしガイド: cafe-pose %8 / silent-panels %7–%8 fixtu
   assert.match(nameRaising, /吹き出し種別/);
   assert.match(nameRaising, /cafe-pose\.mes/);
   assert.match(nameRaising, /%8/);
+  assert.match(nameRaising, /%9/);
+  assert.match(nameRaising, /ふつうのセリフに戻る/);
   assert.match(nameRaising, /silent-panels\.mes/);
   assert.match(nameRaising, /%7/);
   assert.match(nameRaising, /声を出す直前/);
   assert.match(nameRaising, /勝手にセリフを足さない/);
 
   const cafe = parseMesLang(readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8"));
-  const cafeLast = cafe.body.sections[0]!.pieces.at(-1)!;
-  assert.ok(cafeLast.decorators.some((d) => d.kind === "frame" && d.value === "8"));
-  assert.equal(firstCharacter(cafeLast)!.attrs["吹き出し"], "心の声");
+  const cafePieces = cafe.body.sections[0]!.pieces;
+  const cafeThought = cafePieces[7]!;
+  assert.ok(cafeThought.decorators.some((d) => d.kind === "frame" && d.value === "8"));
+  assert.equal(firstCharacter(cafeThought)!.attrs["吹き出し"], "心の声");
+  const cafeSpoken = cafePieces.at(-1)!;
+  assert.ok(cafeSpoken.decorators.some((d) => d.kind === "frame" && d.value === "9"));
+  assert.equal(firstCharacter(cafeSpoken)!.attrs["吹き出し"], undefined);
+  assert.match(cafeSpoken.dialogue, /じゃあ、任せた/);
 
   const silent = parseMesLang(readFileSync(join(root, "examples/manga/silent-panels.mes"), "utf8"));
   const silentPieces = silent.body.sections[0]!.pieces;
