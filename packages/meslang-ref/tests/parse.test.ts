@@ -411,7 +411,7 @@ test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () 
   assert.equal(medo.body.sections.length, 1);
   assert.equal(medo.body.sections[0]!.title, "1ページ");
   const pieces = medo.body.sections[0]!.pieces;
-  assert.ok(pieces.length >= 7);
+  assert.ok(pieces.length >= 8);
   for (const p of pieces) {
     assert.equal(p.dialogue.trim(), "");
     assert.ok(p.decorators.some((d) => d.kind === "frame"));
@@ -426,15 +426,25 @@ test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () 
   );
   assert.ok(findBeat.decorators.some((d) => d.kind === "beat" && d.value.includes("見つける直前")));
   assert.ok(findBeat.decorators.some((d) => d.kind === "sound" && d.value.includes("雑踏")));
-  const last = pieces[pieces.length - 1]!;
-  assert.ok(last.decorators.some((d) => d.kind === "frame" && d.value === "7"));
+  const eyeContact = pieces[6]!;
+  assert.ok(eyeContact.decorators.some((d) => d.kind === "frame" && d.value === "7"));
   assert.ok(
-    last.decorators.some(
+    eyeContact.decorators.some(
       (d) => d.kind === "camera" && d.value.includes("目線の高さ") && d.value.includes("1/2コマ"),
     ),
   );
-  assert.ok(last.decorators.some((d) => d.kind === "beat" && d.value.includes("見つけた直後")));
-  assert.ok(last.decorators.some((d) => d.kind === "comment" && d.value.includes("目が合う")));
+  assert.ok(eyeContact.decorators.some((d) => d.kind === "beat" && d.value.includes("見つけた直後")));
+  assert.ok(eyeContact.decorators.some((d) => d.kind === "comment" && d.value.includes("目が合う")));
+  const last = pieces[pieces.length - 1]!;
+  assert.ok(last.decorators.some((d) => d.kind === "frame" && d.value === "8"));
+  assert.ok(
+    last.decorators.some(
+      (d) => d.kind === "camera" && d.value.includes("二人寄り") && d.value.includes("横長フル"),
+    ),
+  );
+  assert.ok(last.decorators.some((d) => d.kind === "beat" && d.value.includes("声を出す直前")));
+  assert.ok(last.decorators.some((d) => d.kind === "comment" && d.value.includes("口を開きかけ")));
+  assert.ok(last.decorators.some((d) => d.kind === "sound" && d.value.includes("雑踏")));
 });
 
 test("examples/manga/station-two-pages.mes: == pages and % renumber", () => {
@@ -523,7 +533,7 @@ test("manga: :吹き出し and 3rd bracket land on the same key", () => {
   assert.deepEqual(a.attrs, b.attrs);
 });
 
-test("AI ネーム起こしガイド: cafe-pose %8 / silent-panels %7 fixtures stay linked", () => {
+test("AI ネーム起こしガイド: cafe-pose %8 / silent-panels %7–%8 fixtures stay linked", () => {
   const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
   const nameRaising = guide.slice(
     guide.indexOf("### 漫画ネーム起こし"),
@@ -534,6 +544,7 @@ test("AI ネーム起こしガイド: cafe-pose %8 / silent-panels %7 fixtures s
   assert.match(nameRaising, /%8/);
   assert.match(nameRaising, /silent-panels\.mes/);
   assert.match(nameRaising, /%7/);
+  assert.match(nameRaising, /声を出す直前/);
   assert.match(nameRaising, /勝手にセリフを足さない/);
 
   const cafe = parseMesLang(readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8"));
@@ -542,13 +553,18 @@ test("AI ネーム起こしガイド: cafe-pose %8 / silent-panels %7 fixtures s
   assert.equal(firstCharacter(cafeLast)!.attrs["吹き出し"], "心の声");
 
   const silent = parseMesLang(readFileSync(join(root, "examples/manga/silent-panels.mes"), "utf8"));
-  const silentLast = silent.body.sections[0]!.pieces.at(-1)!;
-  assert.ok(silentLast.decorators.some((d) => d.kind === "frame" && d.value === "7"));
+  const silentPieces = silent.body.sections[0]!.pieces;
+  const silentEye = silentPieces[6]!;
+  assert.ok(silentEye.decorators.some((d) => d.kind === "frame" && d.value === "7"));
   assert.ok(
-    silentLast.decorators.some(
+    silentEye.decorators.some(
       (d) => d.kind === "camera" && d.value.includes("目線の高さ") && d.value.includes("1/2コマ"),
     ),
   );
+  assert.equal(silentEye.dialogue.trim(), "");
+  const silentLast = silentPieces.at(-1)!;
+  assert.ok(silentLast.decorators.some((d) => d.kind === "frame" && d.value === "8"));
+  assert.ok(silentLast.decorators.some((d) => d.kind === "beat" && d.value.includes("声を出す直前")));
   assert.equal(silentLast.dialogue.trim(), "");
 });
 
