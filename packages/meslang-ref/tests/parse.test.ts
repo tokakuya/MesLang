@@ -215,6 +215,31 @@ $遠くの車の走行音
   assert.equal(mangaPiece.decorators.find((d) => d.kind === "frame")?.value, "4");
 });
 
+test("glossary: 形チェック means 箱の名前と型 (not 欄 / not quality)", () => {
+  // docs/spec/05-glossary.md「形チェックと目視（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 形チェックと目視"),
+    glossary.indexOf("## 記法"),
+  );
+  assert.match(section, /箱の名前と型/);
+  assert.match(section, /目視/);
+  assert.match(section, /不足の洗い出し/);
+  assert.match(section, /欄の名前と型/);
+  assert.match(section, /品質チェック/);
+
+  const medoSchema = readFileSync(join(root, "schema/medo.schema.json"), "utf8");
+  const conteSchema = readFileSync(join(root, "schema/conte-table.schema.json"), "utf8");
+  assert.match(medoSchema, /箱の名前と型/);
+  assert.match(conteSchema, /箱の名前と型/);
+  assert.doesNotMatch(medoSchema, /欄の名前と型/);
+  assert.doesNotMatch(conteSchema, /欄の名前と型/);
+
+  const conteDoc = readFileSync(join(root, "docs/spec/07-conte-table.md"), "utf8");
+  assert.match(conteDoc, /箱の名前と型/);
+  assert.doesNotMatch(conteDoc, /欄の名前と型/);
+});
+
 test("glossary: 全角／半角の行頭記号 are the same kinds (rawMark kept)", () => {
   // docs/spec/05-glossary.md「全角／半角の行頭記号（まぎらわしいことば）」
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");

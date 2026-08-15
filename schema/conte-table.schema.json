@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://meslang.dev/schema/conte-table.schema.json",
   "title": "ConteTable",
-  "description": "MesLang / Medo からの絵コンテ・カット表二次出力（実験・conte-table/0.0）。形チェックは欄の名前と型だけを見る（カット割りやカメラの良し悪しは見ない）。",
+  "description": "MesLang / Medo からの絵コンテ・カット表二次出力（実験・conte-table/0.0）。形チェックは箱の名前と型だけを見る（カット割りやカメラの良し悪しは見ない）。",
   "type": "object",
   "required": ["version", "title", "profile", "cuts"],
   "additionalProperties": false,
