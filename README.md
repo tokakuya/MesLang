@@ -88,7 +88,7 @@ node --experimental-strip-types src/cli.ts --compat --validate ../../examples/au
 ```
 
 `--validate` は、出てきた JSON の **箱の名前と型**（`version` や `rawMark` など）が揃っているかだけを見ます。話の良し悪しは見ません。  
-取り込み直後の JSON を目で見る手順は、[旧 Mes 取り込みガイドの「取り込み後 Medo の目視」](docs/spec/06-mes-compat.md#取り込み後-medo-の目視任意) にあります。ことばの整理は [用語集の形チェック](docs/spec/05-glossary.md#構造) です。
+取り込み直後の JSON を目で見る手順は、[旧 Mes 取り込みガイドの「取り込み後 Medo の目視」](docs/spec/06-mes-compat.md#取り込み後-medo-の目視任意) にあります。ことばの整理は [用語集の形チェックと目視](docs/spec/05-glossary.md#形チェックと目視まぎらわしいことば) です。
 
 ## 旧 Mes との関係
 
