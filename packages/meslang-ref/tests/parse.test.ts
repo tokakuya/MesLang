@@ -215,6 +215,49 @@ $遠くの車の走行音
   assert.equal(mangaPiece.decorators.find((d) => d.kind === "frame")?.value, "4");
 });
 
+test("glossary: 全角／半角の行頭記号 are the same kinds (rawMark kept)", () => {
+  // docs/spec/05-glossary.md「全角／半角の行頭記号（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 全角／半角の行頭記号"),
+    glossary.indexOf("## おすすめの属性キー"),
+  );
+  assert.match(section, /同じ意味/);
+  assert.match(section, /％/);
+  assert.match(section, /＾/);
+  assert.match(section, /＊/);
+  assert.match(section, /rawMark/);
+  assert.match(section, /未知の記号/);
+
+  const half = parseMesLang(`profile: manga
+----
+%3
+^寄り
+*ため
+@にか
+セリフ
+`);
+  const full = parseMesLang(`profile: manga
+----
+％3
+＾寄り
+＊ため
+＠にか
+セリフ
+`);
+  const halfPiece = half.body.sections[0]!.pieces[0]!;
+  const fullPiece = full.body.sections[0]!.pieces[0]!;
+  assert.equal(
+    halfPiece.decorators.find((d) => d.kind === "frame")?.kind,
+    fullPiece.decorators.find((d) => d.kind === "frame")?.kind,
+  );
+  assert.equal(fullPiece.decorators.find((d) => d.kind === "frame")?.rawMark, "％");
+  assert.equal(fullPiece.decorators.find((d) => d.kind === "camera")?.rawMark, "＾");
+  assert.equal(fullPiece.decorators.find((d) => d.kind === "beat")?.rawMark, "＊");
+  assert.equal(firstCharacter(fullPiece)?.rawMark, "＠");
+  assert.equal(halfPiece.decorators.find((d) => d.kind === "frame")?.rawMark, "%");
+});
+
 test("audio: multiple $ / ! keep document order (pairing is authoring hint)", () => {
   const medo = parseMesLang(`profile: audio
 ----
