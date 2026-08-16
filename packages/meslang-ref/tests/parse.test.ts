@@ -240,6 +240,46 @@ test("glossary: 形チェック means 箱の名前と型 (not 欄 / not quality)
   assert.doesNotMatch(conteDoc, /欄の名前と型/);
 });
 
+test("glossary: かぎかっこ速記と属性 land on the same attrs", () => {
+  // docs/spec/05-glossary.md「かぎかっこ速記と属性（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## かぎかっこ速記と属性"),
+    glossary.indexOf("## 原稿と二次出力"),
+  );
+  assert.match(section, /同じ行き先/);
+  assert.match(section, /かぎかっこ速記/);
+  assert.match(section, /ブラケット/);
+  assert.match(section, /ポーズ/);
+  assert.match(section, /吹き出し/);
+  assert.match(section, /声質/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /2026-08-16/);
+  assert.match(adrReadme, /かぎかっこ速記と属性/);
+
+  const adr0008 = readFileSync(join(root, "docs/decisions/0008-conte-table-secondary.md"), "utf8");
+  assert.match(adr0008, /wont/);
+  assert.doesNotMatch(adr0008, /backlog ready/);
+
+  const attrs = parseMesLang(`profile: manga
+----
+@にか :表情 困り :姿勢 前のめり :吹き出し 心の声
+セリフ
+`);
+  const brackets = parseMesLang(`profile: manga
+----
+@にか[困り][前のめり][心の声]
+セリフ
+`);
+  const a = firstCharacter(attrs.body.sections[0]!.pieces[0]!)!;
+  const b = firstCharacter(brackets.body.sections[0]!.pieces[0]!)!;
+  assert.equal(a.attrs["表情"], "困り");
+  assert.equal(a.attrs["姿勢"], "前のめり");
+  assert.equal(a.attrs["吹き出し"], "心の声");
+  assert.deepEqual(a.attrs, b.attrs);
+});
+
 test("glossary: 全角／半角の行頭記号 are the same kinds (rawMark kept)", () => {
   // docs/spec/05-glossary.md「全角／半角の行頭記号（まぎらわしいことば）」
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");

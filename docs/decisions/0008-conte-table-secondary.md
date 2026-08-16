@@ -21,4 +21,4 @@
 
 - 良いこと: 原稿は軽いまま、ツール側でカット表を再現できる。Medo を壊さない
 - つらいこと: 1ピースに複数 `%` があるなど珍しい書き方は、最初の `%` だけをカット ID にする簡略ルール
-- 次にやること: ~~仮形 `conte-table/0.0` と `toConteTable`~~ → 0.0.15 で完了。~~形チェック `validateConteTable` / `--conte --validate`~~ → 0.0.28。Markdown／CSV 整形は二次ツール側の候補のまま（コアには入れない。backlog ready）
+- 次にやること: ~~仮形 `conte-table/0.0` と `toConteTable`~~ → 0.0.15 で完了。~~形チェック `validateConteTable` / `--conte --validate`~~ → 0.0.28。~~Markdown／CSV 整形をコアへ~~ → やらない（二次ツール側。用語集・backlog **wont**。2026-08-16 日曜で ready 誤表記を解消）
