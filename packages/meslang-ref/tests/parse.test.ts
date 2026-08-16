@@ -280,6 +280,36 @@ test("glossary: かぎかっこ速記と属性 land on the same attrs", () => {
   assert.deepEqual(a.attrs, b.attrs);
 });
 
+test("glossary: デコレーターと行頭記号 are the same family (attrs are not marks)", () => {
+  // docs/spec/05-glossary.md「デコレーターと行頭記号（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## デコレーターと行頭記号"),
+    glossary.indexOf("## かぎかっこ速記と属性"),
+  );
+  assert.match(section, /同じ仲間/);
+  assert.match(section, /行頭記号/);
+  assert.match(section, /デコレーター/);
+  assert.match(section, /属性/);
+  assert.match(section, /rawMark/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /デコレーターと行頭記号/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  assert.match(guide, /デコレーターと行頭記号/);
+
+  const medo = parseMesLang(`@にか :表情 微笑
+#駅前
+こんにちは。
+`);
+  const piece = medo.body.sections[0]!.pieces[0]!;
+  assert.equal(piece.decorators[0]!.kind, "character");
+  assert.equal(piece.decorators[0]!.rawMark, "@");
+  assert.equal(firstCharacter(piece)!.attrs["表情"], "微笑");
+  assert.equal(piece.decorators.find((d) => d.kind === "comment")?.rawMark, "#");
+});
+
 test("glossary: 全角／半角の行頭記号 are the same kinds (rawMark kept)", () => {
   // docs/spec/05-glossary.md「全角／半角の行頭記号（まぎらわしいことば）」
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
