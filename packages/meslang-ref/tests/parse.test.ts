@@ -180,6 +180,7 @@ test("glossary: ! alone is speaker position (not a missing $)", () => {
   const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
   assert.match(compat, /名前「セリフ」/);
   assert.match(compat, /@` 化は任意/);
+  assert.match(compat, /混ぜてよい/);
 
   const medo = parseMesLang(`profile: audio
 ----
@@ -195,6 +196,7 @@ test("glossary: ! alone is speaker position (not a missing $)", () => {
   assert.equal(piece.dialogue, "こういう時は。");
 
   const after = readFileSync(join(root, "examples/audio/mes-import-after.mes"), "utf8");
+  assert.match(after, /こいと「それにしても久しぶりですね。」/);
   const afterMedo = parseMesLang(after);
   const koito = afterMedo.body.sections[0]!.pieces.find(
     (p) => firstCharacter(p)?.value === "こいと" && p.dialogue.includes("ついさっき"),
@@ -202,6 +204,10 @@ test("glossary: ! alone is speaker position (not a missing $)", () => {
   assert.ok(koito);
   assert.equal(koito!.decorators.find((d) => d.kind === "position")?.value, "正面");
   assert.equal(koito!.decorators.find((d) => d.kind === "sound"), undefined);
+
+  const reunion = afterMedo.body.sections[0]!.pieces.find((p) => p.dialogue.includes("久しぶり"));
+  assert.equal(firstCharacter(reunion!)?.value, "こいと");
+  assert.match(after, /@にか/);
 });
 
 test("glossary: manga コマ and anime カット share kind frame", () => {
