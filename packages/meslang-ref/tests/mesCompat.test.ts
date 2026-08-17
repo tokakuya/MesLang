@@ -97,6 +97,8 @@ test("examples/audio mes-import before→after path", () => {
   );
 
   const after = readFileSync(join(root, "examples/audio/mes-import-after.mes"), "utf8");
+  // after may keep 名前「」; DoFlat still yields @ + dialogue (optional hand rewrite)
+  assert.match(after, /こいと「それにしても久しぶりですね。」/);
   const polished = parseMesLang(after);
   assert.equal(polished.header.profile, "audio");
   assert.equal(polished.body.sections[0]!.title, "オープニング");
@@ -114,6 +116,7 @@ test("examples/audio mes-import before→after path", () => {
     false,
   );
   const reunion = polished.body.sections[0]!.pieces.find((p) => p.dialogue.includes("久しぶり"));
+  assert.equal(firstCharacter(reunion!)?.value, "こいと");
   assert.ok(reunion!.decorators.some((d) => d.kind === "sound" && d.value.includes("呼びかける声")));
   assert.ok(reunion!.decorators.some((d) => d.kind === "position" && d.value === "右寄り"));
 });
