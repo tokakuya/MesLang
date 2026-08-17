@@ -161,6 +161,49 @@ $呼びかける声（やや遠く）
   assert.equal(piece.dialogue, "ヒソヒソ……。");
 });
 
+test("glossary: ! alone is speaker position (not a missing $)", () => {
+  // docs/spec/05-glossary.md「音の位置と話者の位置（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 音の位置と話者の位置"),
+    glossary.indexOf("## `#` まわり"),
+  );
+  assert.match(section, /音の位置/);
+  assert.match(section, /話者の位置/);
+  assert.match(section, /\$` なし/);
+  assert.match(section, /正しいです/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  assert.match(guide, /音の位置と話者の位置/);
+  assert.match(guide, /\$ のない ! は話者の位置/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /名前「セリフ」/);
+  assert.match(compat, /@` 化は任意/);
+
+  const medo = parseMesLang(`profile: audio
+----
+@にか[思索][ヒソヒソ]
+!正面やや右
+こういう時は。
+`);
+  const piece = medo.body.sections[0]!.pieces[0]!;
+  assert.equal(firstCharacter(piece)?.value, "にか");
+  assert.equal(firstCharacter(piece)?.attrs["声質"], "ヒソヒソ");
+  assert.equal(piece.decorators.find((d) => d.kind === "position")?.value, "正面やや右");
+  assert.equal(piece.decorators.find((d) => d.kind === "sound"), undefined);
+  assert.equal(piece.dialogue, "こういう時は。");
+
+  const after = readFileSync(join(root, "examples/audio/mes-import-after.mes"), "utf8");
+  const afterMedo = parseMesLang(after);
+  const koito = afterMedo.body.sections[0]!.pieces.find(
+    (p) => firstCharacter(p)?.value === "こいと" && p.dialogue.includes("ついさっき"),
+  );
+  assert.ok(koito);
+  assert.equal(koito!.decorators.find((d) => d.kind === "position")?.value, "正面");
+  assert.equal(koito!.decorators.find((d) => d.kind === "sound"), undefined);
+});
+
 test("glossary: manga コマ and anime カット share kind frame", () => {
   // docs/spec/05-glossary.md「コマとカット（まぎらわしいことば）」
   const manga = parseMesLang(`profile: manga
