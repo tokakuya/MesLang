@@ -584,11 +584,60 @@ test("examples/audio/station.mes: ランチへ has dialogue-less sound beat", ()
 test("examples/manga/station-name.mes parses frames", () => {
   const text = readFileSync(join(root, "examples/manga/station-name.mes"), "utf8");
   const medo = parseMesLang(text);
-  const frames = medo.body.sections
-    .flatMap((s) => s.pieces)
-    .flatMap((p) => p.decorators)
-    .filter((d) => d.kind === "frame");
-  assert.ok(frames.length >= 4);
+  const pieces = medo.body.sections[0]!.pieces;
+  const frames = pieces.flatMap((p) => p.decorators).filter((d) => d.kind === "frame");
+  assert.ok(frames.length >= 6);
+  assert.equal(frames.filter((d) => d.value === "6").length, 1);
+  // %6: same panel, two pieces (second has no %)
+  const multiStart = pieces.findIndex((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "6"));
+  assert.ok(multiStart >= 0);
+  const first = pieces[multiStart]!;
+  const second = pieces[multiStart + 1]!;
+  assert.equal(firstCharacter(first)?.value, "にか");
+  assert.match(first.dialogue, /どこ行く/);
+  assert.equal(firstCharacter(second)?.value, "こいと");
+  assert.match(second.dialogue, /例の店/);
+  assert.equal(
+    second.decorators.some((d) => d.kind === "frame"),
+    false,
+  );
+});
+
+test("glossary: コマとピース — same % keeps following pieces in one panel", () => {
+  // docs/spec/05-glossary.md「コマとピース（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## コマとピース"),
+    glossary.indexOf("## タイミングとビート"),
+  );
+  assert.match(section, /1コマ＝1ピース/);
+  assert.match(section, /先頭/);
+  assert.match(section, /station-name\.mes/);
+
+  const medo = parseMesLang(`profile: manga
+----
+== 1ページ
+
+%6
+^二人引き 横長
+@にか
+あ
+
+@こいと
+い
+`);
+  const pieces = medo.body.sections[0]!.pieces;
+  assert.equal(pieces.length, 2);
+  assert.ok(pieces[0]!.decorators.some((d) => d.kind === "frame" && d.value === "6"));
+  assert.equal(pieces[1]!.decorators.some((d) => d.kind === "frame"), false);
+  assert.equal(firstCharacter(pieces[0]!)?.value, "にか");
+  assert.equal(firstCharacter(pieces[1]!)?.value, "こいと");
+
+  const profile = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profile, /同じコマに複数のセリフ/);
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  assert.match(guide, /コマとピース/);
+  assert.match(guide, /1コマ＝1ピースは目安/);
 });
 
 test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () => {
@@ -743,6 +792,9 @@ test("AI ネーム起こしガイド: cafe-pose %8–%9 / silent-panels %7–%8 
   assert.match(nameRaising, /silent-panels\.mes/);
   assert.match(nameRaising, /%7/);
   assert.match(nameRaising, /声を出す直前/);
+  assert.match(nameRaising, /station-name\.mes/);
+  assert.match(nameRaising, /同じコマの二人セリフ/);
+  assert.match(nameRaising, /コマとピース/);
   assert.match(nameRaising, /勝手にセリフを足さない/);
 
   const cafe = parseMesLang(readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8"));
