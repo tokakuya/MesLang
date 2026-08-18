@@ -53,6 +53,19 @@ test("toConteTable starts a new cut on each %", () => {
   assert.deepEqual(table.cuts[1]!.dialogues, [{ speaker: "こいと", text: "はい" }]);
 });
 
+test("toConteTable keeps %なし pieces in the same cut (manga multi-speech panel)", () => {
+  const text = readFileSync(join(root, "examples/manga/station-name.mes"), "utf8");
+  const table = toConteTable(parseMesLang(text));
+  const cut6 = table.cuts.find((c) => c.cut === "6");
+  assert.ok(cut6);
+  assert.deepEqual(cut6!.camera, ["二人引き 横長"]);
+  assert.equal(cut6!.dialogues.length, 2);
+  assert.equal(cut6!.dialogues[0]!.speaker, "にか");
+  assert.match(cut6!.dialogues[0]!.text, /どこ行く/);
+  assert.equal(cut6!.dialogues[1]!.speaker, "こいと");
+  assert.match(cut6!.dialogues[1]!.text, /例の店/);
+});
+
 test("examples/animation/station-conte.mes yields 5 stable cuts", () => {
   const text = readFileSync(join(root, "examples/animation/station-conte.mes"), "utf8");
   const table = toConteTable(parseMesLang(text));
