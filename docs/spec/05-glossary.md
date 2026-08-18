@@ -334,7 +334,7 @@ CLI の入口は README の `--validate` / `--conte --validate` です。
 | `衣装` | `costume` | |
 | `視線` | `gaze` | |
 | `img` | — | アイコン参照など |
-| `吹き出し` | — | 漫画。心の声など。漫画のかぎかっこ 3 個目。属性例は [cafe-pose.mes](../../examples/manga/cafe-pose.mes) の `%8`（戻す例は `%9`）、かぎかっこ例は [station-name.mes](../../examples/manga/station-name.mes) の `%4`（[分け方](03-media-profiles.md#表情姿勢吹き出しの分け方--表情--姿勢--吹き出し) / [呼び分け](#かぎかっこ速記と属性まぎらわしいことば)） |
+| `吹き出し` | — | 漫画。心の声・ナレ・外注ぎなど。漫画のかぎかっこ 3 個目。心の声は [cafe-pose.mes](../../examples/manga/cafe-pose.mes) `%8`（戻す例 `%9`）／ [station-name.mes](../../examples/manga/station-name.mes) `%4`。ナレ・外注ぎは同駅前見本の `%7` / `%8`（[分け方](03-media-profiles.md#表情姿勢吹き出しの分け方--表情--姿勢--吹き出し) / [吹き出しの書き方](03-media-profiles.md#吹き出しの書き方吹き出し-とかぎかっこ) / [呼び分け](#かぎかっこ速記と属性まぎらわしいことば)） |
 
 かぎかっこ速記のコア既定は [ADR 0005](../decisions/0005-bracket-default-keys.md)、プロファイル別の行き先は [ADR 0007](../decisions/0007-profile-bracket-keys.md) です。属性との呼び分けは [上の節](#かぎかっこ速記と属性まぎらわしいことば) をどうぞ。
 

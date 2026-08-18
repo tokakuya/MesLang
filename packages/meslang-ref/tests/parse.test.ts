@@ -586,8 +586,10 @@ test("examples/manga/station-name.mes parses frames", () => {
   const medo = parseMesLang(text);
   const pieces = medo.body.sections[0]!.pieces;
   const frames = pieces.flatMap((p) => p.decorators).filter((d) => d.kind === "frame");
-  assert.ok(frames.length >= 6);
+  assert.ok(frames.length >= 8);
   assert.equal(frames.filter((d) => d.value === "6").length, 1);
+  assert.equal(frames.filter((d) => d.value === "7").length, 1);
+  assert.equal(frames.filter((d) => d.value === "8").length, 1);
   // %6: same panel, two pieces (second has no %)
   const multiStart = pieces.findIndex((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "6"));
   assert.ok(multiStart >= 0);
@@ -601,6 +603,19 @@ test("examples/manga/station-name.mes parses frames", () => {
     second.decorators.some((d) => d.kind === "frame"),
     false,
   );
+  // %7 ナレ / %8 外注ぎ
+  const nare = pieces.find((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "7"))!;
+  const nareCh = firstCharacter(nare)!;
+  assert.equal(nareCh.value, "ナレ");
+  assert.equal(nareCh.attrs["吹き出し"], "ナレ");
+  assert.match(nare.dialogue, /夕方の駅前/);
+  const soto = pieces.find((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "8"))!;
+  const sotoCh = firstCharacter(soto)!;
+  assert.equal(sotoCh.value, "店員");
+  assert.equal(sotoCh.attrs["吹き出し"], "外注ぎ");
+  assert.equal(sotoCh.attrs["表情"], "微笑");
+  assert.equal(sotoCh.attrs["姿勢"], "店内から");
+  assert.match(soto.dialogue, /いらっしゃいませ/);
 });
 
 test("glossary: コマとピース — same % keeps following pieces in one panel", () => {
@@ -794,6 +809,8 @@ test("AI ネーム起こしガイド: cafe-pose %8–%9 / silent-panels %7–%8 
   assert.match(nameRaising, /声を出す直前/);
   assert.match(nameRaising, /station-name\.mes/);
   assert.match(nameRaising, /同じコマの二人セリフ/);
+  assert.match(nameRaising, /ナレ/);
+  assert.match(nameRaising, /外注ぎ/);
   assert.match(nameRaising, /コマとピース/);
   assert.match(nameRaising, /勝手にセリフを足さない/);
 
@@ -821,6 +838,11 @@ test("AI ネーム起こしガイド: cafe-pose %8–%9 / silent-panels %7–%8 
   assert.ok(silentLast.decorators.some((d) => d.kind === "frame" && d.value === "8"));
   assert.ok(silentLast.decorators.some((d) => d.kind === "beat" && d.value.includes("声を出す直前")));
   assert.equal(silentLast.dialogue.trim(), "");
+
+  const station = parseMesLang(readFileSync(join(root, "examples/manga/station-name.mes"), "utf8"));
+  const stationPieces = station.body.sections[0]!.pieces;
+  assert.equal(firstCharacter(stationPieces.find((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "7"))!)!.attrs["吹き出し"], "ナレ");
+  assert.equal(firstCharacter(stationPieces.find((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "8"))!)!.attrs["吹き出し"], "外注ぎ");
 });
 
 test("AI ガイド: 全角行頭記号（％＾＊含む）を半角と同じと明記", () => {
