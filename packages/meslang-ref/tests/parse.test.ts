@@ -269,7 +269,7 @@ test("glossary: 形チェック means 箱の名前と型 (not 欄 / not quality)
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
   const section = glossary.slice(
     glossary.indexOf("## 形チェックと目視"),
-    glossary.indexOf("## 記法"),
+    glossary.indexOf("## カット表の形チェックの縁"),
   );
   assert.match(section, /箱の名前と型/);
   assert.match(section, /目視/);
@@ -287,6 +287,33 @@ test("glossary: 形チェック means 箱の名前と型 (not 欄 / not quality)
   const conteDoc = readFileSync(join(root, "docs/spec/07-conte-table.md"), "utf8");
   assert.match(conteDoc, /箱の名前と型/);
   assert.doesNotMatch(conteDoc, /欄の名前と型/);
+});
+
+test("glossary: カット表の形チェックの縁 — empty cut id is valid", () => {
+  // docs/spec/05-glossary.md「カット表の形チェックの縁（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## カット表の形チェックの縁"),
+    glossary.indexOf("## 記法"),
+  );
+  assert.match(section, /番号なしカット行/);
+  assert.match(section, /cut: ""/);
+  assert.match(section, /空の配列欄/);
+  assert.match(section, /余分なキー/);
+  assert.match(section, /attrs/);
+
+  const conteDoc = readFileSync(join(root, "docs/spec/07-conte-table.md"), "utf8");
+  assert.match(conteDoc, /形チェックが見る縁/);
+  assert.match(conteDoc, /cut: ""/);
+  assert.match(conteDoc, /dialogues\[\]\.speaker/);
+
+  const conteSchema = readFileSync(join(root, "schema/conte-table.schema.json"), "utf8");
+  assert.match(conteSchema, /番号なし/);
+  assert.match(conteSchema, /空配列/);
+  assert.match(conteSchema, /attrs/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  assert.match(guide, /カット表の形チェックの縁/);
 });
 
 test("glossary: かぎかっこ速記と属性 land on the same attrs", () => {
