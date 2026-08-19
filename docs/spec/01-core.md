@@ -62,17 +62,17 @@ MesLang の「骨組み」です。どのメディアでも共通の約束ごと
 
 ## ピースが持つ情報（イメージ）
 
-ツールが読み取ったあと、だいたい次のようなまとまりになります。
+ツールが読み取ったあと、だいたい次のようなまとまりになります（Medo の箱は [schema/medo.schema.json](../../schema/medo.schema.json)）。
 
 ```
 Piece {
-  dialogue: string          # セリフ
-  decorators: Decorator[]   # 記号の行（出てきた順）
-  attrs: { key: value }     # ピース直下の属性（あまり使いません）
+  dialogue: string          # セリフ（記号でも属性でもない行）
+  decorators: Decorator[]   # 記号の行（出てきた順。属性は各デコレーターの attrs へ）
 }
 ```
 
-同じ種類の記号が複数あれば、値は配列か、改行でつなぐ形にします（参照パーサは配列です）。
+同じ種類の記号が複数あれば、参照パーサは `decorators` に並べます（値を1つの配列にまとめません）。  
+属性（`:key value`）は **直前のデコレーター** に付きます。ピース直下の attrs 箱は v0 にはありません → [デコレーター](02-decorators.md#属性のつき先)。
 
 ## 速記の橋渡し（DoFlat）
 

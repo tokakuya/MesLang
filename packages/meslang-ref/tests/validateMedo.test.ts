@@ -134,6 +134,27 @@ test("validateMedo rejects unknown decorator kind", () => {
   assert.ok(issues.some((i) => i.path.includes("kind")));
 });
 
+test("validateMedo accepts schema kind unknown (hand-built Medo escape hatch)", () => {
+  const issues = validateMedo({
+    version: "medo/0.0",
+    header: { profile: "audio", raw: "" },
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "",
+              decorators: [{ kind: "unknown", rawMark: "~", value: "memo", attrs: {} }],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.deepEqual(issues, []);
+});
+
 test("? ext decorators parse as kind ext with rawMark", () => {
   const medo = parseMesLang(`profile: anime
 ----
