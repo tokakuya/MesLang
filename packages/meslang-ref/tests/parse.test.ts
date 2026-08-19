@@ -294,7 +294,7 @@ test("glossary: かぎかっこ速記と属性 land on the same attrs", () => {
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
   const section = glossary.slice(
     glossary.indexOf("## かぎかっこ速記と属性"),
-    glossary.indexOf("## 原稿と二次出力"),
+    glossary.indexOf("## 属性のつき先"),
   );
   assert.match(section, /同じ行き先/);
   assert.match(section, /かぎかっこ速記/);
@@ -327,6 +327,70 @@ test("glossary: かぎかっこ速記と属性 land on the same attrs", () => {
   assert.equal(a.attrs["姿勢"], "前のめり");
   assert.equal(a.attrs["吹き出し"], "心の声");
   assert.deepEqual(a.attrs, b.attrs);
+});
+
+test("glossary: 属性のつき先 — orphan :attrs stay in dialogue (no silent drop)", () => {
+  // docs/spec/05-glossary.md「属性のつき先（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 属性のつき先"),
+    glossary.indexOf("## 原稿と二次出力"),
+  );
+  assert.match(section, /直前のデコレーター/);
+  assert.match(section, /ピース直下/);
+  assert.match(section, /セリフ行に残す/);
+  assert.match(section, /unknown/);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, /ピース直下の attrs 箱は v0 にはありません/);
+  assert.doesNotMatch(core, /あまり使いません/);
+
+  const decorators = readFileSync(join(root, "docs/spec/02-decorators.md"), "utf8");
+  assert.match(decorators, /## 属性のつき先/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  assert.match(guide, /属性のつき先/);
+  assert.match(guide, /ピース直下の attrs 箱は無い/);
+
+  const schema = readFileSync(join(root, "schema/medo.schema.json"), "utf8");
+  assert.match(schema, /手組み Medo/);
+  assert.match(schema, /セリフ行/);
+
+  // Attached to preceding decorator (unchanged)
+  const attached = parseMesLang(`@にか
+:表情 泣
+こんにちは。
+`);
+  const ch = firstCharacter(attached.body.sections[0]!.pieces[0]!)!;
+  assert.equal(ch.attrs["表情"], "泣");
+  assert.equal(attached.body.sections[0]!.pieces[0]!.dialogue, "こんにちは。");
+
+  // Orphan at piece start → dialogue (not silently dropped)
+  const orphan = parseMesLang(`:表情 泣
+こんにちは。
+`);
+  const orphanPiece = orphan.body.sections[0]!.pieces[0]!;
+  assert.equal(orphanPiece.decorators.length, 0);
+  assert.match(orphanPiece.dialogue, /^:表情 泣/);
+  assert.match(orphanPiece.dialogue, /こんにちは。/);
+
+  // After dialogue, lastDecorator cleared → stay in dialogue
+  const afterSpeech = parseMesLang(`@にか
+こんにちは。
+:表情 泣
+`);
+  const afterPiece = afterSpeech.body.sections[0]!.pieces[0]!;
+  assert.equal(firstCharacter(afterPiece)!.attrs["表情"], undefined);
+  assert.match(afterPiece.dialogue, /:表情 泣/);
+
+  // Unknown leading marks are dialogue, not kind unknown
+  const tilde = parseMesLang(`~メモ
+こんにちは。
+`);
+  const tildePiece = tilde.body.sections[0]!.pieces[0]!;
+  assert.equal(tildePiece.decorators.length, 0);
+  assert.match(tildePiece.dialogue, /^~メモ/);
+  assert.ok(!tildePiece.decorators.some((d) => d.kind === "unknown"));
 });
 
 test("glossary: デコレーターと行頭記号 are the same family (attrs are not marks)", () => {

@@ -158,10 +158,14 @@ function parsePiece(block: string, bracketKeys: readonly string[]): Piece | null
     if (isAttrOnlyLine(line)) {
       const attrs = parseAttrOnlyLine(line, bracketKeys);
       if (Object.keys(attrs).length > 0) {
-        if (lastDecorator) Object.assign(lastDecorator.attrs, attrs);
-        continue;
+        // 属性は直前のデコレーターに付く。直前が無い（ピース先頭やセリフのあと）ときは
+        // 黙って捨てず、セリフ行として残す（ピース直下 attrs は v0 Medo に無い）。
+        if (lastDecorator) {
+          Object.assign(lastDecorator.attrs, attrs);
+          continue;
+        }
       }
-      // 属性として読めない `:…` 行はセリフ側に残す（飲み込み防止）
+      // 属性として読めない `:…` 行、または直前デコレーターなしの属性行はセリフ側へ
     } else {
       const dec = parseDecoratorLine(line, bracketKeys);
       if (dec) {

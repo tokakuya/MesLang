@@ -80,7 +80,8 @@
             "camera",
             "beat",
             "unknown"
-          ]
+          ],
+          "description": "unknown は手組み Medo などの逃げ道。参照パーサは表に無い行頭を kind にせずセリフ行へ残す。"
         },
         "rawMark": {
           "type": "string",
