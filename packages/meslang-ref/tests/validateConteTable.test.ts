@@ -50,6 +50,121 @@ test("validateConteTable rejects wrong version", () => {
   assert.ok(issues.some((i) => i.path === "version"));
 });
 
+test("validateConteTable accepts empty cut id (番号なし) and empty arrays", () => {
+  const issues = validateConteTable({
+    version: "conte-table/0.0",
+    title: "",
+    profile: "anime",
+    cuts: [
+      {
+        cut: "",
+        camera: [],
+        timing: [],
+        action: [],
+        sound: [],
+        position: [],
+        beat: [],
+        ext: [],
+        dialogues: [],
+      },
+    ],
+  });
+  assert.deepEqual(issues, []);
+});
+
+test("validateConteTable accepts empty cuts array", () => {
+  const issues = validateConteTable({
+    version: "conte-table/0.0",
+    title: "",
+    profile: "audio",
+    cuts: [],
+  });
+  assert.deepEqual(issues, []);
+});
+
+test("validateConteTable rejects unexpected top-level property", () => {
+  const issues = validateConteTable({
+    version: "conte-table/0.0",
+    title: "",
+    profile: "anime",
+    cuts: [],
+    extra: true,
+  });
+  assert.ok(issues.some((i) => i.message.includes("unexpected property")));
+});
+
+test("validateConteTable rejects unexpected cut property", () => {
+  const issues = validateConteTable({
+    version: "conte-table/0.0",
+    title: "t",
+    profile: "anime",
+    cuts: [
+      {
+        cut: "1",
+        camera: [],
+        timing: [],
+        action: [],
+        sound: [],
+        position: [],
+        beat: [],
+        ext: [],
+        dialogues: [],
+        note: "nope",
+      },
+    ],
+  });
+  assert.ok(issues.some((i) => i.path === "cuts[0]" && i.message.includes("unexpected property")));
+});
+
+test("validateConteTable rejects dialogue with attrs (attrs stay on Medo)", () => {
+  const issues = validateConteTable({
+    version: "conte-table/0.0",
+    title: "t",
+    profile: "anime",
+    cuts: [
+      {
+        cut: "1",
+        camera: [],
+        timing: [],
+        action: [],
+        sound: [],
+        position: [],
+        beat: [],
+        ext: [],
+        dialogues: [{ speaker: "にか", text: "ねえ", attrs: { 表情: "微笑" } }],
+      },
+    ],
+  });
+  assert.ok(issues.some((i) => i.path.includes("dialogues") && i.message.includes("unexpected property")));
+});
+
+test("validateConteTable rejects camera when not an array", () => {
+  const issues = validateConteTable({
+    version: "conte-table/0.0",
+    title: "t",
+    profile: "anime",
+    cuts: [
+      {
+        cut: "1",
+        camera: "寄り",
+        timing: [],
+        action: [],
+        sound: [],
+        position: [],
+        beat: [],
+        ext: [],
+        dialogues: [],
+      },
+    ],
+  });
+  assert.ok(issues.some((i) => i.path === "cuts[0].camera"));
+});
+
+test("validateConteTable rejects non-object root", () => {
+  const issues = validateConteTable([]);
+  assert.ok(issues.some((i) => i.message.includes("must be an object")));
+});
+
 test("validateConteTable rejects cut missing dialogues", () => {
   const issues = validateConteTable({
     version: "conte-table/0.0",

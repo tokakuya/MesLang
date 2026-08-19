@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://meslang.dev/schema/conte-table.schema.json",
   "title": "ConteTable",
-  "description": "MesLang / Medo からの絵コンテ・カット表二次出力（実験・conte-table/0.0）。形チェックは箱の名前と型だけを見る（カット割りやカメラの良し悪しは見ない）。",
+  "description": "MesLang / Medo からの絵コンテ・カット表二次出力（実験・conte-table/0.0）。形チェックは箱の名前と型だけを見る（カット割りやカメラの良し悪しは見ない）。番号なしの cut（空文字）・空配列・cuts: [] は正しい縁。余分なキーは弾く。",
   "type": "object",
   "required": ["version", "title", "profile", "cuts"],
   "additionalProperties": false,
@@ -45,7 +45,7 @@
       "properties": {
         "cut": {
           "type": "string",
-          "description": "最初の %（frame）の値。番号なしのときは空文字。"
+          "description": "最初の %（frame）の値。番号なしのときは空文字（空文字も形チェックでは正しい）。"
         },
         "camera": {
           "type": "array",
@@ -77,6 +77,7 @@
         },
         "dialogues": {
           "type": "array",
+          "description": "空配列可（セリフなしカット）。speaker / text のみ。話者 attrs は載せない。",
           "items": { "$ref": "#/$defs/dialogueLine" }
         }
       }

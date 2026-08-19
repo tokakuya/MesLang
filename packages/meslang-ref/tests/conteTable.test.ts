@@ -66,6 +66,28 @@ test("toConteTable keeps %なし pieces in the same cut (manga multi-speech pane
   assert.match(cut6!.dialogues[1]!.text, /例の店/);
 });
 
+test("toConteTable uses empty cut id for pieces before the first %", () => {
+  const table = toConteTable(
+    parseMesLang(`profile: anime
+----
+#先にト書きだけ
+$環境音
+
+%CUT-1
+^寄り
+@にか
+はい
+`),
+  );
+  assert.equal(table.cuts.length, 2);
+  assert.equal(table.cuts[0]!.cut, "");
+  assert.deepEqual(table.cuts[0]!.action, ["先にト書きだけ"]);
+  assert.deepEqual(table.cuts[0]!.sound, ["環境音"]);
+  assert.equal(table.cuts[0]!.dialogues.length, 0);
+  assert.equal(table.cuts[1]!.cut, "CUT-1");
+  assert.deepEqual(table.cuts[1]!.dialogues, [{ speaker: "にか", text: "はい" }]);
+});
+
 test("examples/animation/station-conte.mes yields 5 stable cuts", () => {
   const text = readFileSync(join(root, "examples/animation/station-conte.mes"), "utf8");
   const table = toConteTable(parseMesLang(text));
