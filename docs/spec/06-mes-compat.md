@@ -154,7 +154,8 @@ const medo = parseMesLang(rewriteMesCompat(oldText));
 
 参照パーサの CLI では `--compat` で同じ変換をかけられます。  
 形が Medo として通るかは、あわせて `--validate` で確かめられます。  
-`--validate` が見るのは **箱の名前と型** だけです（話の良し悪しや、柱の直し残しは見ません → [用語集](05-glossary.md#形チェックと目視まぎらわしいことば)）。
+`--validate` が見るのは **箱の名前と型** だけです（話の良し悪しや、柱の直し残しは見ません → [用語集](05-glossary.md#形チェックと目視まぎらわしいことば)）。  
+結果を AI に読ませるときは [Medo の形チェック結果の読み方](04-ai-reading.md#medo-の形チェック結果の読み方) をどうぞ。
 
 ```bash
 cd packages/meslang-ref

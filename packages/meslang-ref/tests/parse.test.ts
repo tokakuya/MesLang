@@ -992,3 +992,53 @@ test("AI ガイド: カット表ひな形に番号なし行と形チェック結
   assert.match(shapeRead, /提案:/);
   assert.match(shapeRead, /不足:/);
 });
+
+test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先", () => {
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+
+  const writing = guide.slice(
+    guide.indexOf("## AI に MesLang を書かせるとき"),
+    guide.indexOf("## おすすめの実務の順番"),
+  );
+  assert.match(writing, /直前のデコレーターの直後/);
+  assert.match(writing, /属性のつき先/);
+
+  const gap = guide.slice(
+    guide.indexOf("### 不足情報の洗い出し"),
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+  );
+  assert.match(gap, /ピース先頭やセリフのあと/);
+  assert.match(gap, /属性に付いていない/);
+  assert.match(gap, /Medo の形チェック結果の読み方/);
+
+  const medoRead = guide.slice(
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+  );
+  assert.match(medoRead, /--validate/);
+  assert.match(medoRead, /箱の名前と型/);
+  assert.match(medoRead, /dialogue が空文字/);
+  assert.match(medoRead, /孤立した :key/);
+  assert.match(medoRead, /ピース直下への attrs/);
+  assert.match(medoRead, /kind unknown/);
+  assert.match(medoRead, /提案:/);
+  assert.match(medoRead, /不足:/);
+
+  const mangaWrite = guide.slice(
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+    guide.indexOf("### 不足情報の洗い出し"),
+  );
+  assert.match(mangaWrite, /@話者 の直後/);
+  assert.match(mangaWrite, /属性のつき先/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /Medo の形チェック結果の読み方/);
+
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const shapeSection = glossary.slice(
+    glossary.indexOf("## 形チェックと目視"),
+    glossary.indexOf("## カット表の形チェックの縁"),
+  );
+  assert.match(shapeSection, /medo-の形チェック結果の読み方/);
+  assert.match(shapeSection, /カット表の形チェック結果の読み方/);
+});
