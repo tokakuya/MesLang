@@ -959,10 +959,36 @@ test("AI ガイド: 全角行頭記号（％＾＊含む）を半角と同じと
   );
   assert.match(gap, /全角の行頭記号/);
   assert.match(gap, /未知の記号/);
+  assert.match(gap, /cut: ""/);
+  assert.match(gap, /形チェック結果の読み方/);
 
   const importHelp = guide.slice(
     guide.indexOf("### 旧 Mes 取り込みの手伝い"),
     guide.indexOf("### アニメ字コンテ起こし"),
   );
   assert.match(importHelp, /全角の行頭記号/);
+});
+
+test("AI ガイド: カット表ひな形に番号なし行と形チェック結果の読み方", () => {
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const tidy = guide.slice(
+    guide.indexOf("### カット表への整理"),
+    guide.indexOf("### カット表の形チェック結果の読み方"),
+  );
+  assert.match(tidy, /cut: ""/);
+  assert.match(tidy, /attrs/);
+  assert.match(tidy, /番号なし/);
+  assert.match(tidy, /Markdown／CSV/);
+
+  const shapeRead = guide.slice(
+    guide.indexOf("### カット表の形チェック結果の読み方"),
+    guide.indexOf("### アニメ原稿を書かせるとき"),
+  );
+  assert.match(shapeRead, /--conte --validate/);
+  assert.match(shapeRead, /箱の名前と型/);
+  assert.match(shapeRead, /cut: ""/);
+  assert.match(shapeRead, /空配列/);
+  assert.match(shapeRead, /dialogues への attrs/);
+  assert.match(shapeRead, /提案:/);
+  assert.match(shapeRead, /不足:/);
 });
