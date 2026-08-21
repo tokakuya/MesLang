@@ -648,7 +648,7 @@ test("examples/audio/station.mes: $ / ! / & / :声質 coexist in 改札を出て
 test("examples/audio/station.mes: ランチへ has dialogue-less sound beat", () => {
   const text = readFileSync(join(root, "examples/audio/station.mes"), "utf8");
   const medo = parseMesLang(text);
-  assert.equal(medo.body.sections.length, 3);
+  assert.ok(medo.body.sections.length >= 3);
   assert.equal(medo.body.sections[2]!.title, "ランチへ");
   const pieces = medo.body.sections[2]!.pieces;
   assert.ok(pieces.length >= 4);
@@ -672,6 +672,34 @@ test("examples/audio/station.mes: ランチへ has dialogue-less sound beat", ()
   assert.ok(reply!.decorators.some((d) => d.kind === "timing" && d.value === "0:10"));
 });
 
+test("examples/audio/station.mes: 店の前 arrives with door chime", () => {
+  const text = readFileSync(join(root, "examples/audio/station.mes"), "utf8");
+  const medo = parseMesLang(text);
+  assert.equal(medo.body.sections.length, 4);
+  assert.equal(medo.body.sections[3]!.title, "店の前");
+  const pieces = medo.body.sections[3]!.pieces;
+  assert.ok(pieces.length >= 3);
+
+  const arrive = pieces.find((p) => p.dialogue.trim() === "");
+  assert.ok(arrive);
+  assert.ok(arrive!.decorators.some((d) => d.kind === "sound" && d.value.includes("看板")));
+  assert.ok(arrive!.decorators.some((d) => d.kind === "timing" && d.value === "約1秒"));
+  assert.ok(arrive!.decorators.some((d) => d.kind === "comment" && d.value.includes("入り口")));
+
+  const door = pieces.find((p) => p.dialogue.includes("着きました"));
+  assert.ok(door);
+  assert.equal(firstCharacter(door!)?.attrs["表情"], "微笑");
+  assert.equal(firstCharacter(door!)?.attrs["声質"], "普通");
+  assert.ok(door!.decorators.some((d) => d.kind === "sound" && d.value === "ドアチャイム"));
+  assert.ok(door!.decorators.some((d) => d.kind === "timing" && d.value === "0:02"));
+
+  const trapped = pieces.find((p) => p.dialogue.includes("逃げ場がない"));
+  assert.ok(trapped);
+  assert.equal(firstCharacter(trapped!)?.attrs["表情"], "苦笑い");
+  assert.equal(firstCharacter(trapped!)?.attrs["声質"], "少し低め");
+  assert.ok(trapped!.decorators.some((d) => d.kind === "sound" && d.value.includes("店内")));
+  assert.ok(trapped!.decorators.some((d) => d.kind === "position" && d.value === "近づく"));
+});
 test("examples/manga/station-name.mes parses frames", () => {
   const text = readFileSync(join(root, "examples/manga/station-name.mes"), "utf8");
   const medo = parseMesLang(text);
