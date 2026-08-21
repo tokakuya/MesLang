@@ -705,10 +705,11 @@ test("examples/manga/station-name.mes parses frames", () => {
   const medo = parseMesLang(text);
   const pieces = medo.body.sections[0]!.pieces;
   const frames = pieces.flatMap((p) => p.decorators).filter((d) => d.kind === "frame");
-  assert.ok(frames.length >= 8);
+  assert.ok(frames.length >= 9);
   assert.equal(frames.filter((d) => d.value === "6").length, 1);
   assert.equal(frames.filter((d) => d.value === "7").length, 1);
   assert.equal(frames.filter((d) => d.value === "8").length, 1);
+  assert.equal(frames.filter((d) => d.value === "9").length, 1);
   // %6: same panel, two pieces (second has no %)
   const multiStart = pieces.findIndex((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "6"));
   assert.ok(multiStart >= 0);
@@ -722,7 +723,7 @@ test("examples/manga/station-name.mes parses frames", () => {
     second.decorators.some((d) => d.kind === "frame"),
     false,
   );
-  // %7 ナレ / %8 外注ぎ
+  // %7 ナレ / %8 外注ぎ / %9 入店（音声「店の前」の続き）
   const nare = pieces.find((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "7"))!;
   const nareCh = firstCharacter(nare)!;
   assert.equal(nareCh.value, "ナレ");
@@ -735,6 +736,15 @@ test("examples/manga/station-name.mes parses frames", () => {
   assert.equal(sotoCh.attrs["表情"], "微笑");
   assert.equal(sotoCh.attrs["姿勢"], "店内から");
   assert.match(soto.dialogue, /いらっしゃいませ/);
+  const enter = pieces.find((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "9"))!;
+  const enterCh = firstCharacter(enter)!;
+  assert.equal(enterCh.value, "にか");
+  assert.equal(enterCh.attrs["表情"], "苦笑い");
+  assert.equal(enterCh.attrs["姿勢"], "戸に手");
+  assert.equal(enterCh.attrs["吹き出し"], undefined);
+  assert.match(enter.dialogue, /逃げ場がないな/);
+  assert.ok(enter.decorators.some((d) => d.kind === "sound" && d.value.includes("ドアチャイム")));
+  assert.ok(enter.decorators.some((d) => d.kind === "comment" && d.value.includes("店の前")));
 });
 
 test("glossary: コマとピース — same % keeps following pieces in one panel", () => {
@@ -930,6 +940,7 @@ test("AI ネーム起こしガイド: cafe-pose %8–%9 / silent-panels %7–%8 
   assert.match(nameRaising, /同じコマの二人セリフ/);
   assert.match(nameRaising, /ナレ/);
   assert.match(nameRaising, /外注ぎ/);
+  assert.match(nameRaising, /入店の続き/);
   assert.match(nameRaising, /コマとピース/);
   assert.match(nameRaising, /勝手にセリフを足さない/);
 
@@ -962,6 +973,9 @@ test("AI ネーム起こしガイド: cafe-pose %8–%9 / silent-panels %7–%8 
   const stationPieces = station.body.sections[0]!.pieces;
   assert.equal(firstCharacter(stationPieces.find((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "7"))!)!.attrs["吹き出し"], "ナレ");
   assert.equal(firstCharacter(stationPieces.find((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "8"))!)!.attrs["吹き出し"], "外注ぎ");
+  const stationEnter = stationPieces.find((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "9"))!;
+  assert.equal(firstCharacter(stationEnter)!.attrs["吹き出し"], undefined);
+  assert.match(stationEnter.dialogue, /逃げ場がないな/);
 });
 
 test("AI ガイド: 全角行頭記号（％＾＊含む）を半角と同じと明記", () => {
