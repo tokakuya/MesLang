@@ -700,6 +700,56 @@ test("examples/audio/station.mes: 店の前 arrives with door chime", () => {
   assert.ok(trapped!.decorators.some((d) => d.kind === "sound" && d.value.includes("店内")));
   assert.ok(trapped!.decorators.some((d) => d.kind === "position" && d.value === "近づく"));
 });
+
+test("glossary: 到着の拍 — audio 店の前 vs manga %8–%9", () => {
+  // docs/spec/05-glossary.md「到着の拍（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 到着の拍"),
+    glossary.indexOf("## コマとカット"),
+  );
+  assert.match(section, /到着の拍/);
+  assert.match(section, /店の前/);
+  assert.match(section, /外注ぎ/);
+  assert.match(section, /入店/);
+  assert.match(section, /%8/);
+  assert.match(section, /%9/);
+  assert.match(section, /吹き出し種別/);
+  assert.match(section, /音だけの間/);
+
+  const audio = parseMesLang(readFileSync(join(root, "examples/audio/station.mes"), "utf8"));
+  assert.equal(audio.body.sections[3]!.title, "店の前");
+  assert.ok(audio.body.sections[3]!.pieces.some((p) => p.dialogue.includes("逃げ場がない")));
+
+  const manga = parseMesLang(readFileSync(join(root, "examples/manga/station-name.mes"), "utf8"));
+  const pieces = manga.body.sections[0]!.pieces;
+  const outside = pieces.find((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "8"))!;
+  const enter = pieces.find((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "9"))!;
+  assert.equal(firstCharacter(outside)!.attrs["吹き出し"], "外注ぎ");
+  assert.equal(firstCharacter(enter)!.attrs["吹き出し"], undefined);
+  assert.match(enter.dialogue, /逃げ場がない/);
+  assert.ok(enter.decorators.some((d) => d.kind === "sound" && d.value.includes("ドアチャイム")));
+  assert.ok(enter.decorators.some((d) => d.kind === "comment" && d.value.includes("店の前")));
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /到着の拍/);
+  assert.match(audioReadme, /用語集（到着の拍）/);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, /到着の拍/);
+  assert.match(mangaReadme, /%8`–`%9/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /到着の拍/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  assert.match(guide, /到着の拍/);
+  assert.match(guide, /用語集（到着の拍）/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /到着の拍/);
+});
+
 test("examples/manga/station-name.mes parses frames", () => {
   const text = readFileSync(join(root, "examples/manga/station-name.mes"), "utf8");
   const medo = parseMesLang(text);
@@ -940,7 +990,8 @@ test("AI ネーム起こしガイド: cafe-pose %8–%9 / silent-panels %7–%8 
   assert.match(nameRaising, /同じコマの二人セリフ/);
   assert.match(nameRaising, /ナレ/);
   assert.match(nameRaising, /外注ぎ/);
-  assert.match(nameRaising, /入店の続き/);
+  assert.match(nameRaising, /入店/);
+  assert.match(nameRaising, /到着の拍/);
   assert.match(nameRaising, /コマとピース/);
   assert.match(nameRaising, /勝手にセリフを足さない/);
 
