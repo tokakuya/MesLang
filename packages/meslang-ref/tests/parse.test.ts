@@ -756,7 +756,7 @@ test("glossary: 入店 vs ふつうのセリフに戻る — both omit 吹き出
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
   const section = glossary.slice(
     glossary.indexOf("## 入店とふつうのセリフに戻る"),
-    glossary.indexOf("## コマとカット"),
+    glossary.indexOf("## 吹き出し種別"),
   );
   assert.match(section, /入店/);
   assert.match(section, /ふつうのセリフに戻る/);
@@ -766,6 +766,7 @@ test("glossary: 入店 vs ふつうのセリフに戻る — both omit 吹き出
   assert.match(section, /心の声/);
   assert.match(section, /予約語/);
   assert.match(section, /到着の拍/);
+  assert.match(section, /吹き出し種別/);
 
   const station = parseMesLang(readFileSync(join(root, "examples/manga/station-name.mes"), "utf8"));
   const cafe = parseMesLang(readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8"));
@@ -800,6 +801,70 @@ test("glossary: 入店 vs ふつうのセリフに戻る — both omit 吹き出
 
   const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
   assert.match(overview, /入店とふつうのセリフに戻る/);
+});
+
+test("glossary: 吹き出し種別 — 心の声 / ナレ / 外注ぎ; speaker ≠ kind", () => {
+  // docs/spec/05-glossary.md「吹き出し種別（心の声・ナレ・外注ぎ）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 吹き出し種別"),
+    glossary.indexOf("## コマとカット"),
+  );
+  assert.match(section, /心の声/);
+  assert.match(section, /ナレ/);
+  assert.match(section, /外注ぎ/);
+  assert.match(section, /ふつうのセリフ/);
+  assert.match(section, /話者名/);
+  assert.match(section, /@ナレ/);
+  assert.match(section, /種別/);
+
+  const station = parseMesLang(readFileSync(join(root, "examples/manga/station-name.mes"), "utf8"));
+  const cafe = parseMesLang(readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8"));
+  const pieces = station.body.sections[0]!.pieces;
+  const heartBracket = pieces.find((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "4"),
+  )!;
+  const nare = pieces.find((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "7"))!;
+  const soto = pieces.find((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "8"))!;
+  const enter = pieces.find((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "9"))!;
+  const heartAttr = cafe.body.sections[0]!.pieces.find((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "8"),
+  )!;
+
+  assert.equal(firstCharacter(heartBracket)!.attrs["吹き出し"], "心の声");
+  assert.equal(firstCharacter(nare)!.value, "ナレ");
+  assert.equal(firstCharacter(nare)!.attrs["吹き出し"], "ナレ");
+  assert.equal(firstCharacter(soto)!.attrs["吹き出し"], "外注ぎ");
+  assert.equal(firstCharacter(enter)!.attrs["吹き出し"], undefined);
+  assert.equal(firstCharacter(heartAttr)!.attrs["吹き出し"], "心の声");
+
+  // Speaker name alone is not the kind: @店員 + [外注ぎ]
+  assert.equal(firstCharacter(soto)!.value, "店員");
+  assert.match(nare.dialogue, /夕方の駅前/);
+  assert.match(soto.dialogue, /いらっしゃいませ/);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, /吹き出し種別/);
+  assert.match(mangaReadme, /話者名/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /用語集（吹き出し種別）/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  assert.match(guide, /用語集（吹き出し種別）/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /吹き出し種別/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /吹き出し種別/);
+  assert.match(adrReadme, /クローズ/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  const glossaryWont = glossary.slice(glossary.indexOf("## 採用しない"));
+  assert.match(glossaryWont, /カット表の Markdown／CSV/);
+  assert.match(backlog, /カット表の Markdown／CSV/);
+  assert.match(backlog, /吹き出し種別/);
 });
 
 test("examples/manga/station-name.mes parses frames", () => {
