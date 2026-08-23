@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { doFlat, firstCharacter, parseMesLang } from "../src/parse.ts";
+import { rewriteMesCompat } from "../src/mesCompat.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
@@ -865,6 +866,63 @@ test("glossary: 吹き出し種別 — 心の声 / ナレ / 外注ぎ; speaker �
   assert.match(glossaryWont, /カット表の Markdown／CSV/);
   assert.match(backlog, /カット表の Markdown／CSV/);
   assert.match(backlog, /吹き出し種別/);
+});
+
+test("glossary: 取り込みの三段階 — machine vs human boundary", () => {
+  // docs/spec/05-glossary.md「取り込みの三段階（機械変換と人手）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 取り込みの三段階"),
+    glossary.indexOf("## 記号の呼び名"),
+  );
+  assert.match(section, /機械変換/);
+  assert.match(section, /人手/);
+  assert.match(section, /mes-import-before/);
+  assert.match(section, /mes-import-compat-only/);
+  assert.match(section, /mes-import-after/);
+  assert.match(section, /rewriteMesCompat|--compat/);
+  assert.match(section, /○/);
+  assert.match(section, /◯/);
+  assert.match(section, /〇/);
+  assert.match(section, /オープニング|==/);
+  assert.match(section, /声質/);
+
+  const before = readFileSync(join(root, "examples/audio/mes-import-before.mes"), "utf8");
+  const compatOnly = readFileSync(join(root, "examples/audio/mes-import-compat-only.mes"), "utf8");
+  const after = readFileSync(join(root, "examples/audio/mes-import-after.mes"), "utf8");
+  assert.equal(rewriteMesCompat(before), compatOnly);
+  assert.match(compatOnly, /^#オープニング$/m);
+  assert.match(compatOnly, /^#駅前$/m);
+  assert.match(compatOnly, /\$ヒソヒソ声/);
+  assert.doesNotMatch(compatOnly, /^==/m);
+  assert.match(after, /^== オープニング$/m);
+  assert.match(after, /:声質/);
+  assert.doesNotMatch(after, /\$ヒソヒソ声/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /取り込みの三段階/);
+
+  const compatGuide = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compatGuide, /用語集（取り込みの三段階）/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /用語集（取り込みの三段階）/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  assert.match(guide, /用語集（取り込みの三段階）/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /用語集（取り込みの三段階）/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /取り込みの三段階/);
+  assert.match(adrReadme, /クローズ対象なし/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /取り込みの三段階/);
+  const glossaryWont = glossary.slice(glossary.indexOf("## 採用しない"));
+  assert.match(glossaryWont, /カット表の Markdown／CSV/);
+  assert.match(backlog, /カット表の Markdown／CSV/);
 });
 
 test("examples/manga/station-name.mes parses frames", () => {
