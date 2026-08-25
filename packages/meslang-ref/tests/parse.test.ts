@@ -804,8 +804,9 @@ test("glossary: 到着の拍と店内 — 席について is after arrival", () 
   assert.match(section, /店内の続き/);
   assert.match(section, /店内BGM/);
   assert.match(section, /入店/);
-  assert.match(section, /欠落/);
+  assert.match(section, /%10/);
   assert.match(section, /到着の拍/);
+  assert.doesNotMatch(section, /欠落/);
 
   const audio = parseMesLang(readFileSync(join(root, "examples/audio/station.mes"), "utf8"));
   assert.equal(audio.body.sections[4]!.title, "席について");
@@ -816,32 +817,67 @@ test("glossary: 到着の拍と店内 — 席について is after arrival", () 
     ),
   );
 
+  const manga = parseMesLang(readFileSync(join(root, "examples/manga/station-name.mes"), "utf8"));
+  const pieces = manga.body.sections[0]!.pieces;
+  const interiorStart = pieces.findIndex((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "10"),
+  );
+  assert.ok(interiorStart >= 0);
+  const seat = pieces[interiorStart]!;
+  const heavy = pieces[interiorStart + 1]!;
+  assert.equal(firstCharacter(seat)?.value, "こいと");
+  assert.equal(firstCharacter(seat)?.attrs["表情"], "微笑");
+  assert.equal(firstCharacter(seat)?.attrs["姿勢"], "椅子を引く");
+  assert.equal(firstCharacter(seat)?.attrs["吹き出し"], undefined);
+  assert.match(seat.dialogue, /窓際/);
+  assert.ok(seat.decorators.some((d) => d.kind === "sound" && d.value.includes("店内BGM")));
+  assert.ok(seat.decorators.some((d) => d.kind === "comment" && d.value.includes("席について")));
+  assert.equal(firstCharacter(heavy)?.value, "にか");
+  assert.match(heavy.dialogue, /足が重い/);
+  assert.equal(
+    heavy.decorators.some((d) => d.kind === "frame"),
+    false,
+  );
+
   const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
   assert.match(overview, /到着の拍と店内/);
+  assert.match(overview, /%10/);
 
   const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
   assert.match(profiles, /用語集（到着の拍と店内）/);
+  assert.match(profiles, /%10/);
 
   const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
   assert.match(guide, /用語集（到着の拍と店内）/);
+  assert.match(guide, /%10/);
 
   const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
   assert.match(audioReadme, /用語集（到着の拍と店内）/);
+  assert.match(audioReadme, /%10/);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, /%10/);
+  assert.match(mangaReadme, /席について/);
+  assert.match(mangaReadme, /用語集（到着の拍と店内）/);
 
   const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
   assert.match(adrReadme, /席について/);
   assert.match(adrReadme, /到着の拍と店内/);
+  assert.match(adrReadme, /%10/);
 
   const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
-  assert.match(changelog, /0\.0\.65/);
+  assert.match(changelog, /0\.0\.66/);
+  assert.match(changelog, /%10/);
   assert.match(changelog, /席について/);
 
   const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
   assert.match(roadmap, /席について/);
   assert.match(roadmap, /到着の拍と店内/);
+  assert.match(roadmap, /%10/);
 
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /席について/);
+  assert.match(backlog, /%10/);
 });
 
 test("glossary: 入店 vs ふつうのセリフに戻る — both omit 吹き出し, roles differ", () => {
@@ -1022,11 +1058,12 @@ test("examples/manga/station-name.mes parses frames", () => {
   const medo = parseMesLang(text);
   const pieces = medo.body.sections[0]!.pieces;
   const frames = pieces.flatMap((p) => p.decorators).filter((d) => d.kind === "frame");
-  assert.ok(frames.length >= 9);
+  assert.ok(frames.length >= 10);
   assert.equal(frames.filter((d) => d.value === "6").length, 1);
   assert.equal(frames.filter((d) => d.value === "7").length, 1);
   assert.equal(frames.filter((d) => d.value === "8").length, 1);
   assert.equal(frames.filter((d) => d.value === "9").length, 1);
+  assert.equal(frames.filter((d) => d.value === "10").length, 1);
   // %6: same panel, two pieces (second has no %)
   const multiStart = pieces.findIndex((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "6"));
   assert.ok(multiStart >= 0);
@@ -1040,7 +1077,7 @@ test("examples/manga/station-name.mes parses frames", () => {
     second.decorators.some((d) => d.kind === "frame"),
     false,
   );
-  // %7 ナレ / %8 外注ぎ / %9 入店（音声「店の前」の続き）
+  // %7 ナレ / %8 外注ぎ / %9 入店（音声「店の前」の続き）/ %10 店内（音声「席について」）
   const nare = pieces.find((p) => p.decorators.some((d) => d.kind === "frame" && d.value === "7"))!;
   const nareCh = firstCharacter(nare)!;
   assert.equal(nareCh.value, "ナレ");
@@ -1062,6 +1099,24 @@ test("examples/manga/station-name.mes parses frames", () => {
   assert.match(enter.dialogue, /逃げ場がないな/);
   assert.ok(enter.decorators.some((d) => d.kind === "sound" && d.value.includes("ドアチャイム")));
   assert.ok(enter.decorators.some((d) => d.kind === "comment" && d.value.includes("店の前")));
+  const interiorStart = pieces.findIndex((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "10"),
+  );
+  assert.ok(interiorStart >= 0);
+  const seat = pieces[interiorStart]!;
+  const heavy = pieces[interiorStart + 1]!;
+  assert.equal(firstCharacter(seat)?.value, "こいと");
+  assert.equal(firstCharacter(seat)?.attrs["表情"], "微笑");
+  assert.equal(firstCharacter(seat)?.attrs["姿勢"], "椅子を引く");
+  assert.match(seat.dialogue, /窓際/);
+  assert.ok(seat.decorators.some((d) => d.kind === "sound" && d.value.includes("店内BGM")));
+  assert.ok(seat.decorators.some((d) => d.kind === "comment" && d.value.includes("席について")));
+  assert.equal(firstCharacter(heavy)?.value, "にか");
+  assert.match(heavy.dialogue, /足が重い/);
+  assert.equal(
+    heavy.decorators.some((d) => d.kind === "frame"),
+    false,
+  );
 });
 
 test("glossary: コマとピース — same % keeps following pieces in one panel", () => {
@@ -1257,6 +1312,9 @@ test("AI ネーム起こしガイド: cafe-pose %8–%9 / silent-panels %7–%8 
   assert.match(nameRaising, /同じコマの二人セリフ/);
   assert.match(nameRaising, /ナレ/);
   assert.match(nameRaising, /外注ぎ/);
+  assert.match(nameRaising, /%10/);
+  assert.match(nameRaising, /店内の続き/);
+  assert.match(nameRaising, /到着の拍と店内/);
   assert.match(nameRaising, /入店/);
   assert.match(nameRaising, /到着の拍/);
   assert.match(nameRaising, /入店とふつうのセリフに戻る/);
