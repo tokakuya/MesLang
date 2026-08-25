@@ -889,12 +889,14 @@ test("glossary: 入店 vs ふつうのセリフに戻る — both omit 吹き出
   );
   assert.match(section, /入店/);
   assert.match(section, /ふつうのセリフに戻る/);
+  assert.match(section, /任せたあと/);
   assert.match(section, /station-name/);
   assert.match(section, /cafe-pose/);
   assert.match(section, /外注ぎ/);
   assert.match(section, /心の声/);
   assert.match(section, /予約語/);
   assert.match(section, /到着の拍/);
+  assert.match(section, /店内の続き/);
   assert.match(section, /吹き出し種別/);
 
   const station = parseMesLang(readFileSync(join(root, "examples/manga/station-name.mes"), "utf8"));
@@ -905,31 +907,62 @@ test("glossary: 入店 vs ふつうのセリフに戻る — both omit 吹き出
   const returnSpeech = cafe.body.sections[0]!.pieces.find((p) =>
     p.decorators.some((d) => d.kind === "frame" && d.value === "9"),
   )!;
+  const afterReset = cafe.body.sections[0]!.pieces.find((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "10"),
+  )!;
   const heart = cafe.body.sections[0]!.pieces.find((p) =>
     p.decorators.some((d) => d.kind === "frame" && d.value === "8"),
   )!;
   assert.equal(firstCharacter(enter)!.attrs["吹き出し"], undefined);
   assert.equal(firstCharacter(returnSpeech)!.attrs["吹き出し"], undefined);
+  assert.equal(firstCharacter(afterReset)!.attrs["吹き出し"], undefined);
   assert.equal(firstCharacter(heart)!.attrs["吹き出し"], "心の声");
   assert.match(enter.dialogue, /逃げ場がない/);
   assert.match(returnSpeech.dialogue, /任せた/);
+  assert.match(afterReset.dialogue, /ショートケーキ/);
   assert.ok(enter.decorators.some((d) => d.kind === "comment" && d.value.includes("店の前")));
   assert.ok(
     returnSpeech.decorators.some((d) => d.kind === "comment" && d.value.includes("ふつうのセリフ")),
   );
+  assert.ok(
+    afterReset.decorators.some((d) => d.kind === "comment" && d.value.includes("注文を決める")),
+  );
+  // %10 のあとに空行で続く二人目（同じコマ・% なし）
+  const afterResetIdx = cafe.body.sections[0]!.pieces.indexOf(afterReset);
+  const secondInFrame = cafe.body.sections[0]!.pieces[afterResetIdx + 1]!;
+  assert.ok(!secondInFrame.decorators.some((d) => d.kind === "frame"));
+  assert.equal(firstCharacter(secondInFrame)!.attrs["吹き出し"], undefined);
+  assert.match(secondInFrame.dialogue, /それでいい/);
 
   const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
   assert.match(mangaReadme, /入店とふつうのセリフに戻る/);
+  assert.match(mangaReadme, /任せたあと/);
 
   const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
   assert.match(profiles, /入店とふつうのセリフに戻る/);
+  assert.match(profiles, /任せたあと/);
 
   const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
   assert.match(guide, /入店とふつうのセリフに戻る/);
   assert.match(guide, /用語集（入店とふつうのセリフに戻る）/);
+  assert.match(guide, /任せたあと/);
 
   const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
   assert.match(overview, /入店とふつうのセリフに戻る/);
+  assert.match(overview, /任せたあと/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /任せたあと/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.67/);
+  assert.match(changelog, /任せたあと/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /cafe-pose\.mes.*%10/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /cafe-pose `%10`/);
 });
 
 test("glossary: 吹き出し種別 — 心の声 / ナレ / 外注ぎ; speaker ≠ kind", () => {
@@ -1242,11 +1275,11 @@ test("examples/manga/cafe-pose.mes: 表情 and 姿勢 on speakers", () => {
   assert.equal(medo.header.title, "カフェ・表情と姿勢の練習");
   assert.equal(medo.body.sections[0]!.title, "1ページ");
   const pieces = medo.body.sections[0]!.pieces;
-  assert.ok(pieces.length >= 9);
+  assert.ok(pieces.length >= 11);
   const withAttrs = pieces
     .map((p) => firstCharacter(p))
     .filter((ch): ch is NonNullable<typeof ch> => ch != null && Object.keys(ch.attrs).length > 0);
-  assert.ok(withAttrs.length >= 7);
+  assert.ok(withAttrs.length >= 9);
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "ほっとした" && ch.attrs["姿勢"] === "椅子に沈む"));
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "微笑" && ch.attrs["姿勢"] === "肘をついて顎を支える"));
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "困り" && ch.attrs["姿勢"] === "前のめり"));
@@ -1254,6 +1287,8 @@ test("examples/manga/cafe-pose.mes: 表情 and 姿勢 on speakers", () => {
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "苦笑い" && ch.attrs["姿勢"] === "後ずさり気味"));
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "にやり" && ch.attrs["姿勢"] === "指を一本立てる"));
   assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "照れ" && ch.attrs["姿勢"] === "メニューに視線を落とす"));
+  assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "にやり" && ch.attrs["姿勢"] === "メニューを閉じる"));
+  assert.ok(withAttrs.some((ch) => ch.attrs["表情"] === "ほっとした" && ch.attrs["姿勢"] === "うなずく"));
   const reaction = pieces[6]!;
   assert.ok(reaction.decorators.some((d) => d.kind === "frame" && d.value === "7"));
   assert.ok(reaction.decorators.some((d) => d.kind === "comment" && d.value.includes("くすっと笑う")));
@@ -1273,6 +1308,19 @@ test("examples/manga/cafe-pose.mes: 表情 and 姿勢 on speakers", () => {
   assert.equal(spokenCh.attrs["姿勢"], "メニューに視線を落とす");
   assert.equal(spokenCh.attrs["吹き出し"], undefined);
   assert.match(spoken.dialogue, /じゃあ、任せた/);
+  const order = pieces[9]!;
+  assert.ok(order.decorators.some((d) => d.kind === "frame" && d.value === "10"));
+  const orderCh = firstCharacter(order)!;
+  assert.equal(orderCh.value, "こいと");
+  assert.equal(orderCh.attrs["表情"], "にやり");
+  assert.equal(orderCh.attrs["姿勢"], "メニューを閉じる");
+  assert.equal(orderCh.attrs["吹き出し"], undefined);
+  assert.match(order.dialogue, /ショートケーキ/);
+  const orderReply = pieces[10]!;
+  assert.ok(!orderReply.decorators.some((d) => d.kind === "frame"));
+  assert.equal(firstCharacter(orderReply)!.value, "にか");
+  assert.equal(firstCharacter(orderReply)!.attrs["吹き出し"], undefined);
+  assert.match(orderReply.dialogue, /それでいい/);
 });
 
 test("manga: :吹き出し and 3rd bracket land on the same key", () => {
@@ -1294,7 +1342,7 @@ test("manga: :吹き出し and 3rd bracket land on the same key", () => {
   assert.deepEqual(a.attrs, b.attrs);
 });
 
-test("AI ネーム起こしガイド: cafe-pose %8–%9 / silent-panels %7–%8 fixtures stay linked", () => {
+test("AI ネーム起こしガイド: cafe-pose %8–%10 / silent-panels %7–%8 fixtures stay linked", () => {
   const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
   const nameRaising = guide.slice(
     guide.indexOf("### 漫画ネーム起こし"),
@@ -1304,7 +1352,9 @@ test("AI ネーム起こしガイド: cafe-pose %8–%9 / silent-panels %7–%8 
   assert.match(nameRaising, /cafe-pose\.mes/);
   assert.match(nameRaising, /%8/);
   assert.match(nameRaising, /%9/);
+  assert.match(nameRaising, /%10/);
   assert.match(nameRaising, /ふつうのセリフに戻る/);
+  assert.match(nameRaising, /任せたあと/);
   assert.match(nameRaising, /silent-panels\.mes/);
   assert.match(nameRaising, /%7/);
   assert.match(nameRaising, /声を出す直前/);
@@ -1312,7 +1362,6 @@ test("AI ネーム起こしガイド: cafe-pose %8–%9 / silent-panels %7–%8 
   assert.match(nameRaising, /同じコマの二人セリフ/);
   assert.match(nameRaising, /ナレ/);
   assert.match(nameRaising, /外注ぎ/);
-  assert.match(nameRaising, /%10/);
   assert.match(nameRaising, /店内の続き/);
   assert.match(nameRaising, /到着の拍と店内/);
   assert.match(nameRaising, /入店/);
@@ -1326,10 +1375,18 @@ test("AI ネーム起こしガイド: cafe-pose %8–%9 / silent-panels %7–%8 
   const cafeThought = cafePieces[7]!;
   assert.ok(cafeThought.decorators.some((d) => d.kind === "frame" && d.value === "8"));
   assert.equal(firstCharacter(cafeThought)!.attrs["吹き出し"], "心の声");
-  const cafeSpoken = cafePieces.at(-1)!;
-  assert.ok(cafeSpoken.decorators.some((d) => d.kind === "frame" && d.value === "9"));
+  const cafeSpoken = cafePieces.find((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "9"),
+  )!;
   assert.equal(firstCharacter(cafeSpoken)!.attrs["吹き出し"], undefined);
   assert.match(cafeSpoken.dialogue, /じゃあ、任せた/);
+  const cafeOrder = cafePieces.find((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "10"),
+  )!;
+  assert.equal(firstCharacter(cafeOrder)!.attrs["吹き出し"], undefined);
+  assert.match(cafeOrder.dialogue, /ショートケーキ/);
+  const cafeOrderIdx = cafePieces.indexOf(cafeOrder);
+  assert.match(cafePieces[cafeOrderIdx + 1]!.dialogue, /それでいい/);
 
   const silent = parseMesLang(readFileSync(join(root, "examples/manga/silent-panels.mes"), "utf8"));
   const silentPieces = silent.body.sections[0]!.pieces;
