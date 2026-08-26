@@ -270,13 +270,14 @@ test("glossary: 形チェック means 箱の名前と型 (not 欄 / not quality)
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
   const section = glossary.slice(
     glossary.indexOf("## 形チェックと目視"),
-    glossary.indexOf("## カット表の形チェックの縁"),
+    glossary.indexOf("## Medo の形チェックの縁"),
   );
   assert.match(section, /箱の名前と型/);
   assert.match(section, /目視/);
   assert.match(section, /不足の洗い出し/);
   assert.match(section, /欄の名前と型/);
   assert.match(section, /品質チェック/);
+  assert.match(section, /Medo でよく迷う縁/);
 
   const medoSchema = readFileSync(join(root, "schema/medo.schema.json"), "utf8");
   const conteSchema = readFileSync(join(root, "schema/conte-table.schema.json"), "utf8");
@@ -288,6 +289,53 @@ test("glossary: 形チェック means 箱の名前と型 (not 欄 / not quality)
   const conteDoc = readFileSync(join(root, "docs/spec/07-conte-table.md"), "utf8");
   assert.match(conteDoc, /箱の名前と型/);
   assert.doesNotMatch(conteDoc, /欄の名前と型/);
+});
+
+test("glossary: Medo の形チェックの縁 — empty arrays and dialogue are valid", () => {
+  // docs/spec/05-glossary.md「Medo の形チェックの縁（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## Medo の形チェックの縁"),
+    glossary.indexOf("## カット表の形チェックの縁"),
+  );
+  assert.match(section, /空のセクション列/);
+  assert.match(section, /sections: \[\]/);
+  assert.match(section, /空のピース列/);
+  assert.match(section, /pieces: \[\]/);
+  assert.match(section, /空のデコレーター列/);
+  assert.match(section, /decorators: \[\]/);
+  assert.match(section, /空セリフ/);
+  assert.match(section, /dialogue: ""/);
+  assert.match(section, /attrs: \{\}/);
+  assert.match(section, /余分なキー/);
+  assert.match(section, /ピース直下/);
+  assert.match(section, /rawMark/);
+  assert.match(section, /kind `unknown`/);
+  assert.match(section, /%10/);
+  assert.match(section, /コマとピース/);
+
+  const medoSchema = readFileSync(join(root, "schema/medo.schema.json"), "utf8");
+  assert.match(medoSchema, /空の sections/);
+  assert.match(medoSchema, /正しい縁/);
+  assert.match(medoSchema, /rawMark 欠け/);
+  assert.match(medoSchema, /unknown/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  assert.match(guide, /Medo の形チェックの縁/);
+  assert.match(guide, /pieces \/ sections が \[\]/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /Medo の形チェックの縁/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /Medo の形チェックの縁/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /Medo の形チェックの縁/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.68/);
+  assert.match(changelog, /Medo の形チェックの縁/);
 });
 
 test("glossary: カット表の形チェックの縁 — empty cut id is valid", () => {
@@ -1513,8 +1561,9 @@ test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先"
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
   const shapeSection = glossary.slice(
     glossary.indexOf("## 形チェックと目視"),
-    glossary.indexOf("## カット表の形チェックの縁"),
+    glossary.indexOf("## Medo の形チェックの縁"),
   );
   assert.match(shapeSection, /medo-の形チェック結果の読み方/);
   assert.match(shapeSection, /カット表の形チェック結果の読み方/);
+  assert.match(shapeSection, /Medo でよく迷う縁/);
 });

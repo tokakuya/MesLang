@@ -155,6 +155,134 @@ test("validateMedo accepts schema kind unknown (hand-built Medo escape hatch)", 
   assert.deepEqual(issues, []);
 });
 
+test("validateMedo accepts empty sections / pieces / decorators / dialogue (shape edges)", () => {
+  assert.deepEqual(
+    validateMedo({
+      version: "medo/0.0",
+      header: { profile: "audio", raw: "" },
+      body: { sections: [] },
+    }),
+    [],
+  );
+  assert.deepEqual(
+    validateMedo({
+      version: "medo/0.0",
+      header: { profile: "manga", raw: "" },
+      body: {
+        sections: [{ title: "無言ページ", pieces: [] }],
+      },
+    }),
+    [],
+  );
+  assert.deepEqual(
+    validateMedo({
+      version: "medo/0.0",
+      header: { profile: "manga", raw: "" },
+      body: {
+        sections: [
+          {
+            title: "",
+            pieces: [{ dialogue: "", decorators: [] }],
+          },
+        ],
+      },
+    }),
+    [],
+  );
+  assert.deepEqual(
+    validateMedo({
+      version: "medo/0.0",
+      header: { profile: "manga", raw: "" },
+      body: {
+        sections: [
+          {
+            title: "",
+            pieces: [
+              {
+                dialogue: "",
+                decorators: [{ kind: "frame", rawMark: "%", value: "1", attrs: {} }],
+              },
+            ],
+          },
+        ],
+      },
+    }),
+    [],
+  );
+});
+
+test("validateMedo rejects piece-level attrs (attrs belong on decorators)", () => {
+  const issues = validateMedo({
+    version: "medo/0.0",
+    header: { profile: "manga", raw: "" },
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "hi",
+              decorators: [],
+              attrs: { 表情: "微笑" },
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.ok(issues.some((i) => i.path.includes("pieces") && i.message.includes("unexpected property")));
+});
+
+test("validateMedo: cafe-pose / station-name %10 multi-speech fixtures stay valid", () => {
+  const station = parseMesLang(readFileSync(join(root, "examples/manga/station-name.mes"), "utf8"));
+  const cafe = parseMesLang(readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8"));
+  assertValidMedo(station);
+  assertValidMedo(cafe);
+
+  const stationPieces = station.body.sections[0]!.pieces;
+  const cafePieces = cafe.body.sections[0]!.pieces;
+  const station10 = stationPieces.findIndex((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "10"),
+  );
+  const cafe10 = cafePieces.findIndex((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "10"),
+  );
+  assert.ok(station10 >= 0);
+  assert.ok(cafe10 >= 0);
+
+  // Same panel: first piece has %, second continues without frame
+  const stationSecond = stationPieces[station10 + 1]!;
+  const cafeSecond = cafePieces[cafe10 + 1]!;
+  assert.equal(
+    stationSecond.decorators.some((d) => d.kind === "frame"),
+    false,
+  );
+  assert.equal(
+    cafeSecond.decorators.some((d) => d.kind === "frame"),
+    false,
+  );
+  assert.ok(stationPieces[station10]!.decorators.some((d) => d.kind === "sound"));
+  assert.match(stationPieces[station10]!.dialogue, /窓際/);
+  assert.match(stationSecond.dialogue, /足が重い/);
+  assert.match(cafePieces[cafe10]!.dialogue, /ショートケーキ/);
+  assert.match(cafeSecond.dialogue, /それでいい/);
+
+  // Hand-shaped slice of the %10 pair still passes (empty attrs / multi-piece)
+  const sliceIssues = validateMedo({
+    version: "medo/0.0",
+    header: { profile: "manga", title: "slice", raw: "" },
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [stationPieces[station10]!, stationSecond, cafePieces[cafe10]!, cafeSecond],
+        },
+      ],
+    },
+  });
+  assert.deepEqual(sliceIssues, []);
+});
+
 test("? ext decorators parse as kind ext with rawMark", () => {
   const medo = parseMesLang(`profile: anime
 ----
