@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.68 — 2026-08-26
+
+- 水曜: 用語集に「Medo の形チェックの縁」を追加（空の `sections` / `pieces` / `decorators`、空セリフ、`attrs: {}` は正しい。ピース直下 attrs・`rawMark` 欠けは弾く）
+- schema `medo.schema.json` の description と AI ガイド／取り込みガイド／概要の導線を追随
+- 参照パーサ: 縁の固定テスト＋ cafe-pose / station-name `%10`（同じコマに複数セリフ）の形チェック厚み
+
 ## 0.0.67 — 2026-08-25
 
 - 火曜夜: 漫画見本 `cafe-pose.mes` に `%10`（任せたあとに注文を決める。種別なしのまま続ける。同じコマに二人セリフ）
