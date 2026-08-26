@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.0.69 — 2026-08-26
+
+- 水曜夜: 形チェックで **空の値** と **必須箱の欠け** を区別（`dialogue: ""` は通る／キーなしは弾く。カット表も `cut: ""` と `cut` 欠け）
+- 用語集の Medo／カット表の縁に「空と欠け」「ヘッダーの縁」（空 header・profile なしは正しい。空文字の profile は弾く）
+- 参照パーサ: 欠けは `is required`、型違いは `must be …`。schema description と AI ひな形を追随
+
 ## 0.0.68 — 2026-08-26
 
 - 水曜: 用語集に「Medo の形チェックの縁」を追加（空の `sections` / `pieces` / `decorators`、空セリフ、`attrs: {}` は正しい。ピース直下 attrs・`rawMark` 欠けは弾く）

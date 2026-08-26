@@ -186,6 +186,76 @@ test("validateConteTable rejects cut missing dialogues", () => {
   assert.ok(issues.some((i) => i.path.includes("dialogues")));
 });
 
+test("validateConteTable distinguishes empty cut id from missing cut key", () => {
+  const emptyCut = validateConteTable({
+    version: "conte-table/0.0",
+    title: "",
+    profile: "anime",
+    cuts: [
+      {
+        cut: "",
+        camera: [],
+        timing: [],
+        action: [],
+        sound: [],
+        position: [],
+        beat: [],
+        ext: [],
+        dialogues: [],
+      },
+    ],
+  });
+  assert.deepEqual(emptyCut, []);
+
+  const missingCut = validateConteTable({
+    version: "conte-table/0.0",
+    title: "",
+    profile: "anime",
+    cuts: [
+      {
+        camera: [],
+        timing: [],
+        action: [],
+        sound: [],
+        position: [],
+        beat: [],
+        ext: [],
+        dialogues: [],
+      },
+    ],
+  });
+  assert.ok(missingCut.some((i) => i.path === "cuts[0].cut" && i.message.includes("required")));
+
+  const missingSpeaker = validateConteTable({
+    version: "conte-table/0.0",
+    title: "",
+    profile: "anime",
+    cuts: [
+      {
+        cut: "1",
+        camera: [],
+        timing: [],
+        action: [],
+        sound: [],
+        position: [],
+        beat: [],
+        ext: [],
+        dialogues: [{ text: "ねえ" }],
+      },
+    ],
+  });
+  assert.ok(
+    missingSpeaker.some((i) => i.path.includes("speaker") && i.message.includes("required")),
+  );
+
+  const missingTitle = validateConteTable({
+    version: "conte-table/0.0",
+    profile: "anime",
+    cuts: [],
+  });
+  assert.ok(missingTitle.some((i) => i.path === "title" && i.message.includes("required")));
+});
+
 test("validateConteTable rejects non-string camera entry", () => {
   const issues = validateConteTable({
     version: "conte-table/0.0",

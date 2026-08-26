@@ -63,7 +63,7 @@ test("validateMedo rejects missing rawMark (schema required)", () => {
       ],
     },
   });
-  assert.ok(issues.some((i) => i.path.includes("rawMark")));
+  assert.ok(issues.some((i) => i.path.includes("rawMark") && i.message.includes("required")));
 });
 
 test("validateMedo rejects unknown header.profile", () => {
@@ -231,6 +231,130 @@ test("validateMedo rejects piece-level attrs (attrs belong on decorators)", () =
     },
   });
   assert.ok(issues.some((i) => i.path.includes("pieces") && i.message.includes("unexpected property")));
+});
+
+test("validateMedo distinguishes empty values from missing required keys", () => {
+  const emptyOk = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "",
+              decorators: [{ kind: "comment", rawMark: "", value: "", attrs: {} }],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.deepEqual(emptyOk, []);
+
+  const missingDialogue = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [{ decorators: [] }],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    missingDialogue.some((i) => i.path.includes("dialogue") && i.message.includes("required")),
+  );
+
+  const missingAttrs = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "",
+              decorators: [{ kind: "comment", rawMark: "#", value: "ト書き" }],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.ok(missingAttrs.some((i) => i.path.includes("attrs") && i.message.includes("required")));
+
+  const missingHeader = validateMedo({
+    version: "medo/0.0",
+    body: { sections: [] },
+  });
+  assert.ok(missingHeader.some((i) => i.path === "header" && i.message.includes("required")));
+
+  const missingBody = validateMedo({
+    version: "medo/0.0",
+    header: {},
+  });
+  assert.ok(missingBody.some((i) => i.path === "body" && i.message.includes("required")));
+});
+
+test("validateMedo header edges: missing profile ok, empty/unknown profile rejected, extra string keys ok", () => {
+  assert.deepEqual(
+    validateMedo({
+      version: "medo/0.0",
+      header: {},
+      body: { sections: [] },
+    }),
+    [],
+  );
+  assert.deepEqual(
+    validateMedo({
+      version: "medo/0.0",
+      header: { title: "駅前", "bracket-keys": "表情, 姿勢", raw: "" },
+      body: { sections: [] },
+    }),
+    [],
+  );
+
+  const emptyProfile = validateMedo({
+    version: "medo/0.0",
+    header: { profile: "" },
+    body: { sections: [] },
+  });
+  assert.ok(emptyProfile.some((i) => i.path === "header.profile"));
+
+  const nestedHeader = validateMedo({
+    version: "medo/0.0",
+    header: { extra: { nope: true } },
+    body: { sections: [] },
+  });
+  assert.ok(nestedHeader.some((i) => i.path === "header.extra"));
+
+  const decoratorExtra = validateMedo({
+    version: "medo/0.0",
+    header: { profile: "audio" },
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "",
+              decorators: [
+                { kind: "comment", rawMark: "#", value: "x", attrs: {}, note: "nope" },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    decoratorExtra.some((i) => i.path.includes("decorators") && i.message.includes("unexpected property")),
+  );
 });
 
 test("validateMedo: cafe-pose / station-name %10 multi-speech fixtures stay valid", () => {

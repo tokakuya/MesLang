@@ -6,6 +6,45 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
+function fieldPath(path: string, key: string): string {
+  return path ? `${path}.${key}` : key;
+}
+
+/** Empty string is present; missing key is not. */
+function requireString(
+  obj: Record<string, unknown>,
+  key: string,
+  path: string,
+  issues: ConteValidationIssue[],
+): void {
+  const at = fieldPath(path, key);
+  if (!Object.hasOwn(obj, key)) {
+    issues.push({ path: at, message: `${key} is required` });
+    return;
+  }
+  if (typeof obj[key] !== "string") {
+    issues.push({ path: at, message: `${key} must be a string` });
+  }
+}
+
+function requireArray(
+  obj: Record<string, unknown>,
+  key: string,
+  path: string,
+  issues: ConteValidationIssue[],
+): unknown[] | undefined {
+  const at = fieldPath(path, key);
+  if (!Object.hasOwn(obj, key)) {
+    issues.push({ path: at, message: `${key} is required` });
+    return undefined;
+  }
+  if (!Array.isArray(obj[key])) {
+    issues.push({ path: at, message: `${key} must be an array` });
+    return undefined;
+  }
+  return obj[key] as unknown[];
+}
+
 function checkStringArray(v: unknown, path: string, issues: ConteValidationIssue[]): void {
   if (!Array.isArray(v)) {
     issues.push({ path, message: "must be an array of strings" });
@@ -28,12 +67,8 @@ function checkDialogue(d: unknown, path: string, issues: ConteValidationIssue[])
       issues.push({ path, message: `unexpected property "${key}"` });
     }
   }
-  if (typeof d.speaker !== "string") {
-    issues.push({ path: `${path}.speaker`, message: "speaker must be a string" });
-  }
-  if (typeof d.text !== "string") {
-    issues.push({ path: `${path}.text`, message: "text must be a string" });
-  }
+  requireString(d, "speaker", path, issues);
+  requireString(d, "text", path, issues);
 }
 
 function checkCut(c: unknown, path: string, issues: ConteValidationIssue[]): void {
@@ -57,22 +92,23 @@ function checkCut(c: unknown, path: string, issues: ConteValidationIssue[]): voi
       issues.push({ path, message: `unexpected property "${key}"` });
     }
   }
-  if (typeof c.cut !== "string") {
-    issues.push({ path: `${path}.cut`, message: "cut must be a string" });
-  }
+  requireString(c, "cut", path, issues);
   for (const field of ["camera", "timing", "action", "sound", "position", "beat", "ext"] as const) {
-    checkStringArray(c[field], `${path}.${field}`, issues);
+    if (!Object.hasOwn(c, field)) {
+      issues.push({ path: `${path}.${field}`, message: `${field} is required` });
+    } else {
+      checkStringArray(c[field], `${path}.${field}`, issues);
+    }
   }
-  if (!Array.isArray(c.dialogues)) {
-    issues.push({ path: `${path}.dialogues`, message: "dialogues must be an array" });
-    return;
-  }
-  c.dialogues.forEach((d, i) => checkDialogue(d, `${path}.dialogues[${i}]`, issues));
+  const dialogues = requireArray(c, "dialogues", path, issues);
+  if (!dialogues) return;
+  dialogues.forEach((d, i) => checkDialogue(d, `${path}.dialogues[${i}]`, issues));
 }
 
 /**
  * Lightweight shape check aligned with `schema/conte-table.schema.json`.
  * Keeps the reference package tiny (no schema library).
+ * Empty values (`cut: ""` / `[]`) are valid; missing required keys are not.
  */
 export function validateConteTable(data: unknown): ConteValidationIssue[] {
   const issues: ConteValidationIssue[] = [];
@@ -84,22 +120,19 @@ export function validateConteTable(data: unknown): ConteValidationIssue[] {
       issues.push({ path: "", message: `unexpected property "${key}"` });
     }
   }
-  if (data.version !== "conte-table/0.0") {
+  if (!Object.hasOwn(data, "version")) {
+    issues.push({ path: "version", message: "version is required" });
+  } else if (data.version !== "conte-table/0.0") {
     issues.push({
       path: "version",
       message: `expected "conte-table/0.0", got ${String(data.version)}`,
     });
   }
-  if (typeof data.title !== "string") {
-    issues.push({ path: "title", message: "title must be a string" });
-  }
-  if (typeof data.profile !== "string") {
-    issues.push({ path: "profile", message: "profile must be a string" });
-  }
-  if (!Array.isArray(data.cuts)) {
-    issues.push({ path: "cuts", message: "cuts must be an array" });
-  } else {
-    data.cuts.forEach((c, i) => checkCut(c, `cuts[${i}]`, issues));
+  requireString(data, "title", "", issues);
+  requireString(data, "profile", "", issues);
+  const cuts = requireArray(data, "cuts", "", issues);
+  if (cuts) {
+    cuts.forEach((c, i) => checkCut(c, `cuts[${i}]`, issues));
   }
   return issues;
 }

@@ -313,11 +313,17 @@ test("glossary: Medo の形チェックの縁 — empty arrays and dialogue are 
   assert.match(section, /kind `unknown`/);
   assert.match(section, /%10/);
   assert.match(section, /コマとピース/);
+  assert.match(section, /空と欠け/);
+  assert.match(section, /ヘッダーの縁/);
+  assert.match(section, /`profile` なし/);
+  assert.match(section, /`dialogue` キーなし/);
 
   const medoSchema = readFileSync(join(root, "schema/medo.schema.json"), "utf8");
   assert.match(medoSchema, /空の sections/);
   assert.match(medoSchema, /正しい縁/);
-  assert.match(medoSchema, /rawMark 欠け/);
+  assert.match(medoSchema, /必須箱の欠け/);
+  assert.match(medoSchema, /rawMark なし/);
+  assert.match(medoSchema, /profile なし/);
   assert.match(medoSchema, /unknown/);
 
   const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
@@ -334,6 +340,8 @@ test("glossary: Medo の形チェックの縁 — empty arrays and dialogue are 
   assert.match(adrReadme, /Medo の形チェックの縁/);
 
   const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.69/);
+  assert.match(changelog, /空と欠け|必須箱の欠け/);
   assert.match(changelog, /0\.0\.68/);
   assert.match(changelog, /Medo の形チェックの縁/);
 });
@@ -350,15 +358,20 @@ test("glossary: カット表の形チェックの縁 — empty cut id is valid",
   assert.match(section, /空の配列欄/);
   assert.match(section, /余分なキー/);
   assert.match(section, /attrs/);
+  assert.match(section, /空と欠け/);
+  assert.match(section, /`cut` キーなし/);
 
   const conteDoc = readFileSync(join(root, "docs/spec/07-conte-table.md"), "utf8");
   assert.match(conteDoc, /形チェックが見る縁/);
   assert.match(conteDoc, /cut: ""/);
   assert.match(conteDoc, /dialogues\[\]\.speaker/);
+  assert.match(conteDoc, /`cut` キーなし/);
+  assert.match(conteDoc, /`dialogues` キーなし/);
 
   const conteSchema = readFileSync(join(root, "schema/conte-table.schema.json"), "utf8");
   assert.match(conteSchema, /番号なし/);
   assert.match(conteSchema, /空配列/);
+  assert.match(conteSchema, /必須箱の欠け/);
   assert.match(conteSchema, /attrs/);
 
   const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
@@ -1513,6 +1526,7 @@ test("AI ガイド: カット表ひな形に番号なし行と形チェック結
   assert.match(shapeRead, /cut: ""/);
   assert.match(shapeRead, /空配列/);
   assert.match(shapeRead, /dialogues への attrs/);
+  assert.match(shapeRead, /必須箱の欠け/);
   assert.match(shapeRead, /提案:/);
   assert.match(shapeRead, /不足:/);
 });
@@ -1545,6 +1559,8 @@ test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先"
   assert.match(medoRead, /孤立した :key/);
   assert.match(medoRead, /ピース直下への attrs/);
   assert.match(medoRead, /kind unknown/);
+  assert.match(medoRead, /必須箱の欠け/);
+  assert.match(medoRead, /profile なし/);
   assert.match(medoRead, /提案:/);
   assert.match(medoRead, /不足:/);
 

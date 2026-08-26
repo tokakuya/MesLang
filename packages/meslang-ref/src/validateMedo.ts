@@ -21,6 +21,39 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
 
+/** Empty string is present; missing key is not. */
+function requireString(
+  obj: Record<string, unknown>,
+  key: string,
+  path: string,
+  issues: MedoValidationIssue[],
+): void {
+  if (!Object.hasOwn(obj, key)) {
+    issues.push({ path: `${path}.${key}`, message: `${key} is required` });
+    return;
+  }
+  if (typeof obj[key] !== "string") {
+    issues.push({ path: `${path}.${key}`, message: `${key} must be a string` });
+  }
+}
+
+function requireArray(
+  obj: Record<string, unknown>,
+  key: string,
+  path: string,
+  issues: MedoValidationIssue[],
+): unknown[] | undefined {
+  if (!Object.hasOwn(obj, key)) {
+    issues.push({ path: `${path}.${key}`, message: `${key} is required` });
+    return undefined;
+  }
+  if (!Array.isArray(obj[key])) {
+    issues.push({ path: `${path}.${key}`, message: `${key} must be an array` });
+    return undefined;
+  }
+  return obj[key] as unknown[];
+}
+
 function checkDecorator(d: unknown, path: string, issues: MedoValidationIssue[]): void {
   if (!isPlainObject(d)) {
     issues.push({ path, message: "decorator must be an object" });
@@ -31,16 +64,16 @@ function checkDecorator(d: unknown, path: string, issues: MedoValidationIssue[])
       issues.push({ path, message: `unexpected property "${key}"` });
     }
   }
-  if (typeof d.kind !== "string" || !DECORATOR_KINDS.has(d.kind)) {
+  if (!Object.hasOwn(d, "kind")) {
+    issues.push({ path: `${path}.kind`, message: "kind is required" });
+  } else if (typeof d.kind !== "string" || !DECORATOR_KINDS.has(d.kind)) {
     issues.push({ path: `${path}.kind`, message: `invalid kind: ${String(d.kind)}` });
   }
-  if (typeof d.rawMark !== "string") {
-    issues.push({ path: `${path}.rawMark`, message: "rawMark must be a string" });
-  }
-  if (typeof d.value !== "string") {
-    issues.push({ path: `${path}.value`, message: "value must be a string" });
-  }
-  if (!isPlainObject(d.attrs)) {
+  requireString(d, "rawMark", path, issues);
+  requireString(d, "value", path, issues);
+  if (!Object.hasOwn(d, "attrs")) {
+    issues.push({ path: `${path}.attrs`, message: "attrs is required" });
+  } else if (!isPlainObject(d.attrs)) {
     issues.push({ path: `${path}.attrs`, message: "attrs must be an object" });
   } else {
     for (const [k, v] of Object.entries(d.attrs)) {
@@ -61,14 +94,10 @@ function checkPiece(p: unknown, path: string, issues: MedoValidationIssue[]): vo
       issues.push({ path, message: `unexpected property "${key}"` });
     }
   }
-  if (typeof p.dialogue !== "string") {
-    issues.push({ path: `${path}.dialogue`, message: "dialogue must be a string" });
-  }
-  if (!Array.isArray(p.decorators)) {
-    issues.push({ path: `${path}.decorators`, message: "decorators must be an array" });
-    return;
-  }
-  p.decorators.forEach((d, i) => checkDecorator(d, `${path}.decorators[${i}]`, issues));
+  requireString(p, "dialogue", path, issues);
+  const decorators = requireArray(p, "decorators", path, issues);
+  if (!decorators) return;
+  decorators.forEach((d, i) => checkDecorator(d, `${path}.decorators[${i}]`, issues));
 }
 
 function checkSection(s: unknown, path: string, issues: MedoValidationIssue[]): void {
@@ -81,19 +110,16 @@ function checkSection(s: unknown, path: string, issues: MedoValidationIssue[]): 
       issues.push({ path, message: `unexpected property "${key}"` });
     }
   }
-  if (typeof s.title !== "string") {
-    issues.push({ path: `${path}.title`, message: "title must be a string" });
-  }
-  if (!Array.isArray(s.pieces)) {
-    issues.push({ path: `${path}.pieces`, message: "pieces must be an array" });
-    return;
-  }
-  s.pieces.forEach((p, i) => checkPiece(p, `${path}.pieces[${i}]`, issues));
+  requireString(s, "title", path, issues);
+  const pieces = requireArray(s, "pieces", path, issues);
+  if (!pieces) return;
+  pieces.forEach((p, i) => checkPiece(p, `${path}.pieces[${i}]`, issues));
 }
 
 /**
  * Lightweight shape check aligned with `schema/medo.schema.json`.
  * Avoids pulling in a schema library; keeps the reference package tiny.
+ * Empty values (`""` / `[]` / `{}`) are valid; missing required keys are not.
  */
 export function validateMedo(data: unknown): MedoValidationIssue[] {
   const issues: MedoValidationIssue[] = [];
@@ -105,10 +131,14 @@ export function validateMedo(data: unknown): MedoValidationIssue[] {
       issues.push({ path: "", message: `unexpected property "${key}"` });
     }
   }
-  if (data.version !== "medo/0.0") {
+  if (!Object.hasOwn(data, "version")) {
+    issues.push({ path: "version", message: "version is required" });
+  } else if (data.version !== "medo/0.0") {
     issues.push({ path: "version", message: `expected "medo/0.0", got ${String(data.version)}` });
   }
-  if (!isPlainObject(data.header)) {
+  if (!Object.hasOwn(data, "header")) {
+    issues.push({ path: "header", message: "header is required" });
+  } else if (!isPlainObject(data.header)) {
     issues.push({ path: "header", message: "header must be an object" });
   } else {
     for (const [k, v] of Object.entries(data.header)) {
@@ -123,7 +153,9 @@ export function validateMedo(data: unknown): MedoValidationIssue[] {
       });
     }
   }
-  if (!isPlainObject(data.body)) {
+  if (!Object.hasOwn(data, "body")) {
+    issues.push({ path: "body", message: "body is required" });
+  } else if (!isPlainObject(data.body)) {
     issues.push({ path: "body", message: "body must be an object" });
   } else {
     for (const key of Object.keys(data.body)) {
@@ -131,10 +163,9 @@ export function validateMedo(data: unknown): MedoValidationIssue[] {
         issues.push({ path: "body", message: `unexpected property "${key}"` });
       }
     }
-    if (!Array.isArray(data.body.sections)) {
-      issues.push({ path: "body.sections", message: "sections must be an array" });
-    } else {
-      data.body.sections.forEach((s, i) => checkSection(s, `body.sections[${i}]`, issues));
+    const sections = requireArray(data.body, "sections", "body", issues);
+    if (sections) {
+      sections.forEach((s, i) => checkSection(s, `body.sections[${i}]`, issues));
     }
   }
   return issues;
