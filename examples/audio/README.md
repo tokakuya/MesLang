@@ -83,4 +83,5 @@ node --experimental-strip-types src/cli.ts --compat --validate ../../examples/au
 ## AI に頼むとき
 
 台本化・音声原稿の下書き・旧 Mes 取り込みの手伝いは、[AI 向けガイド](../../docs/spec/04-ai-reading.md#音声台本化) のひな形をコピーしてください。  
+ヘッダーに `profile` が無くても誤りではありません（取り込み前／機械変換直後見本がその例です → [用語集（ヘッダーの縁）](../../docs/spec/05-glossary.md#medo-の形チェックの縁まぎらわしいことば)）。  
 セリフ文字数の照合はツールの `--count` が本命で、AI 用のひな形は [セリフ文字数の照合](../../docs/spec/04-ai-reading.md#セリフ文字数の照合音声) にあります。

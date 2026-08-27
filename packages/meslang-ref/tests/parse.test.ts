@@ -1608,3 +1608,78 @@ test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先"
   assert.match(shapeSection, /空と欠け/);
   assert.match(shapeSection, /ヘッダーの縁/);
 });
+
+test("AI ガイド: 音声台本化／原稿生成にヘッダーの縁（profile なしは誤りにしない）", () => {
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+
+  const audioScript = guide.slice(
+    guide.indexOf("### 音声台本化"),
+    guide.indexOf("### セリフ文字数の照合"),
+  );
+  assert.match(audioScript, /ヘッダーの縁/);
+  assert.match(audioScript, /profile が無くても誤りにしない/);
+  assert.match(audioScript, /profile: ""/);
+  assert.match(audioScript, /mes-import-before/);
+  assert.match(audioScript, /mes-import-compat-only/);
+  assert.match(audioScript, /medo-の形チェックの縁まぎらわしいことば/);
+
+  const count = guide.slice(
+    guide.indexOf("### セリフ文字数の照合"),
+    guide.indexOf("### 音声原稿を書かせるとき"),
+  );
+  assert.match(count, /ヘッダーの縁/);
+  assert.match(count, /profile が無くても集計できる/);
+
+  const audioWrite = guide.slice(
+    guide.indexOf("### 音声原稿を書かせるとき"),
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+  );
+  assert.match(audioWrite, /ヘッダーの縁/);
+  assert.match(audioWrite, /profile: audio/);
+  assert.match(audioWrite, /profile が無くても形の誤りではない/);
+  assert.match(audioWrite, /mes-import-before/);
+  assert.match(audioWrite, /mes-import-after/);
+
+  const importHelp = guide.slice(
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+    guide.indexOf("### アニメ字コンテ起こし"),
+  );
+  assert.match(importHelp, /ヘッダーの縁/);
+  assert.match(importHelp, /profile が無くても誤りにしない/);
+  assert.match(importHelp, /medo-の形チェックの縁まぎらわしいことば/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /ヘッダーの縁/);
+  assert.match(audioReadme, /profile/);
+
+  const before = readFileSync(join(root, "examples/audio/mes-import-before.mes"), "utf8");
+  const mid = readFileSync(join(root, "examples/audio/mes-import-compat-only.mes"), "utf8");
+  const after = readFileSync(join(root, "examples/audio/mes-import-after.mes"), "utf8");
+  assert.doesNotMatch(before, /^profile:/m);
+  assert.doesNotMatch(mid, /^profile:/m);
+  assert.match(after, /^profile: audio/m);
+  const parsedMid = parseMesLang(mid);
+  assert.equal(parsedMid.header.profile, "audio");
+
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const importStages = glossary.slice(
+    glossary.indexOf("## 取り込みの三段階"),
+    glossary.indexOf("## 記号の呼び名"),
+  );
+  assert.match(importStages, /ヘッダーの縁/);
+  assert.match(importStages, /profile/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /ヘッダーの縁/);
+  assert.match(compat, /profile` なし/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.71/);
+  assert.match(changelog, /ヘッダーの縁/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /木曜夜.*ヘッダーの縁/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /木曜夜.*ヘッダーの縁/);
+});
