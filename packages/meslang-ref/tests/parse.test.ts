@@ -340,6 +340,7 @@ test("glossary: Medo の形チェックの縁 — empty arrays and dialogue are 
   assert.match(adrReadme, /Medo の形チェックの縁/);
 
   const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.70/);
   assert.match(changelog, /0\.0\.69/);
   assert.match(changelog, /空と欠け|必須箱の欠け/);
   assert.match(changelog, /0\.0\.68/);
@@ -1430,6 +1431,13 @@ test("AI ネーム起こしガイド: cafe-pose %8–%10 / silent-panels %7–%8
   assert.match(nameRaising, /入店とふつうのセリフに戻る/);
   assert.match(nameRaising, /コマとピース/);
   assert.match(nameRaising, /勝手にセリフを足さない/);
+  assert.match(nameRaising, /空と欠け/);
+  assert.match(nameRaising, /ヘッダーの縁/);
+  assert.match(nameRaising, /medo-の形チェックの縁まぎらわしいことば/);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, /空と欠け/);
+  assert.match(mangaReadme, /ヘッダーの縁/);
 
   const cafe = parseMesLang(readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8"));
   const cafePieces = cafe.body.sections[0]!.pieces;
@@ -1527,6 +1535,7 @@ test("AI ガイド: カット表ひな形に番号なし行と形チェック結
   assert.match(shapeRead, /空配列/);
   assert.match(shapeRead, /dialogues への attrs/);
   assert.match(shapeRead, /必須箱の欠け/);
+  assert.match(shapeRead, /空と欠け/);
   assert.match(shapeRead, /提案:/);
   assert.match(shapeRead, /不足:/);
 });
@@ -1541,6 +1550,13 @@ test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先"
   assert.match(writing, /直前のデコレーターの直後/);
   assert.match(writing, /属性のつき先/);
 
+  const practice = guide.slice(
+    guide.indexOf("## おすすめの実務の順番"),
+    guide.indexOf("## ツールと AI の役割分担"),
+  );
+  assert.match(practice, /空と欠け/);
+  assert.match(practice, /ヘッダーの縁/);
+
   const gap = guide.slice(
     guide.indexOf("### 不足情報の洗い出し"),
     guide.indexOf("### Medo の形チェック結果の読み方"),
@@ -1548,6 +1564,8 @@ test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先"
   assert.match(gap, /ピース先頭やセリフのあと/);
   assert.match(gap, /属性に付いていない/);
   assert.match(gap, /Medo の形チェック結果の読み方/);
+  assert.match(gap, /空と欠け/);
+  assert.match(gap, /ヘッダーの縁/);
 
   const medoRead = guide.slice(
     guide.indexOf("### Medo の形チェック結果の読み方"),
@@ -1561,6 +1579,9 @@ test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先"
   assert.match(medoRead, /kind unknown/);
   assert.match(medoRead, /必須箱の欠け/);
   assert.match(medoRead, /profile なし/);
+  assert.match(medoRead, /空と欠け/);
+  assert.match(medoRead, /ヘッダーの縁/);
+  assert.match(medoRead, /profile: ""/);
   assert.match(medoRead, /提案:/);
   assert.match(medoRead, /不足:/);
 
@@ -1573,6 +1594,8 @@ test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先"
 
   const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
   assert.match(compat, /Medo の形チェック結果の読み方/);
+  assert.match(compat, /空と欠け/);
+  assert.match(compat, /ヘッダーの縁/);
 
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
   const shapeSection = glossary.slice(
@@ -1582,4 +1605,6 @@ test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先"
   assert.match(shapeSection, /medo-の形チェック結果の読み方/);
   assert.match(shapeSection, /カット表の形チェック結果の読み方/);
   assert.match(shapeSection, /Medo でよく迷う縁/);
+  assert.match(shapeSection, /空と欠け/);
+  assert.match(shapeSection, /ヘッダーの縁/);
 });
