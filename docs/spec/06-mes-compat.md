@@ -17,7 +17,7 @@
 
 ## おすすめの手順（音声原稿）
 
-1. ヘッダーに `profile: audio` を足す（なくても音声扱いですが、書いておくと安心です）。旧形の `$title …` はそのままでも、`title: …` に直してもよいです
+1. ヘッダーに `profile: audio` を足す（なくても音声扱いです。**ヘッダーの縁**なので誤りではありません → [用語集](05-glossary.md#medo-の形チェックの縁まぎらわしいことば)）。旧形の `$title …` はそのままでも、`title: …` に直してもよいです
 2. 行頭の `○` / `◯` を `#` に直す（参照パーサの `rewriteMesCompat` でも可）
 3. 章・場面の区切りにしたい行を `== …` にする（人の目で確認）
 4. 必要なら `@名前 :表情 …` のように属性を足す
@@ -109,9 +109,9 @@ $雑踏
 
 | 段階 | ファイル | 中身 |
 |------|----------|------|
-| 1. 取り込み前 | [mes-import-before.mes](../../examples/audio/mes-import-before.mes) | 行頭 `○` / `◯`、章らしい `#`、旧流儀の `$ヒソヒソ声`、`&少し間を置いて` |
-| 2. 機械変換だけ | [mes-import-compat-only.mes](../../examples/audio/mes-import-compat-only.mes) | `rewriteMesCompat` / `--compat` のあと。柱だけ `#`。章も声質もまだ直していない |
-| 3. 人手のあと | [mes-import-after.mes](../../examples/audio/mes-import-after.mes) | `==` 化、`:声質` 移動、属性など。場の `$` / `!` と `&` はそのまま。`@名前` 化は任意（見本は `@` と `名前「」` を混ぜている） |
+| 1. 取り込み前 | [mes-import-before.mes](../../examples/audio/mes-import-before.mes) | 行頭 `○` / `◯`、章らしい `#`、旧流儀の `$ヒソヒソ声`、`&少し間を置いて`。`profile` なし（ヘッダーの縁） |
+| 2. 機械変換だけ | [mes-import-compat-only.mes](../../examples/audio/mes-import-compat-only.mes) | `rewriteMesCompat` / `--compat` のあと。柱だけ `#`。章も声質もまだ直していない。`profile` なしのまま |
+| 3. 人手のあと | [mes-import-after.mes](../../examples/audio/mes-import-after.mes) | `==` 化、`:声質` 移動、属性など。場の `$` / `!` と `&` はそのまま。`profile: audio` を足した例。`@名前` 化は任意（見本は `@` と `名前「」` を混ぜている） |
 
 段階2は、段階1に `--compat` をかけた結果と **同じ文面** になるように揃えてあります（参照パーサの固定テストでも確認）。
 
