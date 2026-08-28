@@ -157,7 +157,7 @@ AI に目標字数との照合や、話者ごとの偏りを見てもらうと�
 - 知らない記号を発明しない。足りなければ # か ? か属性キーを使う
 ```
 
-見本の雰囲気: [examples/audio/station.mes](../../examples/audio/station.mes)（「ランチへ」＝音だけの間。「店の前」＝到着の拍。「席について」＝到着のあとの店内）  
+見本の雰囲気: [examples/audio/station.mes](../../examples/audio/station.mes)（「ランチへ」＝音だけの間。「店の前」＝到着の拍。「席について」＝到着のあとの店内。「注文」＝席についてのあと。入り口の外注ぎとは別）  
 `profile` なしの下書き例: [mes-import-before.mes](../../examples/audio/mes-import-before.mes)（人手のあとに `profile: audio` を足した例は [mes-import-after.mes](../../examples/audio/mes-import-after.mes)）  
 語彙: [メディアプロファイル（音声）](03-media-profiles.md#音声作品profile-audio) / [用語集（音・声質・ヘッダー変数）](05-glossary.md#音声質ヘッダー変数まぎらわしいことば) / [用語集（音の位置と話者の位置）](05-glossary.md#音の位置と話者の位置まぎらわしいことば) / [用語集（音だけの間 / 無言コマ）](05-glossary.md#セリフのない間音だけの間--無言コマ) / [用語集（到着の拍）](05-glossary.md#到着の拍まぎらわしいことば) / [用語集（到着の拍と店内）](05-glossary.md#到着の拍と店内まぎらわしいことば) / [用語集（タイミングとビート）](05-glossary.md#タイミングとビートまぎらわしいことば) / [用語集（属性のつき先）](05-glossary.md#属性のつき先まぎらわしいことば) / [用語集（Medo の形チェックの縁）](05-glossary.md#medo-の形チェックの縁まぎらわしいことば)（ヘッダーの縁）
 
