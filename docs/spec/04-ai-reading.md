@@ -86,7 +86,7 @@ AI に渡す前に、形だけはツールへ任せると安心です。
 ```
 
 入力例（セリフなしページ）: [examples/manga/silent-panels.mes](../../examples/manga/silent-panels.mes)（`%7`＝目が合う無言。`%8`＝声を出す直前。どちらもセリフなし）  
-入力例（会話あり・1ページ）: [examples/manga/station-name.mes](../../examples/manga/station-name.mes)（心の声・`%6`＝同じコマの二人セリフ・`%7`＝ナレ・`%8`＝外注ぎ・`%9`＝入店・`%10`＝店内の続き。到着の拍は `%8`–`%9`）  
+入力例（会話あり・1ページ）: [examples/manga/station-name.mes](../../examples/manga/station-name.mes)（心の声・`%6`＝同じコマの二人セリフ・`%7`＝ナレ・`%8`＝外注ぎ・`%9`＝入店・`%10`＝店内の続き・`%11`＝注文。到着の拍は `%8`–`%9`。席の店員 ≠ 外注ぎ）  
 入力例（2ページ通し・`%` 数え直し）: [examples/manga/station-two-pages.mes](../../examples/manga/station-two-pages.mes)  
 入力例（表情・姿勢・`:吹き出し`）: [examples/manga/cafe-pose.mes](../../examples/manga/cafe-pose.mes)（`%8`＝属性の心の声。`%9`＝そのあとふつうのセリフに戻る。`%10`＝任せたあと。駅前 `%9` 入店／`%10` 店内の続きとは役割が別）  
 呼び分け: [用語集（コマとカット）](05-glossary.md#コマとカットまぎらわしいことば) / [用語集（コマとピース）](05-glossary.md#コマとピースまぎらわしいことば) / [用語集（到着の拍）](05-glossary.md#到着の拍まぎらわしいことば) / [用語集（到着の拍と店内）](05-glossary.md#到着の拍と店内まぎらわしいことば) / [用語集（入店とふつうのセリフに戻る）](05-glossary.md#入店とふつうのセリフに戻るまぎらわしいことば) / [用語集（Medo の形チェックの縁）](05-glossary.md#medo-の形チェックの縁まぎらわしいことば)（空と欠け・ヘッダーの縁）  
@@ -157,7 +157,7 @@ AI に目標字数との照合や、話者ごとの偏りを見てもらうと�
 - 知らない記号を発明しない。足りなければ # か ? か属性キーを使う
 ```
 
-見本の雰囲気: [examples/audio/station.mes](../../examples/audio/station.mes)（「ランチへ」＝音だけの間。「店の前」＝到着の拍。「席について」＝到着のあとの店内。「注文」＝席についてのあと。入り口の外注ぎとは別）  
+見本の雰囲気: [examples/audio/station.mes](../../examples/audio/station.mes)（「ランチへ」＝音だけの間。「店の前」＝到着の拍。「席について」＝到着のあとの店内。「注文」＝席についてのあと。入り口の外注ぎとは別。漫画 `%11` と同じ拍）  
 `profile` なしの下書き例: [mes-import-before.mes](../../examples/audio/mes-import-before.mes)（人手のあとに `profile: audio` を足した例は [mes-import-after.mes](../../examples/audio/mes-import-after.mes)）  
 語彙: [メディアプロファイル（音声）](03-media-profiles.md#音声作品profile-audio) / [用語集（音・声質・ヘッダー変数）](05-glossary.md#音声質ヘッダー変数まぎらわしいことば) / [用語集（音の位置と話者の位置）](05-glossary.md#音の位置と話者の位置まぎらわしいことば) / [用語集（音だけの間 / 無言コマ）](05-glossary.md#セリフのない間音だけの間--無言コマ) / [用語集（到着の拍）](05-glossary.md#到着の拍まぎらわしいことば) / [用語集（到着の拍と店内）](05-glossary.md#到着の拍と店内まぎらわしいことば) / [用語集（タイミングとビート）](05-glossary.md#タイミングとビートまぎらわしいことば) / [用語集（属性のつき先）](05-glossary.md#属性のつき先まぎらわしいことば) / [用語集（Medo の形チェックの縁）](05-glossary.md#medo-の形チェックの縁まぎらわしいことば)（ヘッダーの縁）
 
@@ -176,7 +176,7 @@ AI に目標字数との照合や、話者ごとの偏りを見てもらうと�
 - きれいな完成ネームや画像は二次の仕事。ここでは原稿テキストだけを出す
 ```
 
-入力の参考（会話・1ページ。`%4`＝心の声。`%6`＝同じコマの二人セリフ。`%7`＝ナレ。`%8`＝外注ぎ。`%9`＝入店。`%10`＝店内の続き。到着の拍は `%8`–`%9`）: [examples/manga/station-name.mes](../../examples/manga/station-name.mes)
+入力の参考（会話・1ページ。`%4`＝心の声。`%6`＝同じコマの二人セリフ。`%7`＝ナレ。`%8`＝外注ぎ。`%9`＝入店。`%10`＝店内の続き。`%11`＝注文。到着の拍は `%8`–`%9`。席の店員 ≠ 外注ぎ）: [examples/manga/station-name.mes](../../examples/manga/station-name.mes)
 入力の参考（会話・1ページ。表情／姿勢／`%8`＝`:吹き出し`／`%9`＝ふつうのセリフに戻る／`%10`＝任せたあと。駅前 `%9` 入店／`%10` 店内の続きとは役割が別）: [examples/manga/cafe-pose.mes](../../examples/manga/cafe-pose.mes)  
 入力の参考（2ページ通し。かぎかっこでの心の声あり）: [examples/manga/station-two-pages.mes](../../examples/manga/station-two-pages.mes)  
 入力の参考（無言コマ。`%7`＝目が合う、`%8`＝声を出す直前）: [examples/manga/silent-panels.mes](../../examples/manga/silent-panels.mes)  
