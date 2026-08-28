@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { rewriteMesCompat } from "../src/mesCompat.ts";
-import { parseMesLang } from "../src/parse.ts";
+import { firstCharacter, parseMesLang } from "../src/parse.ts";
 import { assertValidMedo, validateMedo } from "../src/validateMedo.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
@@ -374,7 +374,7 @@ test("validateMedo: cafe-pose / station-name %10 multi-speech fixtures stay vali
   assert.ok(station10 >= 0);
   assert.ok(cafe10 >= 0);
 
-  // Same panel: first piece has %, second continues without frame
+  // Same panel: first piece has %, following pieces continue without frame
   const stationSecond = stationPieces[station10 + 1]!;
   const cafeSecond = cafePieces[cafe10 + 1]!;
   assert.equal(
@@ -390,6 +390,25 @@ test("validateMedo: cafe-pose / station-name %10 multi-speech fixtures stay vali
   assert.match(stationSecond.dialogue, /足が重い/);
   assert.match(cafePieces[cafe10]!.dialogue, /ショートケーキ/);
   assert.match(cafeSecond.dialogue, /それでいい/);
+
+  const station11 = stationPieces.findIndex((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "11"),
+  );
+  assert.ok(station11 >= 0);
+  const stationOrderSecond = stationPieces[station11 + 1]!;
+  const stationOrderThird = stationPieces[station11 + 2]!;
+  assert.equal(
+    stationOrderSecond.decorators.some((d) => d.kind === "frame"),
+    false,
+  );
+  assert.equal(
+    stationOrderThird.decorators.some((d) => d.kind === "frame"),
+    false,
+  );
+  assert.match(stationPieces[station11]!.dialogue, /ご注文/);
+  assert.match(stationOrderSecond.dialogue, /いつもので/);
+  assert.match(stationOrderThird.dialogue, /注文まで来たか/);
+  assert.equal(firstCharacter(stationPieces[station11]!)?.attrs["吹き出し"], undefined);
 
   // Hand-shaped slice of the %10 pair still passes (empty attrs / multi-piece)
   const sliceIssues = validateMedo({
