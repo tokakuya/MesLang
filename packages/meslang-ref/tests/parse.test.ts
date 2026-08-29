@@ -1045,7 +1045,7 @@ test("glossary: 店内の続きと注文 — umbrella vs seating vs order vs 席
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
   const section = glossary.slice(
     glossary.indexOf("## 店内の続きと注文"),
-    glossary.indexOf("## 入店とふつうのセリフに戻る"),
+    glossary.indexOf("## 任せたあとと注文を取る"),
   );
   assert.match(section, /店内の続きと注文/);
   assert.match(section, /総称/);
@@ -1115,6 +1115,85 @@ test("glossary: 店内の続きと注文 — umbrella vs seating vs order vs 席
 
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /店内の続きと注文/);
+  assert.match(backlog, /日曜向け/);
+});
+
+test("glossary: 任せたあとと注文を取る — cafe decide vs staff take-order", () => {
+  // docs/spec/05-glossary.md「任せたあとと注文を取る（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 任せたあとと注文を取る"),
+    glossary.indexOf("## 入店とふつうのセリフに戻る"),
+  );
+  assert.match(section, /任せたあとと注文を取る/);
+  assert.match(section, /注文を決める/);
+  assert.match(section, /注文を取る/);
+  assert.match(section, /客どうし/);
+  assert.match(section, /店員は出ない/);
+  assert.match(section, /cafe-pose/);
+  assert.match(section, /station-name/);
+  assert.match(section, /予約語/);
+  assert.match(section, /店内の続きと注文/);
+  assert.match(section, /入店とふつうのセリフに戻る/);
+
+  const cafe = parseMesLang(readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8"));
+  const station = parseMesLang(readFileSync(join(root, "examples/manga/station-name.mes"), "utf8"));
+  const audio = parseMesLang(readFileSync(join(root, "examples/audio/station.mes"), "utf8"));
+  const decide = cafe.body.sections[0]!.pieces.find((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "10"),
+  )!;
+  const takeOrder = station.body.sections[0]!.pieces.find((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "11"),
+  )!;
+  assert.equal(firstCharacter(decide)?.value, "こいと");
+  assert.equal(firstCharacter(decide)?.attrs["吹き出し"], undefined);
+  assert.match(decide.dialogue, /ショートケーキ/);
+  assert.ok(decide.decorators.some((d) => d.kind === "comment" && d.value.includes("注文を決める")));
+  assert.ok(
+    !cafe.body.sections[0]!.pieces.some((p) => firstCharacter(p)?.value === "店員"),
+  );
+  assert.equal(firstCharacter(takeOrder)?.value, "店員");
+  assert.equal(firstCharacter(takeOrder)?.attrs["吹き出し"], undefined);
+  assert.match(takeOrder.dialogue, /ご注文/);
+  assert.equal(audio.body.sections[5]!.title, "注文");
+  assert.ok(
+    audio.body.sections[5]!.pieces.some((p) => firstCharacter(p)?.value === "店員"),
+  );
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /任せたあとと注文を取る/);
+  assert.match(overview, /客どうし/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /用語集（任せたあとと注文を取る）/);
+  assert.match(profiles, /客どうしで決める/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  assert.match(guide, /用語集（任せたあとと注文を取る）/);
+  assert.match(guide, /注文を取る/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /用語集（任せたあとと注文を取る）/);
+  assert.match(audioReadme, /客どうしで注文を決める/);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, /用語集（任せたあとと注文を取る）/);
+  assert.match(mangaReadme, /客どうしで決める/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /任せたあとと注文を取る/);
+  assert.match(adrReadme, /客どうしで決める/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.75/);
+  assert.match(changelog, /任せたあとと注文を取る/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /任せたあとと注文を取る/);
+  assert.match(roadmap, /日曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /任せたあとと注文を取る/);
   assert.match(backlog, /日曜向け/);
 });
 
@@ -1645,6 +1724,7 @@ test("AI ネーム起こしガイド: cafe-pose %8–%10 / silent-panels %7–%8
   assert.match(nameRaising, /席の店員/);
   assert.match(nameRaising, /到着の拍と店内/);
   assert.match(nameRaising, /店内の続きと注文/);
+  assert.match(nameRaising, /任せたあとと注文を取る/);
   assert.match(nameRaising, /入店/);
   assert.match(nameRaising, /到着の拍/);
   assert.match(nameRaising, /入店とふつうのセリフに戻る/);
