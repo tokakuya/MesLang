@@ -1111,11 +1111,11 @@ test("glossary: 店内の続きと注文 — umbrella vs seating vs order vs 席
 
   const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
   assert.match(roadmap, /店内の続きと注文/);
-  assert.match(roadmap, /日曜向け/);
+  assert.match(roadmap, /月曜向け/);
 
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /店内の続きと注文/);
-  assert.match(backlog, /日曜向け/);
+  assert.match(backlog, /月曜向け/);
 });
 
 test("glossary: 任せたあとと注文を取る — cafe decide vs staff take-order", () => {
@@ -1190,11 +1190,11 @@ test("glossary: 任せたあとと注文を取る — cafe decide vs staff take-
 
   const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
   assert.match(roadmap, /任せたあとと注文を取る/);
-  assert.match(roadmap, /日曜向け/);
+  assert.match(roadmap, /月曜向け/);
 
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /任せたあとと注文を取る/);
-  assert.match(backlog, /日曜向け/);
+  assert.match(backlog, /月曜向け/);
 });
 
 test("glossary: 見本の場面対応 — station vs cafe are different samples", () => {
@@ -1264,11 +1264,11 @@ test("glossary: 見本の場面対応 — station vs cafe are different samples"
 
   const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
   assert.match(roadmap, /見本の場面対応/);
-  assert.match(roadmap, /日曜向け/);
+  assert.match(roadmap, /月曜向け/);
 
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /見本の場面対応/);
-  assert.match(backlog, /日曜向け/);
+  assert.match(backlog, /月曜向け/);
 });
 
 test("glossary: 入店 vs ふつうのセリフに戻る — both omit 吹き出し, roles differ", () => {
@@ -2056,4 +2056,98 @@ test("AI ガイド: 音声台本化／原稿生成にヘッダーの縁（profil
 
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /木曜夜.*ヘッダーの縁/);
+});
+
+test("AI ガイド: ひな形に見本の場面対応（番号は予約語ではない）", () => {
+  const firstFence = (src: string) => {
+    const start = src.indexOf("```\n");
+    const end = src.indexOf("\n```", start + 4);
+    return src.slice(start + 4, end);
+  };
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+
+  const basics = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  const basicsPrompt = firstFence(basics);
+  assert.match(basicsPrompt, /見本の場面対応/);
+  assert.match(basicsPrompt, /予約語ではない/);
+  assert.match(basicsPrompt, /駅前とカフェは別見本/);
+
+  const nameRaising = guide.slice(
+    guide.indexOf("### 漫画ネーム起こし"),
+    guide.indexOf("### 漫画参考画像"),
+  );
+  const namePrompt = firstFence(nameRaising);
+  assert.match(namePrompt, /見本の場面対応/);
+  assert.match(namePrompt, /%10 をどの見本でも/);
+  assert.match(namePrompt, /席について/);
+
+  const audioScript = guide.slice(
+    guide.indexOf("### 音声台本化"),
+    guide.indexOf("### セリフ文字数の照合"),
+  );
+  const audioPrompt = firstFence(audioScript);
+  assert.match(audioPrompt, /見本の場面対応/);
+  assert.match(audioPrompt, /同一視しない/);
+
+  const audioWrite = guide.slice(
+    guide.indexOf("### 音声原稿を書かせるとき"),
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+  );
+  const audioWritePrompt = firstFence(audioWrite);
+  assert.match(audioWritePrompt, /見本の場面対応/);
+  assert.match(audioWritePrompt, /予約語にしない/);
+
+  const mangaWrite = guide.slice(
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+    guide.indexOf("### 不足情報の洗い出し"),
+  );
+  const mangaWritePrompt = firstFence(mangaWrite);
+  assert.match(mangaWritePrompt, /見本の場面対応/);
+  assert.match(mangaWritePrompt, /予約語ではない/);
+  assert.match(mangaWritePrompt, /cafe-pose %10/);
+
+  const gap = guide.slice(
+    guide.indexOf("### 不足情報の洗い出し"),
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+  );
+  const gapPrompt = firstFence(gap);
+  assert.match(gapPrompt, /見本の場面対応/);
+  assert.match(gapPrompt, /同一視しない/);
+
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 見本の場面対応"),
+    glossary.indexOf("## 到着の拍"),
+  );
+  assert.match(section, /AI ガイド/);
+  assert.match(section, /読み手aiへの基本指示コピー用/);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, /ひな形のなかには/);
+  assert.match(mangaReadme, /見本の場面対応/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /ひな形のなかには/);
+  assert.match(audioReadme, /見本の場面対応/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /見本の場面対応/);
+  assert.match(adrReadme, /コピー用ひな形/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.77/);
+  assert.match(changelog, /見本の場面対応/);
+  assert.match(changelog, /番号は予約語ではない/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /日曜夜: 見本の場面対応の定着/);
+  assert.match(roadmap, /月曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /日曜夜（2026-08-30）: AI ひな形を見本の場面対応/);
+  assert.match(backlog, /月曜向け/);
 });
