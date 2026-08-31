@@ -240,6 +240,10 @@ test("glossary: コメントアウトは行頭だけ — mid-line // stays", () 
   ]) {
     const text = readFileSync(join(root, rel), "utf8");
     assert.match(text, /^\/\/ 取り込みメモ：柱は○で書いてある$/m);
+    assert.match(text, /\/\/ 旧メモ/);
+    assert.match(text, /\$雑踏 \/\/ 大きめ/);
+    // Closing-quote-then-// would skip 名前「」 sugar; samples keep // inside quotes / $ lines.
+    assert.doesNotMatch(text, /」\s*\/\//);
   }
 
   const before = readFileSync(join(root, "examples/audio/mes-import-before.mes"), "utf8");
@@ -254,6 +258,105 @@ test("glossary: コメントアウトは行頭だけ — mid-line // stays", () 
     afterPieces.some((p) => p.dialogue.includes("取り込みメモ")),
     false,
   );
+  const afterNika = afterPieces.find((p) => p.dialogue.includes("キタキタ"));
+  assert.ok(afterNika);
+  assert.match(afterNika!.dialogue, /\/\/ 旧メモ/);
+  assert.ok(
+    afterNika!.decorators.some((d) => d.kind === "sound" && d.value === "雑踏 // 大きめ"),
+  );
+});
+
+test("doFlat: // after closing quote is not 名前「」 sugar", () => {
+  // docs/spec/01-core.md + glossary コメントアウト（行頭だけ）
+  // Sugar requires the line to end at 」. Trailing // after the quote is leftover dialogue.
+  const trailing = doFlat(`にか「あ、キタキタ。」 // 旧メモ
+`);
+  assert.doesNotMatch(trailing, /^@にか/m);
+  assert.match(trailing, /にか「あ、キタキタ。」 \/\/ 旧メモ/);
+
+  const inside = doFlat(`にか「あ、キタキタ。 // 旧メモ」
+`);
+  assert.match(inside, /^@にか$/m);
+  assert.match(inside, /^あ、キタキタ。 \/\/ 旧メモ$/m);
+
+  const medo = parseMesLang(`にか「あ、キタキタ。」 // 旧メモ
+`);
+  const piece = medo.body.sections[0]!.pieces[0]!;
+  assert.equal(firstCharacter(piece), undefined);
+  assert.match(piece.dialogue, /にか「あ、キタキタ。」 \/\/ 旧メモ/);
+});
+
+test("glossary: 閉じかぎのあとの // は糖衣しない — 0.0.79 samples", () => {
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## コメントアウト（行頭だけ）"),
+    glossary.indexOf("## 取り込みの三段階"),
+  );
+  assert.match(section, /閉じかぎ/);
+  assert.match(section, /糖衣/);
+  assert.match(section, /かぎかっこ内/);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, /閉じかぎ/);
+  assert.match(core, /糖衣/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /閉じかぎ/);
+  assert.match(compat, /こう書くと @ になりません/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const basic = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basic, /閉じかぎ/);
+
+  const importHelp = guide.slice(
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+    guide.indexOf("### アニメ字コンテ起こし"),
+  );
+  assert.match(importHelp, /閉じかぎ/);
+
+  const gap = guide.slice(
+    guide.indexOf("### 不足情報の洗い出し"),
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+  );
+  assert.match(gap, /閉じかぎ/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /閉じかぎのあとだと糖衣しない/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /閉じかぎ/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /閉じかぎ/);
+  assert.match(audioReadme, /途中の `\/\/`（かぎかっこ内と `\$` 行）/);
+
+  const decorators = readFileSync(join(root, "docs/spec/02-decorators.md"), "utf8");
+  assert.match(decorators, /閉じかぎ/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /閉じかぎ/);
+
+  const adr0006 = readFileSync(join(root, "docs/decisions/0006-mes-compat-import.md"), "utf8");
+  assert.match(adr0006, /途中の `\/\/` を実例化/);
+  assert.match(adr0006, /閉じかぎ/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.79/);
+  assert.match(changelog, /閉じかぎ/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /月曜夜.*途中の `\/\/` を実例化/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /月曜夜.*途中の `\/\/` を実例化/);
+  assert.match(backlog, /火曜向け/);
+  const glossaryWont = glossary.slice(glossary.indexOf("## 採用しない"));
+  assert.match(glossaryWont, /途中の `\/\/` を互換レイヤで削ること/);
+  assert.match(backlog, /途中の `\/\/` を互換レイヤで削ること/);
+  assert.match(backlog, /カット表の Markdown／CSV/);
 });
 
 
