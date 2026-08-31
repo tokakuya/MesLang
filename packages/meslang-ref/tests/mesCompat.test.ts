@@ -193,6 +193,32 @@ test("rewriteMesCompat: 〇 (U+3007) is not hashira — left alone", () => {
   assert.ok(pieces.some((p) => p.dialogue.includes("〇似た形")));
 });
 
+test("rewriteMesCompat leaves row-start // alone (not mid-line strip)", () => {
+  // ADR 0006: mid-line // is not a compat rewrite. Core skips row-start only.
+  const rewritten = rewriteMesCompat(`// 取り込みメモ
+
+○駅前
+にか「あ、キタキタ。 // 旧メモ」
+$雑踏 // 大きめ
+`);
+  assert.match(rewritten, /^\/\/ 取り込みメモ$/m);
+  assert.match(rewritten, /^#駅前$/m);
+  assert.match(rewritten, /あ、キタキタ。 \/\/ 旧メモ/);
+  assert.match(rewritten, /\$雑踏 \/\/ 大きめ/);
+
+  const medo = parseMesLang(rewritten);
+  const pieces = medo.body.sections[0]!.pieces;
+  assert.equal(
+    pieces.some((p) => p.dialogue.includes("取り込みメモ")),
+    false,
+  );
+  const nika = pieces.find((p) => p.dialogue.includes("キタキタ"));
+  assert.ok(nika);
+  assert.match(nika!.dialogue, /\/\/ 旧メモ/);
+  assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "sound" && d.value.includes("// 大きめ"))));
+});
+
+
 test("audio: speaker 声質 is attr; ambient voice stays $", () => {
   const medo = parseMesLang(`profile: audio
 ----
