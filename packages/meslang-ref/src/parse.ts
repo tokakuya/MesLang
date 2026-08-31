@@ -25,7 +25,15 @@ export function doFlat(text: string): string {
     .split("\n")
     .map((line) => {
       const trimmed = line.trimEnd();
-      if (!trimmed || DECORATOR_MARKS.has(trimmed[0]!) || trimmed.startsWith("==") || HEADER_DELIM.test(trimmed)) {
+      // Row-start // is comment-out (stripped later in parsePiece). Do not treat
+      // `//名前「」` as dialogue sugar — old Mes deleted comments before DoFlat_Dialogue.
+      if (
+        !trimmed ||
+        trimmed.startsWith("//") ||
+        DECORATOR_MARKS.has(trimmed[0]!) ||
+        trimmed.startsWith("==") ||
+        HEADER_DELIM.test(trimmed)
+      ) {
         return line;
       }
       let m = SUGAR_DIALOGUE_RE.exec(trimmed);

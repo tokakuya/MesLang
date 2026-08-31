@@ -117,12 +117,145 @@ test("blank line splits pieces; postfix decorators ok", () => {
   assert.equal(pieces[1]!.decorators.find((d) => d.kind === "comment")?.value, "笑顔");
 });
 
-test("sugar 名前「セリフ」", () => {
-  assert.match(doFlat(`想太「りんご剥いたよ」`), /@想太\nりんご剥いたよ/);
-  const medo = parseMesLang(`想太「りんご剥いたよ」\n`);
-  assert.equal(firstCharacter(medo.body.sections[0]!.pieces[0]!)?.value, "想太");
-  assert.equal(medo.body.sections[0]!.pieces[0]!.dialogue, "りんご剥いたよ");
+test("doFlat: row-start // is not dialogue sugar", () => {
+  // docs/spec/01-core.md + glossary コメントアウト（行頭だけ）
+  const commented = doFlat(`//にか「消えてはいけない」
+@こいと
+残る。
+`);
+  assert.match(commented, /^\/\/にか「消えてはいけない」$/m);
+  assert.doesNotMatch(commented, /@\/\/にか/);
+  assert.doesNotMatch(commented, /@にか/);
+
+  const medo = parseMesLang(`//にか「消えてはいけない」
+
+@こいと
+残る。
+`);
+  const pieces = medo.body.sections[0]!.pieces;
+  assert.equal(pieces.length, 1);
+  assert.equal(firstCharacter(pieces[0]!)?.value, "こいと");
+  assert.equal(pieces[0]!.dialogue, "残る。");
+  assert.equal(
+    pieces.some((p) => p.dialogue.includes("消えてはいけない")),
+    false,
+  );
 });
+
+test("row-start // is skipped; mid-line // stays in dialogue and $", () => {
+  const medo = parseMesLang(`profile: audio
+----
+// この行は読み飛ばす
+@にか
+あ、キタキタ。 // メモはセリフに残る
+$雑踏 // 音の値にも残る
+!正面
+`);
+  const piece = medo.body.sections[0]!.pieces[0]!;
+  assert.equal(firstCharacter(piece)?.value, "にか");
+  assert.equal(piece.dialogue, "あ、キタキタ。 // メモはセリフに残る");
+  assert.equal(piece.decorators.find((d) => d.kind === "sound")?.value, "雑踏 // 音の値にも残る");
+  assert.equal(piece.decorators.find((d) => d.kind === "position")?.value, "正面");
+});
+
+test("glossary: コメントアウトは行頭だけ — mid-line // stays", () => {
+  // docs/spec/05-glossary.md「コメントアウト（行頭だけ）（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## コメントアウト（行頭だけ）"),
+    glossary.indexOf("## 取り込みの三段階"),
+  );
+  assert.match(section, /コメントアウト（行頭だけ）/);
+  assert.match(section, /行頭/);
+  assert.match(section, /途中/);
+  assert.match(section, /DeleteCommentout|旧 Mes/);
+  assert.match(section, /--compat/);
+  assert.match(section, /セリフに残る/);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, /行の途中/);
+  assert.match(core, /コメントアウト行頭だけまぎらわしいことば/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /コメントアウトは行頭だけ/);
+  assert.match(compat, /DeleteCommentout/);
+  assert.match(compat, /途中の `\/\/` を互換レイヤで削ること/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const basic = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basic, /途中の \/\//);
+
+  const importHelp = guide.slice(
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+    guide.indexOf("### アニメ字コンテ起こし"),
+  );
+  assert.match(importHelp, /途中の \/\/|行頭の \/\//);
+  assert.match(importHelp, /コメントアウト行頭だけまぎらわしいことば/);
+
+  const gap = guide.slice(
+    guide.indexOf("### 不足情報の洗い出し"),
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+  );
+  assert.match(gap, /途中の \/\//);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /コメントアウト（行頭だけ/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /コメントアウト行頭だけまぎらわしいことば/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /コメントアウト行頭だけまぎらわしいことば/);
+
+  const decorators = readFileSync(join(root, "docs/spec/02-decorators.md"), "utf8");
+  assert.match(decorators, /コメントアウト行頭だけまぎらわしいことば/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /コメントアウトは行頭/);
+
+  const adr0006 = readFileSync(join(root, "docs/decisions/0006-mes-compat-import.md"), "utf8");
+  assert.match(adr0006, /途中の `\/\/`/);
+  assert.match(adr0006, /DeleteCommentout/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.78/);
+  assert.match(changelog, /行頭 `\/\/` だけ/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /コメントアウトは行頭/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /コメントアウトは行頭/);
+  const glossaryWont = glossary.slice(glossary.indexOf("## 採用しない"));
+  assert.match(glossaryWont, /途中の `\/\/`/);
+  assert.match(backlog, /途中の `\/\/` を互換レイヤで削ること/);
+
+  for (const rel of [
+    "examples/audio/mes-import-before.mes",
+    "examples/audio/mes-import-compat-only.mes",
+    "examples/audio/mes-import-after.mes",
+  ]) {
+    const text = readFileSync(join(root, rel), "utf8");
+    assert.match(text, /^\/\/ 取り込みメモ：柱は○で書いてある$/m);
+  }
+
+  const before = readFileSync(join(root, "examples/audio/mes-import-before.mes"), "utf8");
+  const mid = readFileSync(join(root, "examples/audio/mes-import-compat-only.mes"), "utf8");
+  assert.equal(rewriteMesCompat(before), mid);
+
+  const afterMedo = parseMesLang(
+    readFileSync(join(root, "examples/audio/mes-import-after.mes"), "utf8"),
+  );
+  const afterPieces = afterMedo.body.sections.flatMap((s) => s.pieces);
+  assert.equal(
+    afterPieces.some((p) => p.dialogue.includes("取り込みメモ")),
+    false,
+  );
+});
+
 
 test("header $key value form (Mes-style) and body $ sound stay distinct", () => {
   const medo = parseMesLang(`$title 駅前の二人
@@ -1111,11 +1244,11 @@ test("glossary: 店内の続きと注文 — umbrella vs seating vs order vs 席
 
   const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
   assert.match(roadmap, /店内の続きと注文/);
-  assert.match(roadmap, /月曜向け/);
+  assert.match(roadmap, /火曜向け/);
 
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /店内の続きと注文/);
-  assert.match(backlog, /月曜向け/);
+  assert.match(backlog, /火曜向け/);
 });
 
 test("glossary: 任せたあとと注文を取る — cafe decide vs staff take-order", () => {
@@ -1190,11 +1323,11 @@ test("glossary: 任せたあとと注文を取る — cafe decide vs staff take-
 
   const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
   assert.match(roadmap, /任せたあとと注文を取る/);
-  assert.match(roadmap, /月曜向け/);
+  assert.match(roadmap, /火曜向け/);
 
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /任せたあとと注文を取る/);
-  assert.match(backlog, /月曜向け/);
+  assert.match(backlog, /火曜向け/);
 });
 
 test("glossary: 見本の場面対応 — station vs cafe are different samples", () => {
@@ -1264,11 +1397,11 @@ test("glossary: 見本の場面対応 — station vs cafe are different samples"
 
   const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
   assert.match(roadmap, /見本の場面対応/);
-  assert.match(roadmap, /月曜向け/);
+  assert.match(roadmap, /火曜向け/);
 
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /見本の場面対応/);
-  assert.match(backlog, /月曜向け/);
+  assert.match(backlog, /火曜向け/);
 });
 
 test("glossary: 入店 vs ふつうのセリフに戻る — both omit 吹き出し, roles differ", () => {
@@ -2145,9 +2278,9 @@ test("AI ガイド: ひな形に見本の場面対応（番号は予約語では
 
   const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
   assert.match(roadmap, /日曜夜: 見本の場面対応の定着/);
-  assert.match(roadmap, /月曜向け/);
+  assert.match(roadmap, /火曜向け/);
 
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /日曜夜（2026-08-30）: AI ひな形を見本の場面対応/);
-  assert.match(backlog, /月曜向け/);
+  assert.match(backlog, /火曜向け/);
 });
