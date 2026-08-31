@@ -85,7 +85,7 @@ test("examples/audio mes-import before→after path", () => {
     pieces.some((p) => p.decorators.some((d) => d.kind === "sound" && d.value.includes("ヒソヒソ"))),
   );
   // Ambient sound / position stay as $ / !
-  assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "sound" && d.value === "雑踏")));
+  assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "sound" && d.value === "雑踏 // 大きめ")));
   assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "position" && d.value === "正面")));
   // Soft audio pause stays as & (timing); do not mix * (beat) into import samples
   assert.ok(
@@ -105,7 +105,8 @@ test("examples/audio mes-import before→after path", () => {
   const nika = polished.body.sections[0]!.pieces.find((p) => p.dialogue.includes("キタキタ"));
   assert.equal(firstCharacter(nika!)?.attrs["声質"], "ヒソヒソ");
   assert.equal(firstCharacter(nika!)?.attrs["表情"], "焦り");
-  assert.ok(nika!.decorators.some((d) => d.kind === "sound" && d.value === "雑踏"));
+  assert.ok(nika!.decorators.some((d) => d.kind === "sound" && d.value === "雑踏 // 大きめ"));
+  assert.match(nika!.dialogue, /\/\/ 旧メモ/);
   assert.ok(nika!.decorators.some((d) => d.kind === "position" && d.value === "正面"));
   const pause = polished.body.sections[0]!.pieces.find((p) =>
     p.decorators.some((d) => d.kind === "timing" && d.value === "少し間を置いて"),
@@ -137,6 +138,8 @@ test("mes-import-compat-only.mes matches rewriteMesCompat(before)", () => {
   assert.ok(comments.includes("改札の外"));
   assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "sound" && d.value.includes("ヒソヒソ"))));
   assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "timing" && d.value === "少し間を置いて")));
+  assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "sound" && d.value === "雑踏 // 大きめ")));
+  assert.ok(pieces.some((p) => p.dialogue.includes("// 旧メモ")));
   assert.equal(pieces.some((p) => p.decorators.some((d) => d.kind === "beat")), false);
 });
 
