@@ -2,7 +2,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://meslang.dev/schema/medo.schema.json",
   "title": "Medo",
-  "description": "MesLang の中間データ（medo/0.0）。実験的で破壊的変更があり得る。形チェックは箱の名前と型だけを見る（話の良し悪しは見ない）。空の sections / pieces / decorators、空の dialogue、attrs: {} は正しい縁。必須箱の欠け（dialogue キーなし、rawMark なしなど）は弾く。空の header・profile なし・追加の文字列キーは正しい。空文字や未知の profile は弾く。ピース直下の attrs は弾く。kind unknown は手組み用の逃げ道。",
+  "description": "MesLang の中間データ（medo/0.0）。実験的で破壊的変更があり得る。形チェックは箱の名前と型だけを見る（話の良し悪しは見ない）。空の sections / pieces / decorators、空の dialogue、attrs: {} は正しい縁。必須箱の欠け（dialogue キーなし、rawMark なしなど）は弾く。null は欠けではない（型違い。dialogue: null は must be a string）。空の header・profile なし・追加の文字列キーは正しい。空文字や未知の profile は弾く。profile: null は型違い。ピース直下の attrs は弾く。kind unknown は手組み用の逃げ道。",
   "type": "object",
   "required": ["version", "header", "body"],
   "additionalProperties": false,

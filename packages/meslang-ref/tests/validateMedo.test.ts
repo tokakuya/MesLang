@@ -301,6 +301,136 @@ test("validateMedo distinguishes empty values from missing required keys", () =>
   assert.ok(missingBody.some((i) => i.path === "body" && i.message.includes("required")));
 });
 
+test("validateMedo treats null as type mismatch, not missing", () => {
+  const nullDialogue = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [{ dialogue: null, decorators: [] }],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    nullDialogue.some((i) => i.path.includes("dialogue") && i.message.includes("must be a string")),
+  );
+  assert.equal(
+    nullDialogue.some((i) => i.path.includes("dialogue") && i.message.includes("required")),
+    false,
+  );
+
+  const nullDecorators = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [{ title: "", pieces: [{ dialogue: "", decorators: null }] }],
+    },
+  });
+  assert.ok(
+    nullDecorators.some(
+      (i) => i.path.includes("decorators") && i.message.includes("must be an array"),
+    ),
+  );
+  assert.equal(
+    nullDecorators.some(
+      (i) => i.path.includes("decorators") && i.message.includes("required"),
+    ),
+    false,
+  );
+
+  const nullInArray = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [{ title: "", pieces: [{ dialogue: "", decorators: [null] }] }],
+    },
+  });
+  assert.ok(nullInArray.some((i) => i.message.includes("decorator must be an object")));
+
+  const nullKind = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "",
+              decorators: [{ kind: null, rawMark: "#", value: "x", attrs: {} }],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    nullKind.some((i) => i.path.includes("kind") && i.message.includes("must be a string")),
+  );
+  assert.equal(nullKind.some((i) => i.message.includes("invalid kind")), false);
+
+  const nullVersion = validateMedo({
+    version: null,
+    header: {},
+    body: { sections: [] },
+  });
+  assert.ok(
+    nullVersion.some((i) => i.path === "version" && i.message.includes("must be a string")),
+  );
+  assert.equal(
+    nullVersion.some((i) => i.path === "version" && i.message.includes("required")),
+    false,
+  );
+
+  const nullHeader = validateMedo({
+    version: "medo/0.0",
+    header: null,
+    body: { sections: [] },
+  });
+  assert.ok(
+    nullHeader.some((i) => i.path === "header" && i.message.includes("must be an object")),
+  );
+
+  const nullProfile = validateMedo({
+    version: "medo/0.0",
+    header: { profile: null },
+    body: { sections: [] },
+  });
+  assert.ok(nullProfile.some((i) => i.path === "header.profile"));
+  assert.equal(
+    nullProfile.some((i) => i.path === "header.profile" && i.message.includes("required")),
+    false,
+  );
+
+  const nullAttrs = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "",
+              decorators: [{ kind: "comment", rawMark: "#", value: "x", attrs: null }],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    nullAttrs.some((i) => i.path.includes("attrs") && i.message.includes("must be an object")),
+  );
+  assert.equal(
+    nullAttrs.some((i) => i.path.includes("attrs") && i.message.includes("required")),
+    false,
+  );
+});
+
 test("validateMedo header edges: missing profile ok, empty/unknown profile rejected, extra string keys ok", () => {
   assert.deepEqual(
     validateMedo({
