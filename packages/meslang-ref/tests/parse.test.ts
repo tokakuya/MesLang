@@ -2512,3 +2512,100 @@ test("AI ガイド: ひな形に見本の場面対応（番号は予約語では
   assert.match(backlog, /日曜夜（2026-08-30）: AI ひな形を見本の場面対応/);
   assert.match(backlog, /水曜向け/);
 });
+
+test("glossary: null は欠けではない（型違い）", () => {
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const medoSection = glossary.slice(
+    glossary.indexOf("## Medo の形チェックの縁"),
+    glossary.indexOf("## カット表の形チェックの縁"),
+  );
+  assert.match(medoSection, /null と欠け/);
+  assert.match(medoSection, /dialogue: null/);
+  assert.match(medoSection, /must be a string/);
+  assert.match(medoSection, /is required/);
+  assert.match(medoSection, /は欠けではない（型違い）/);
+  assert.match(medoSection, /profile: null/);
+
+  const conteSection = glossary.slice(
+    glossary.indexOf("## カット表の形チェックの縁"),
+    glossary.indexOf("## 記法"),
+  );
+  assert.match(conteSection, /null と欠け/);
+  assert.match(conteSection, /cut: null/);
+  assert.match(conteSection, /camera: null/);
+
+  const shapeIntro = glossary.slice(
+    glossary.indexOf("## 形チェックと目視"),
+    glossary.indexOf("## Medo の形チェックの縁"),
+  );
+  assert.match(shapeIntro, /null と欠け/);
+
+  const medoSchema = readFileSync(join(root, "schema/medo.schema.json"), "utf8");
+  assert.match(medoSchema, /null は欠けではない/);
+  assert.match(medoSchema, /dialogue: null/);
+  assert.match(medoSchema, /profile: null/);
+
+  const conteSchema = readFileSync(join(root, "schema/conte-table.schema.json"), "utf8");
+  assert.match(conteSchema, /null は欠けではない/);
+  assert.match(conteSchema, /cut: null/);
+  assert.match(conteSchema, /camera: null/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const practice = guide.slice(
+    guide.indexOf("## おすすめの実務の順番"),
+    guide.indexOf("## ツールと AI の役割分担"),
+  );
+  assert.match(practice, /null と欠け/);
+
+  const medoRead = guide.slice(
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+  );
+  const medoPrompt = medoRead.slice(medoRead.indexOf("```"), medoRead.indexOf("```", medoRead.indexOf("```") + 3));
+  assert.match(medoPrompt, /null と欠け/);
+  assert.match(medoPrompt, /dialogue: null/);
+  assert.match(medoPrompt, /kind: null/);
+  assert.match(medoRead, /null と欠け/);
+
+  const conteRead = guide.slice(
+    guide.indexOf("### カット表の形チェック結果の読み方"),
+    guide.indexOf("### アニメ原稿を書かせるとき"),
+  );
+  assert.match(conteRead, /null と欠け/);
+  assert.match(conteRead, /cut: null/);
+  assert.match(conteRead, /camera: \[null\]/);
+
+  const conteDoc = readFileSync(join(root, "docs/spec/07-conte-table.md"), "utf8");
+  assert.match(conteDoc, /cut: null/);
+  assert.match(conteDoc, /camera: \[null\]/);
+  assert.match(conteDoc, /欠けではない/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /null と欠け/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /null と欠け/);
+
+  const readme = readFileSync(join(root, "README.md"), "utf8");
+  assert.match(readme, /null/);
+  assert.match(readme, /型違い/);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, /null と欠け/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /null と欠け/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.82/);
+  assert.match(changelog, /null と欠け/);
+  assert.match(changelog, /must be a string/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /null と欠け/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /null と欠け/);
+  assert.match(backlog, /水曜向け/);
+});

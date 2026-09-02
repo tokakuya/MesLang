@@ -109,6 +109,7 @@ function checkCut(c: unknown, path: string, issues: ConteValidationIssue[]): voi
  * Lightweight shape check aligned with `schema/conte-table.schema.json`.
  * Keeps the reference package tiny (no schema library).
  * Empty values (`cut: ""` / `[]`) are valid; missing required keys are not.
+ * `null` is a type mismatch (not missing).
  */
 export function validateConteTable(data: unknown): ConteValidationIssue[] {
   const issues: ConteValidationIssue[] = [];
@@ -122,10 +123,12 @@ export function validateConteTable(data: unknown): ConteValidationIssue[] {
   }
   if (!Object.hasOwn(data, "version")) {
     issues.push({ path: "version", message: "version is required" });
+  } else if (typeof data.version !== "string") {
+    issues.push({ path: "version", message: "version must be a string" });
   } else if (data.version !== "conte-table/0.0") {
     issues.push({
       path: "version",
-      message: `expected "conte-table/0.0", got ${String(data.version)}`,
+      message: `expected "conte-table/0.0", got ${data.version}`,
     });
   }
   requireString(data, "title", "", issues);
