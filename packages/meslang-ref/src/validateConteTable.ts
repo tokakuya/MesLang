@@ -109,6 +109,7 @@ function checkCut(c: unknown, path: string, issues: ConteValidationIssue[]): voi
  * Lightweight shape check aligned with `schema/conte-table.schema.json`.
  * Keeps the reference package tiny (no schema library).
  * Empty values (`cut: ""` / `[]`) are valid; missing required keys are not.
+ * Type mismatches (`cut: 1`, `camera` as a string) are rejected separately.
  */
 export function validateConteTable(data: unknown): ConteValidationIssue[] {
   const issues: ConteValidationIssue[] = [];

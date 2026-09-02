@@ -449,6 +449,107 @@ test("? ext decorators parse as kind ext with rawMark", () => {
   );
 });
 
+test("validateMedo accepts attrs on frame/camera (shape does not judge attachment)", () => {
+  const medo = parseMesLang(`profile: manga
+----
+%2 :表情 焦り
+^にかバストアップ :姿勢 前のめり
+@にか
+待たせたな……！
+`);
+  assertValidMedo(medo);
+  const piece = medo.body.sections[0]!.pieces[0]!;
+  const frame = piece.decorators.find((d) => d.kind === "frame")!;
+  const camera = piece.decorators.find((d) => d.kind === "camera")!;
+  const ch = firstCharacter(piece)!;
+  assert.equal(frame.attrs["表情"], "焦り");
+  assert.equal(camera.attrs["姿勢"], "前のめり");
+  assert.equal(ch.attrs["表情"], undefined);
+
+  const hand = validateMedo({
+    version: "medo/0.0",
+    header: { profile: "manga", raw: "" },
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "待たせたな……！",
+              decorators: [
+                { kind: "frame", rawMark: "%", value: "2", attrs: { 表情: "焦り" } },
+                { kind: "character", rawMark: "@", value: "にか", attrs: {} },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.deepEqual(hand, []);
+});
+
+test("validateMedo rejects type mismatches (distinct from missing keys and extra keys)", () => {
+  const dialogueNumber = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [{ title: "", pieces: [{ dialogue: 1, decorators: [] }] }],
+    },
+  });
+  assert.ok(
+    dialogueNumber.some((i) => i.path.includes("dialogue") && i.message.includes("must be a string")),
+  );
+  assert.equal(
+    dialogueNumber.some((i) => i.path.includes("dialogue") && i.message.includes("required")),
+    false,
+  );
+
+  const attrsArray = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "",
+              decorators: [{ kind: "character", rawMark: "@", value: "にか", attrs: [] }],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    attrsArray.some((i) => i.path.includes("attrs") && i.message.includes("must be an object")),
+  );
+
+  const attrNumber = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "",
+              decorators: [
+                { kind: "character", rawMark: "@", value: "にか", attrs: { 表情: 1 } },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    attrNumber.some((i) => i.path.includes("attrs.表情") && i.message.includes("must be strings")),
+  );
+});
+
 test("examples/animation/station-conte.mes: cuts, timing, and ? ext notes", () => {
   const text = readFileSync(join(root, "examples/animation/station-conte.mes"), "utf8");
   const medo = parseMesLang(text);
