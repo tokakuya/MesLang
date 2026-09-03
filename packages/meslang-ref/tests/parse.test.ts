@@ -5,6 +5,9 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { doFlat, firstCharacter, parseMesLang } from "../src/parse.ts";
 import { rewriteMesCompat } from "../src/mesCompat.ts";
+import { toConteTable } from "../src/conteTable.ts";
+import { validateConteTable } from "../src/validateConteTable.ts";
+import { validateMedo } from "../src/validateMedo.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
@@ -2511,4 +2514,156 @@ test("AI ガイド: ひな形に見本の場面対応（番号は予約語では
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /日曜夜（2026-08-30）: AI ひな形を見本の場面対応/);
   assert.match(backlog, /水曜向け/);
+});
+
+test("AI ガイド: 通った＝声質が話者にある、ではない（音声・カット表ひな形）", () => {
+  const voicePitfall = parseMesLang(`profile: audio
+----
+@にか
+$ヒソヒソ声 :声質 ヒソヒソ
+待たせるなんて失礼だぞ。
+`);
+  assert.deepEqual(validateMedo(voicePitfall), []);
+  const voicePiece = voicePitfall.body.sections[0]!.pieces[0]!;
+  const sound = voicePiece.decorators.find((d) => d.kind === "sound")!;
+  const ch = firstCharacter(voicePiece)!;
+  assert.equal(sound.value, "ヒソヒソ声");
+  assert.equal(sound.attrs["声質"], "ヒソヒソ");
+  assert.equal(ch.attrs["声質"], undefined);
+
+  const leftover = parseMesLang(`profile: audio
+----
+@にか
+$ヒソヒソ声
+待たせるなんて失礼だぞ。
+`);
+  assert.deepEqual(validateMedo(leftover), []);
+  assert.equal(
+    leftover.body.sections[0]!.pieces[0]!.decorators.find((d) => d.kind === "sound")?.value,
+    "ヒソヒソ声",
+  );
+  assert.equal(firstCharacter(leftover.body.sections[0]!.pieces[0]!)?.attrs["声質"], undefined);
+
+  const contePitfall = parseMesLang(`profile: anime
+----
+%CUT-001
+@にか :表情 微笑
+こんにちは
+`);
+  assert.deepEqual(validateMedo(contePitfall), []);
+  const table = toConteTable(contePitfall);
+  assert.deepEqual(validateConteTable(table), []);
+  assert.equal(table.cuts[0]!.dialogues[0]!.speaker, "にか");
+  assert.equal(table.cuts[0]!.dialogues[0]!.text, "こんにちは");
+  assert.equal("attrs" in table.cuts[0]!.dialogues[0]!, false);
+  assert.equal(firstCharacter(contePitfall.body.sections[0]!.pieces[0]!)?.attrs["表情"], "微笑");
+
+  const firstFence = (src: string) => {
+    const start = src.indexOf("```\n");
+    const end = src.indexOf("\n```", start + 4);
+    return src.slice(start + 4, end);
+  };
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const voicePhrase = /通った＝声質が話者にある、ではない/;
+  const tablePhrase = /通った＝表に表情がある、ではない/;
+
+  const audioScript = guide.slice(
+    guide.indexOf("### 音声台本化"),
+    guide.indexOf("### セリフ文字数の照合"),
+  );
+  assert.match(firstFence(audioScript), voicePhrase);
+  assert.match(audioScript, /音声質ヘッダー変数まぎらわしいことば/);
+
+  const count = guide.slice(
+    guide.indexOf("### セリフ文字数の照合"),
+    guide.indexOf("### 音声原稿を書かせるとき"),
+  );
+  assert.match(firstFence(count), voicePhrase);
+  assert.match(firstFence(count), /\$ヒソヒソ声/);
+
+  const audioWrite = guide.slice(
+    guide.indexOf("### 音声原稿を書かせるとき"),
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+  );
+  assert.match(firstFence(audioWrite), voicePhrase);
+  assert.match(firstFence(audioWrite), /\$ の直後に付けない/);
+
+  const gap = guide.slice(
+    guide.indexOf("### 不足情報の洗い出し"),
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+  );
+  assert.match(firstFence(gap), voicePhrase);
+  assert.match(firstFence(gap), /声質は話者にある/);
+
+  const importHelp = guide.slice(
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+    guide.indexOf("### アニメ字コンテ起こし"),
+  );
+  assert.match(firstFence(importHelp), voicePhrase);
+  assert.match(firstFence(importHelp), /--compat --validate/);
+
+  const tidy = guide.slice(
+    guide.indexOf("### カット表への整理"),
+    guide.indexOf("### カット表の形チェック結果の読み方"),
+  );
+  assert.match(firstFence(tidy), tablePhrase);
+
+  const shapeRead = guide.slice(
+    guide.indexOf("### カット表の形チェック結果の読み方"),
+    guide.indexOf("### アニメ原稿を書かせるとき"),
+  );
+  assert.match(firstFence(shapeRead), tablePhrase);
+  assert.match(firstFence(shapeRead), /載せ忘れではなく/);
+
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const voiceSection = glossary.slice(
+    glossary.indexOf("## 音・声質・ヘッダー変数"),
+    glossary.indexOf("## 音の位置と話者の位置"),
+  );
+  assert.match(voiceSection, voicePhrase);
+  assert.match(voiceSection, /形チェック通過 ≠ 声質が話者にある/);
+
+  const conteSection = glossary.slice(
+    glossary.indexOf("## カット表の形チェックの縁"),
+    glossary.indexOf("## 記法"),
+  );
+  assert.match(conteSection, tablePhrase);
+  assert.match(conteSection, /形チェック通過 ≠ 表に表情がある/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, voicePhrase);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, voicePhrase);
+
+  const conteDoc = readFileSync(join(root, "docs/spec/07-conte-table.md"), "utf8");
+  assert.match(conteDoc, tablePhrase);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, voicePhrase);
+  assert.match(overview, tablePhrase);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, voicePhrase);
+
+  const animeReadme = readFileSync(join(root, "examples/animation/README.md"), "utf8");
+  assert.match(animeReadme, tablePhrase);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.83/);
+  assert.match(changelog, voicePhrase);
+  assert.match(changelog, tablePhrase);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /木曜夜: AI ひな形に「通った＝声質が話者にある、ではない」/);
+  assert.match(roadmap, /金曜向け/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /木曜夜（2026-09-03）: AI ひな形に「通った＝声質が話者にある、ではない」/);
+  assert.match(backlog, /金曜向け/);
+  assert.match(backlog, /水曜向け/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /通った＝声質が話者にある、ではない/);
 });
