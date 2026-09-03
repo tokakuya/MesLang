@@ -5,6 +5,7 @@ import { test } from "node:test";
 import { fileURLToPath } from "node:url";
 import { doFlat, firstCharacter, parseMesLang } from "../src/parse.ts";
 import { rewriteMesCompat } from "../src/mesCompat.ts";
+import { validateMedo } from "../src/validateMedo.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
@@ -2511,4 +2512,150 @@ test("AI ガイド: ひな形に見本の場面対応（番号は予約語では
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /日曜夜（2026-08-30）: AI ひな形を見本の場面対応/);
   assert.match(backlog, /水曜向け/);
+});
+
+test("AI ガイド: 通った＝つき先が正しい、ではない（形チェック通過 ≠ 話者に届いた）", () => {
+  const pitfall = parseMesLang(`profile: manga
+----
+%2 :表情 焦り
+^にかバストアップ :姿勢 前のめり
+@にか
+待たせたな……！
+`);
+  const issues = validateMedo(pitfall);
+  assert.deepEqual(issues, []);
+  const piece = pitfall.body.sections[0]!.pieces[0]!;
+  const frame = piece.decorators.find((d) => d.kind === "frame")!;
+  const ch = firstCharacter(piece)!;
+  assert.equal(frame.attrs["表情"], "焦り");
+  assert.equal(ch.attrs["表情"], undefined);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const phrase = /通った＝つき先が正しい、ではない/;
+
+  const basics = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basics, phrase);
+
+  const writing = guide.slice(
+    guide.indexOf("## AI に MesLang を書かせるとき"),
+    guide.indexOf("## おすすめの実務の順番"),
+  );
+  assert.match(writing, phrase);
+
+  const practice = guide.slice(
+    guide.indexOf("## おすすめの実務の順番"),
+    guide.indexOf("## ツールと AI の役割分担"),
+  );
+  assert.match(practice, phrase);
+  assert.match(practice, /%2 :表情/);
+
+  const roles = guide.slice(
+    guide.indexOf("## ツールと AI の役割分担"),
+    guide.indexOf("## プロンプトのひな形"),
+  );
+  assert.match(roles, /属性のつき先/);
+  assert.match(roles, phrase);
+
+  const nameRaising = guide.slice(
+    guide.indexOf("### 漫画ネーム起こし"),
+    guide.indexOf("### 漫画参考画像"),
+  );
+  assert.match(nameRaising, phrase);
+  assert.match(nameRaising, /話者の顔として読まない/);
+
+  const refImage = guide.slice(
+    guide.indexOf("### 漫画参考画像"),
+    guide.indexOf("### 音声台本化"),
+  );
+  assert.match(refImage, phrase);
+  assert.match(refImage, /顔の描き分けには使わない/);
+
+  const mangaWrite = guide.slice(
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+    guide.indexOf("### 不足情報の洗い出し"),
+  );
+  assert.match(mangaWrite, phrase);
+
+  const gap = guide.slice(
+    guide.indexOf("### 不足情報の洗い出し"),
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+  );
+  assert.match(gap, phrase);
+  assert.match(gap, /表情は話者にある/);
+
+  const medoRead = guide.slice(
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+  );
+  assert.match(medoRead, phrase);
+  assert.match(medoRead, /通った＝話者に届いた、ではない/);
+  assert.match(medoRead, /frame\.attrs/);
+
+  const animeRaise = guide.slice(
+    guide.indexOf("### アニメ字コンテ起こし"),
+    guide.indexOf("### カット表への整理"),
+  );
+  assert.match(animeRaise, phrase);
+
+  const animeWrite = guide.slice(
+    guide.indexOf("### アニメ原稿を書かせるとき"),
+    guide.length,
+  );
+  assert.match(animeWrite, phrase);
+
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const shapeSection = glossary.slice(
+    glossary.indexOf("## 形チェックと目視"),
+    glossary.indexOf("## Medo の形チェックの縁"),
+  );
+  assert.match(shapeSection, /通った＝箱が揃った/);
+  assert.match(shapeSection, /通った＝つき先や品質が正しい/);
+
+  const panelSection = glossary.slice(
+    glossary.indexOf("## コマ・構図と属性"),
+    glossary.indexOf("## タイミングとビート"),
+  );
+  assert.match(panelSection, /形チェック通過 ≠ つき先が正しい/);
+  assert.match(panelSection, phrase);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /通った＝つき先が正しい、ではない/);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, phrase);
+
+  const decorators = readFileSync(join(root, "docs/spec/02-decorators.md"), "utf8");
+  assert.match(decorators, phrase);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, phrase);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, phrase);
+
+  const readme = readFileSync(join(root, "README.md"), "utf8");
+  assert.match(readme, phrase);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, phrase);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /通った＝つき先が正しい、ではない/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.81/);
+  assert.match(changelog, /通った＝つき先が正しい、ではない/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /通った＝つき先が正しい、ではない/);
+  assert.match(roadmap, /水曜向け/);
+  assert.match(roadmap, /金曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /通った＝つき先が正しい、ではない/);
+  assert.match(backlog, /水曜向け/);
+  assert.match(backlog, /金曜向け/);
 });
