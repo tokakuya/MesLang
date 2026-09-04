@@ -1073,6 +1073,54 @@ test("examples/audio/station.mes: 注文 is interior after seating", () => {
   assert.ok(nika!.decorators.some((d) => d.kind === "position" && d.value === "近づく"));
 });
 
+test("examples/audio/station.mes: 丼が来る is interior after order", () => {
+  const text = readFileSync(join(root, "examples/audio/station.mes"), "utf8");
+  const medo = parseMesLang(text);
+  assert.ok(medo.body.sections.length >= 7);
+  assert.equal(medo.body.sections[6]!.title, "丼が来る");
+  const pieces = medo.body.sections[6]!.pieces;
+  assert.ok(pieces.length >= 4);
+
+  const wait = pieces.find((p) => p.dialogue.trim() === "");
+  assert.ok(wait);
+  assert.ok(wait!.decorators.some((d) => d.kind === "sound" && d.value.includes("厨房")));
+  assert.ok(wait!.decorators.some((d) => d.kind === "position" && d.value === "奥"));
+  assert.ok(wait!.decorators.some((d) => d.kind === "timing" && d.value === "約2秒"));
+  assert.ok(wait!.decorators.some((d) => d.kind === "comment" && d.value.includes("注文のあと")));
+  assert.ok(wait!.decorators.some((d) => d.kind === "comment" && d.value.includes("注文を取る拍でもない")));
+
+  const staff = pieces.find((p) => p.dialogue.includes("お待たせしました"));
+  assert.ok(staff);
+  assert.equal(firstCharacter(staff!)?.value, "店員");
+  assert.equal(firstCharacter(staff!)?.attrs["表情"], "微笑");
+  assert.equal(firstCharacter(staff!)?.attrs["声質"], "普通");
+  assert.equal(firstCharacter(staff!)?.attrs["吹き出し"], undefined);
+  assert.ok(staff!.decorators.some((d) => d.kind === "sound" && d.value.includes("丼を置く")));
+  assert.ok(staff!.decorators.some((d) => d.kind === "position" && d.value === "近づく"));
+  assert.ok(staff!.decorators.some((d) => d.kind === "timing" && d.value === "0:03"));
+
+  const koito = pieces.find((p) => p.dialogue.includes("匂いまで同じ"));
+  assert.ok(koito);
+  assert.equal(firstCharacter(koito!)?.value, "こいと");
+  assert.equal(firstCharacter(koito!)?.attrs["表情"], "微笑");
+  assert.equal(firstCharacter(koito!)?.attrs["声質"], "普通");
+  assert.ok(koito!.decorators.some((d) => d.kind === "sound" && d.value.includes("湯気")));
+  assert.ok(koito!.decorators.some((d) => d.kind === "position" && d.value === "左寄り"));
+
+  const nika = pieces.find((p) => p.dialogue.includes("現物まで来たか"));
+  assert.ok(nika);
+  assert.equal(firstCharacter(nika!)?.value, "にか");
+  assert.equal(firstCharacter(nika!)?.attrs["表情"], "苦笑い");
+  assert.equal(firstCharacter(nika!)?.attrs["声質"], "少し声を落として");
+  assert.ok(nika!.decorators.some((d) => d.kind === "sound" && d.value.includes("箸")));
+  assert.ok(nika!.decorators.some((d) => d.kind === "position" && d.value === "正面"));
+
+  const orderSec = medo.body.sections[5]!;
+  assert.equal(orderSec.title, "注文");
+  assert.ok(orderSec.pieces.some((p) => firstCharacter(p)?.value === "店員"));
+  assert.ok(pieces.some((p) => firstCharacter(p)?.value === "店員"));
+});
+
 test("glossary: 到着の拍 — audio 店の前 vs manga %8–%9", () => {
   // docs/spec/05-glossary.md「到着の拍（まぎらわしいことば）」
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
@@ -1142,6 +1190,7 @@ test("glossary: 到着の拍と店内 — 席について is after arrival", () 
   assert.match(section, /到着の拍と店内/);
   assert.match(section, /席について/);
   assert.match(section, /注文/);
+  assert.match(section, /丼が来る/);
   assert.match(section, /店内の続き/);
   assert.match(section, /店内BGM/);
   assert.match(section, /入店/);
@@ -1156,6 +1205,7 @@ test("glossary: 到着の拍と店内 — 席について is after arrival", () 
   const audio = parseMesLang(readFileSync(join(root, "examples/audio/station.mes"), "utf8"));
   assert.equal(audio.body.sections[4]!.title, "席について");
   assert.equal(audio.body.sections[5]!.title, "注文");
+  assert.equal(audio.body.sections[6]!.title, "丼が来る");
   assert.ok(audio.body.sections[4]!.pieces.some((p) => p.dialogue.includes("窓際")));
   assert.ok(
     audio.body.sections[4]!.pieces.some((p) =>
@@ -1168,6 +1218,17 @@ test("glossary: 到着の拍と店内 — 席について is after arrival", () 
   assert.equal(firstCharacter(staff)?.attrs["吹き出し"], undefined);
   assert.ok(orderSec.pieces.some((p) => p.dialogue.includes("いつもので")));
   assert.ok(orderSec.pieces.some((p) => p.dialogue.includes("注文まで来たか")));
+
+  const serveSec = audio.body.sections[6]!;
+  const serveStaff = serveSec.pieces.find((p) => p.dialogue.includes("お待たせしました"))!;
+  assert.equal(firstCharacter(serveStaff)?.value, "店員");
+  assert.equal(firstCharacter(serveStaff)?.attrs["吹き出し"], undefined);
+  assert.ok(serveSec.pieces.some((p) => p.dialogue.includes("現物まで来たか")));
+  assert.ok(
+    serveSec.pieces.some((p) =>
+      p.decorators.some((d) => d.kind === "comment" && d.value.includes("注文のあと")),
+    ),
+  );
 
   const manga = parseMesLang(readFileSync(join(root, "examples/manga/station-name.mes"), "utf8"));
   const pieces = manga.body.sections[0]!.pieces;
@@ -1238,6 +1299,7 @@ test("glossary: 到着の拍と店内 — 席について is after arrival", () 
   assert.match(audioReadme, /%10/);
   assert.match(audioReadme, /%11/);
   assert.match(audioReadme, /六場面目「注文」/);
+  assert.match(audioReadme, /七場面目「丼が来る」/);
   assert.match(audioReadme, /席の店員/);
 
   const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
@@ -1257,10 +1319,12 @@ test("glossary: 到着の拍と店内 — 席について is after arrival", () 
   assert.match(changelog, /0\.0\.66/);
   assert.match(changelog, /0\.0\.72/);
   assert.match(changelog, /0\.0\.73/);
+  assert.match(changelog, /0\.0\.84/);
   assert.match(changelog, /%10/);
   assert.match(changelog, /%11/);
   assert.match(changelog, /席について/);
   assert.match(changelog, /注文/);
+  assert.match(changelog, /丼が来る/);
 
   const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
   assert.match(roadmap, /席について/);
@@ -1268,12 +1332,14 @@ test("glossary: 到着の拍と店内 — 席について is after arrival", () 
   assert.match(roadmap, /%10/);
   assert.match(roadmap, /%11/);
   assert.match(roadmap, /注文/);
+  assert.match(roadmap, /丼が来る/);
 
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /席について/);
   assert.match(backlog, /%10/);
   assert.match(backlog, /%11/);
   assert.match(backlog, /注文/);
+  assert.match(backlog, /丼が来る/);
 });
 
 test("glossary: 店内の続きと注文 — umbrella vs seating vs order vs 席の店員", () => {
@@ -1287,6 +1353,7 @@ test("glossary: 店内の続きと注文 — umbrella vs seating vs order vs 席
   assert.match(section, /総称/);
   assert.match(section, /席について/);
   assert.match(section, /注文/);
+  assert.match(section, /丼が来る/);
   assert.match(section, /席の店員/);
   assert.match(section, /外注ぎ/);
   assert.match(section, /%10/);
@@ -1299,6 +1366,7 @@ test("glossary: 店内の続きと注文 — umbrella vs seating vs order vs 席
   const audio = parseMesLang(readFileSync(join(root, "examples/audio/station.mes"), "utf8"));
   assert.equal(audio.body.sections[4]!.title, "席について");
   assert.equal(audio.body.sections[5]!.title, "注文");
+  assert.equal(audio.body.sections[6]!.title, "丼が来る");
   assert.ok(
     audio.body.sections[4]!.pieces.some((p) =>
       p.decorators.some((d) => d.kind === "comment" && d.value.includes("店内の続き")),
@@ -1351,6 +1419,72 @@ test("glossary: 店内の続きと注文 — umbrella vs seating vs order vs 席
 
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /店内の続きと注文/);
+  assert.match(backlog, /水曜向け/);
+});
+
+test("glossary: 丼が来る — after take-order, staff brings food", () => {
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const scene = glossary.slice(
+    glossary.indexOf("## 見本の場面対応"),
+    glossary.indexOf("## 到着の拍（"),
+  );
+  const interior = glossary.slice(
+    glossary.indexOf("## 到着の拍と店内"),
+    glossary.indexOf("## 店内の続きと注文"),
+  );
+  const umbrella = glossary.slice(
+    glossary.indexOf("## 店内の続きと注文"),
+    glossary.indexOf("## 任せたあとと注文を取る"),
+  );
+  assert.match(scene, /丼が来る/);
+  assert.match(interior, /丼が来る/);
+  assert.match(umbrella, /丼が来る/);
+  assert.match(umbrella, /運ぶ/);
+  assert.match(interior, /取る拍と運ぶ拍/);
+
+  const audio = parseMesLang(readFileSync(join(root, "examples/audio/station.mes"), "utf8"));
+  assert.equal(audio.body.sections[5]!.title, "注文");
+  assert.equal(audio.body.sections[6]!.title, "丼が来る");
+  const serve = audio.body.sections[6]!;
+  const staff = serve.pieces.find((p) => firstCharacter(p)?.value === "店員")!;
+  assert.match(staff.dialogue, /お待たせしました/);
+  assert.equal(firstCharacter(staff)?.attrs["吹き出し"], undefined);
+  assert.ok(serve.pieces.some((p) => p.dialogue.includes("現物まで来たか")));
+  assert.ok(
+    !serve.pieces.some((p) => p.dialogue.includes("ご注文")),
+  );
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /丼が来る/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /丼が来る/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  assert.match(guide, /丼が来る/);
+  assert.match(guide, /店員が運ぶ/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /七場面目「丼が来る」/);
+  assert.match(audioReadme, /取る拍と運ぶ拍/);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, /丼が来る/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /丼が来る/);
+  assert.match(adrReadme, /取る拍と運ぶ拍/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.84/);
+  assert.match(changelog, /丼が来る/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /丼が来る/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /丼が来る/);
   assert.match(backlog, /水曜向け/);
 });
 
@@ -1453,6 +1587,7 @@ test("glossary: 見本の場面対応 — station vs cafe are different samples"
   assert.match(section, /station-two-pages/);
   assert.match(section, /silent-panels/);
   assert.match(section, /店内の続き/);
+  assert.match(section, /丼が来る/);
 
   const cafe = parseMesLang(readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8"));
   const station = parseMesLang(readFileSync(join(root, "examples/manga/station-name.mes"), "utf8"));
@@ -1473,6 +1608,7 @@ test("glossary: 見本の場面対応 — station vs cafe are different samples"
   assert.equal(audio.body.sections[3]!.title, "店の前");
   assert.equal(audio.body.sections[4]!.title, "席について");
   assert.equal(audio.body.sections[5]!.title, "注文");
+  assert.equal(audio.body.sections[6]!.title, "丼が来る");
 
   const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
   assert.match(overview, /見本の場面対応/);
