@@ -410,6 +410,25 @@ test("validateMedo: cafe-pose / station-name %10 multi-speech fixtures stay vali
   assert.match(stationOrderThird.dialogue, /注文まで来たか/);
   assert.equal(firstCharacter(stationPieces[station11]!)?.attrs["吹き出し"], undefined);
 
+  const station12 = stationPieces.findIndex((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "12"),
+  );
+  assert.ok(station12 >= 0);
+  const stationServeSecond = stationPieces[station12 + 1]!;
+  const stationServeThird = stationPieces[station12 + 2]!;
+  assert.equal(
+    stationServeSecond.decorators.some((d) => d.kind === "frame"),
+    false,
+  );
+  assert.equal(
+    stationServeThird.decorators.some((d) => d.kind === "frame"),
+    false,
+  );
+  assert.match(stationPieces[station12]!.dialogue, /お待たせしました/);
+  assert.match(stationServeSecond.dialogue, /匂いまで同じ/);
+  assert.match(stationServeThird.dialogue, /現物まで来たか/);
+  assert.equal(firstCharacter(stationPieces[station12]!)?.attrs["吹き出し"], undefined);
+
   // Hand-shaped slice of the %10 pair still passes (empty attrs / multi-piece)
   const sliceIssues = validateMedo({
     version: "medo/0.0",
