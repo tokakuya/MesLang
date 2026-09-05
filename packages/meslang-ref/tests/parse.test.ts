@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
+import { toConteTable } from "../src/conteTable.ts";
 import { doFlat, firstCharacter, parseMesLang } from "../src/parse.ts";
 import { rewriteMesCompat } from "../src/mesCompat.ts";
 
@@ -1976,6 +1977,162 @@ test("glossary: コマ・構図と属性 — speaker keys stay on @, not % or ^"
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /コマ・構図と属性/);
   assert.match(backlog, /水曜向け/);
+});
+
+test("glossary: 拡張メモとト書きとコメントアウト — ? stays ext, # stays comment, // is dropped", () => {
+  // docs/spec/05-glossary.md「拡張メモとト書きとコメントアウト（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 拡張メモとト書きとコメントアウト"),
+    glossary.indexOf("## コメントアウト（行頭だけ）"),
+  );
+  assert.match(section, /拡張メモとト書きとコメントアウト/);
+  assert.match(section, /ト書き/);
+  assert.match(section, /拡張メモ/);
+  assert.match(section, /コメントアウト/);
+  assert.match(section, /station-conte/);
+  assert.match(section, /\/ `ext`/);
+  assert.match(section, /残らない/);
+  assert.match(section, /カメラ（`\^`）やト書き/);
+
+  const hashAround = glossary.slice(
+    glossary.indexOf("## `#` まわり"),
+    glossary.indexOf("## 拡張メモとト書きとコメントアウト"),
+  );
+  assert.match(hashAround, /拡張メモとト書きとコメントアウトまぎらわしいことば/);
+
+  const names = glossary.slice(
+    glossary.indexOf("## 記号の呼び名"),
+    glossary.indexOf("## 全角／半角の行頭記号"),
+  );
+  assert.match(names, /拡張メモとト書きとコメントアウトまぎらわしいことば/);
+
+  const medo = parseMesLang(`profile: anime
+----
+%CUT-002
+^にか寄せ
+&2s
+#にかが立ち止まる
+?layout A案
+?bg station_evening
+// この行は残らない
+@にか :表情 焦り
+おくれた……！
+`);
+  const piece = medo.body.sections[0]!.pieces[0]!;
+  assert.deepEqual(
+    piece.decorators.map((d) => d.kind),
+    ["frame", "camera", "timing", "comment", "ext", "ext", "character"],
+  );
+  assert.equal(piece.decorators.find((d) => d.kind === "comment")?.value, "にかが立ち止まる");
+  const exts = piece.decorators.filter((d) => d.kind === "ext");
+  assert.deepEqual(
+    exts.map((d) => [d.rawMark, d.value]),
+    [
+      ["?", "layout A案"],
+      ["?", "bg station_evening"],
+    ],
+  );
+  assert.equal(
+    piece.decorators.some((d) => (d.value ?? "").includes("残らない")),
+    false,
+  );
+  assert.doesNotMatch(piece.dialogue, /残らない/);
+
+  const table = toConteTable(medo);
+  const cut = table.cuts[0]!;
+  assert.deepEqual(cut.action, ["にかが立ち止まる"]);
+  assert.deepEqual(cut.ext, ["layout A案", "bg station_evening"]);
+  assert.deepEqual(cut.camera, ["にか寄せ"]);
+  assert.equal(
+    cut.ext.some((e) => e.includes("にかが")),
+    false,
+  );
+  assert.equal(
+    cut.action.some((a) => a.includes("layout")),
+    false,
+  );
+
+  const sample = parseMesLang(
+    readFileSync(join(root, "examples/animation/station-conte.mes"), "utf8"),
+  );
+  const sampleTable = toConteTable(sample);
+  const allExt = sampleTable.cuts.flatMap((c) => c.ext);
+  const allAction = sampleTable.cuts.flatMap((c) => c.action);
+  const allCamera = sampleTable.cuts.flatMap((c) => c.camera);
+  assert.ok(allExt.some((e) => e.startsWith("bg ")));
+  assert.ok(allExt.some((e) => e.startsWith("layout ")));
+  assert.ok(allAction.some((a) => a.includes("雑踏")));
+  assert.equal(
+    allCamera.some((c) => c.startsWith("bg ")),
+    false,
+  );
+  assert.equal(
+    allAction.some((a) => a.startsWith("bg ")),
+    false,
+  );
+
+  const decorators = readFileSync(join(root, "docs/spec/02-decorators.md"), "utf8");
+  assert.match(decorators, /拡張メモとト書きとコメントアウトまぎらわしいことば/);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, /拡張メモとト書きとコメントアウトまぎらわしいことば/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /拡張メモとト書きとコメントアウト/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /拡張メモとト書きとコメントアウトまぎらわしいことば/);
+
+  const conteSpec = readFileSync(join(root, "docs/spec/07-conte-table.md"), "utf8");
+  assert.match(conteSpec, /拡張メモとト書きとコメントアウトまぎらわしいことば/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const basics = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basics, /拡張メモとト書きとコメントアウト/);
+  assert.match(basics, /kind ext/);
+
+  const animeRaising = guide.slice(
+    guide.indexOf("### アニメ字コンテ起こし"),
+    guide.indexOf("### カット表への整理"),
+  );
+  assert.match(animeRaising, /拡張メモとト書きとコメントアウト/);
+
+  const contePrompt = guide.slice(
+    guide.indexOf("### カット表への整理"),
+    guide.indexOf("### カット表の形チェック結果の読み方"),
+  );
+  assert.match(contePrompt, /拡張メモとト書きとコメントアウト/);
+
+  const animeWrite = guide.slice(guide.indexOf("### アニメ原稿を書かせるとき"));
+  assert.match(animeWrite, /拡張メモとト書きとコメントアウト/);
+
+  const gap = guide.slice(
+    guide.indexOf("### 不足情報の洗い出し"),
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+  );
+  assert.match(gap, /拡張メモとト書きとコメントアウト/);
+
+  const animReadme = readFileSync(join(root, "examples/animation/README.md"), "utf8");
+  assert.match(animReadme, /拡張メモとト書きとコメントアウトまぎらわしいことば/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /拡張メモとト書きとコメントアウト/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.87/);
+  assert.match(changelog, /拡張メモとト書きとコメントアウト/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /拡張メモとト書きとコメントアウト/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlogDone = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlogDone, /拡張メモとト書きとコメントアウト/);
+  assert.match(backlogDone, /水曜向け/);
 });
 
 test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () => {
