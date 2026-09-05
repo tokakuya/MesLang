@@ -1978,6 +1978,135 @@ test("glossary: コマ・構図と属性 — speaker keys stay on @, not % or ^"
   assert.match(backlog, /水曜向け/);
 });
 
+test("glossary: 構図とカメラ — manga composition and anime camera share kind camera", () => {
+  // docs/spec/05-glossary.md「構図とカメラ（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 構図とカメラ"),
+    glossary.indexOf("## コマとピース"),
+  );
+  assert.match(section, /構図とカメラ/);
+  assert.match(section, /kind は/);
+  assert.match(section, /`camera`（どう見せるか）/);
+  assert.match(section, /漫画では \*\*構図\*\*/);
+  assert.match(section, /アニメでは \*\*カメラ\*\*/);
+  assert.match(section, /silent-panels/);
+  assert.match(section, /station-conte/);
+  assert.match(section, /1\/2コマ/);
+  assert.match(section, /コマとカット/);
+
+  const manga = parseMesLang(`profile: manga
+----
+%1
+^俯瞰ぎみ 1/2コマ
+#改札前
+`);
+  const anime = parseMesLang(`profile: anime
+----
+%CUT-001
+^寄り → 引き / 手持ちの揺れ
+&2s
+#立ち止まる
+`);
+  const mangaCam = manga.body.sections[0]!.pieces[0]!.decorators.find((d) => d.kind === "camera");
+  const animeCam = anime.body.sections[0]!.pieces[0]!.decorators.find((d) => d.kind === "camera");
+  assert.equal(mangaCam?.kind, "camera");
+  assert.equal(animeCam?.kind, "camera");
+  assert.match(mangaCam?.value ?? "", /俯瞰/);
+  assert.match(mangaCam?.value ?? "", /1\/2コマ/);
+  assert.match(animeCam?.value ?? "", /寄り/);
+  assert.equal(manga.header.profile, "manga");
+  assert.equal(anime.header.profile, "anime");
+
+  const silent = parseMesLang(readFileSync(join(root, "examples/manga/silent-panels.mes"), "utf8"));
+  const conte = parseMesLang(readFileSync(join(root, "examples/animation/station-conte.mes"), "utf8"));
+  const silentCam = silent.body.sections[0]!.pieces.find((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "7"),
+  )!.decorators.find((d) => d.kind === "camera");
+  assert.ok(silentCam);
+  assert.equal(silentCam!.kind, "camera");
+  const conteCam = conte.body.sections[0]!.pieces[0]!.decorators.find((d) => d.kind === "camera");
+  assert.ok(conteCam);
+  assert.equal(conteCam!.kind, "camera");
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /用語集（構図とカメラ）/);
+  const compositionGuide = profiles.slice(
+    profiles.indexOf("### 構図の語彙ガイド"),
+    profiles.indexOf("### ページとコマの分け方"),
+  );
+  assert.match(compositionGuide, /構図とカメラまぎらわしいことば/);
+  assert.doesNotMatch(compositionGuide, /コマとカットまぎらわしいことば/);
+  const cameraGuide = profiles.slice(
+    profiles.indexOf("#### `^`（カメラ）"),
+    profiles.indexOf("#### `&`（尺）"),
+  );
+  assert.match(cameraGuide, /構図とカメラまぎらわしいことば/);
+
+  const decorators = readFileSync(join(root, "docs/spec/02-decorators.md"), "utf8");
+  assert.match(decorators, /構図とカメラまぎらわしいことば/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /構図とカメラ/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const basics = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basics, /\^構図\/カメラ/);
+  assert.match(basics, /構図とカメラ/);
+  assert.doesNotMatch(basics, /\^カメラ \*ビート/);
+
+  const nameRaising = guide.slice(
+    guide.indexOf("### 漫画ネーム起こし"),
+    guide.indexOf("### 漫画参考画像"),
+  );
+  assert.match(nameRaising, /用語集（構図とカメラ）/);
+
+  const mangaWrite = guide.slice(
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+    guide.indexOf("### 不足情報の洗い出し"),
+  );
+  assert.match(mangaWrite, /用語集（構図とカメラ）/);
+  assert.match(mangaWrite, /構図とカメラ/);
+
+  const animeRaising = guide.slice(
+    guide.indexOf("### アニメ字コンテ起こし"),
+    guide.indexOf("### カット表への整理"),
+  );
+  assert.match(animeRaising, /構図と呼ばない/);
+  assert.match(animeRaising, /用語集（構図とカメラ）/);
+
+  const animeWrite = guide.slice(guide.indexOf("### アニメ原稿を書かせるとき"));
+  assert.match(animeWrite, /「構図」と呼ばない/);
+  assert.match(animeWrite, /用語集（構図とカメラ）/);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, /構図とカメラまぎらわしいことば/);
+
+  const animeReadme = readFileSync(join(root, "examples/animation/README.md"), "utf8");
+  assert.match(animeReadme, /構図とカメラまぎらわしいことば/);
+
+  const conteTable = readFileSync(join(root, "docs/spec/07-conte-table.md"), "utf8");
+  assert.match(conteTable, /構図とカメラ/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /構図とカメラ/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.86/);
+  assert.match(changelog, /構図とカメラ/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /構図とカメラ/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /構図とカメラ/);
+  assert.match(backlog, /水曜向け/);
+});
+
 test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () => {
   const text = readFileSync(join(root, "examples/manga/silent-panels.mes"), "utf8");
   const medo = parseMesLang(text);
