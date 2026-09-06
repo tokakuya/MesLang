@@ -1978,6 +1978,123 @@ test("glossary: コマ・構図と属性 — speaker keys stay on @, not % or ^"
   assert.match(backlog, /水曜向け/);
 });
 
+test("glossary: 原稿の必須と箱の必須 — dialogue-only manuscript is valid", () => {
+  // docs/spec/05-glossary.md「原稿の必須と箱の必須（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 原稿の必須と箱の必須"),
+    glossary.indexOf("## 記法"),
+  );
+  assert.match(section, /原稿の必須と箱の必須/);
+  assert.match(section, /ほぼゼロ/);
+  assert.match(section, /セリフだけでもよい/);
+  assert.match(section, /待たせたな/);
+  assert.match(section, /箱の必須/);
+  assert.match(section, /rawMark/);
+  assert.match(section, /不足の洗い出し/);
+  assert.match(section, /形チェック失敗/);
+  assert.match(section, /哲学の必須ゼロ/);
+  assert.match(section, /philosophy\.md/);
+
+  const onlyDialogue = parseMesLang("待たせたな……！\n");
+  const piece = onlyDialogue.body.sections[0]!.pieces[0]!;
+  assert.equal(piece.dialogue, "待たせたな……！");
+  assert.deepEqual(piece.decorators, []);
+
+  const philosophy = readFileSync(join(root, "docs/philosophy.md"), "utf8");
+  assert.match(philosophy, /原稿の必須と箱の必須/);
+  assert.match(philosophy, /必須の情報は、ほぼゼロ/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /原稿の必須と箱の必須/);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, /原稿の必須と箱の必須/);
+
+  const decorators = readFileSync(join(root, "docs/spec/02-decorators.md"), "utf8");
+  assert.match(decorators, /原稿の必須と箱の必須/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /原稿の必須と箱の必須/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  assert.match(guide, /原稿の必須と箱の必須/);
+
+  const basics = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basics, /原稿の必須はほぼゼロ/);
+  assert.match(basics, /原稿の必須と箱の必須/);
+
+  const medoRead = guide.slice(
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+  );
+  assert.match(medoRead, /原稿の必須と箱の必須/);
+  assert.match(medoRead, /セリフだけの原稿が通っても/);
+
+  const audioWrite = guide.slice(
+    guide.indexOf("### 音声原稿を書かせるとき"),
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+  );
+  assert.match(audioWrite, /原稿の必須と箱の必須/);
+
+  const mangaWrite = guide.slice(
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+    guide.indexOf("### 不足情報の洗い出し"),
+  );
+  assert.match(mangaWrite, /原稿の必須と箱の必須/);
+
+  const gap = guide.slice(
+    guide.indexOf("### 不足情報の洗い出し"),
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+  );
+  assert.match(gap, /原稿の必須と箱の必須/);
+
+  const animeWrite = guide.slice(
+    guide.indexOf("### アニメ原稿を書かせるとき"),
+  );
+  assert.match(animeWrite, /原稿の必須と箱の必須/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /原稿の必須と箱の必須/);
+
+  const conteDoc = readFileSync(join(root, "docs/spec/07-conte-table.md"), "utf8");
+  assert.match(conteDoc, /原稿の必須と箱の必須/);
+
+  const medoSchema = readFileSync(join(root, "schema/medo.schema.json"), "utf8");
+  assert.match(medoSchema, /原稿の必須（ほぼゼロ）と箱の必須は別/);
+
+  const readme = readFileSync(join(root, "README.md"), "utf8");
+  assert.match(readme, /原稿の必須と箱の必須/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /原稿の必須と箱の必須/);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, /原稿の必須と箱の必須まぎらわしいことば/);
+
+  const animeReadme = readFileSync(join(root, "examples/animation/README.md"), "utf8");
+  assert.match(animeReadme, /原稿の必須と箱の必須/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /原稿の必須と箱の必須/);
+  assert.match(adrReadme, /2026-09-06/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.88/);
+  assert.match(changelog, /原稿の必須と箱の必須/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /原稿の必須と箱の必須/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /原稿の必須と箱の必須/);
+  assert.match(backlog, /水曜向け/);
+});
+
 test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () => {
   const text = readFileSync(join(root, "examples/manga/silent-panels.mes"), "utf8");
   const medo = parseMesLang(text);
