@@ -463,3 +463,11 @@ test("examples/animation/station-conte.mes: cuts, timing, and ? ext notes", () =
   assert.ok(exts.some((d) => d.value.includes("bg")));
   assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "timing")));
 });
+
+test("validateMedo accepts dialogue-only manuscript (原稿の必須 is nearly zero)", () => {
+  const medo = parseMesLang("待たせたな……！\n");
+  assertValidMedo(medo);
+  const piece = medo.body.sections[0]!.pieces[0]!;
+  assert.equal(piece.dialogue, "待たせたな……！");
+  assert.deepEqual(piece.decorators, []);
+});
