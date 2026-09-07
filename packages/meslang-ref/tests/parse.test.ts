@@ -266,6 +266,37 @@ test("glossary: コメントアウトは行頭だけ — mid-line // stays", () 
   );
 });
 
+test("doFlat: tab and 4 spaces are speaker sugar; 3 spaces are not", () => {
+  // docs/spec/01-core.md + glossary 速記の橋渡し（かぎかっこ・タブ・空白4つ）
+  const tabbed = doFlat("にか\t二年ぶりかな。\n");
+  assert.match(tabbed, /^@にか$/m);
+  assert.match(tabbed, /^二年ぶりかな。$/m);
+
+  const four = doFlat("にか    二年ぶりかな。\n");
+  assert.match(four, /^@にか$/m);
+  assert.match(four, /^二年ぶりかな。$/m);
+
+  const three = doFlat("にか   二年ぶりかな。\n");
+  assert.doesNotMatch(three, /^@にか$/m);
+  assert.match(three, /^にか   二年ぶりかな。$/m);
+
+  const noName = doFlat("    二年ぶりかな。\n");
+  assert.doesNotMatch(noName, /^@/);
+  assert.match(noName, /^    二年ぶりかな。$/m);
+
+  const tabMedo = parseMesLang("にか\tタブのセリフ。\n");
+  assert.equal(firstCharacter(tabMedo.body.sections[0]!.pieces[0]!)?.value, "にか");
+  assert.equal(tabMedo.body.sections[0]!.pieces[0]!.dialogue, "タブのセリフ。");
+
+  const fourMedo = parseMesLang("にか    空白四つのセリフ。\n");
+  assert.equal(firstCharacter(fourMedo.body.sections[0]!.pieces[0]!)?.value, "にか");
+  assert.equal(fourMedo.body.sections[0]!.pieces[0]!.dialogue, "空白四つのセリフ。");
+
+  const threeMedo = parseMesLang("にか   空白三つのセリフ。\n");
+  assert.equal(firstCharacter(threeMedo.body.sections[0]!.pieces[0]!), undefined);
+  assert.match(threeMedo.body.sections[0]!.pieces[0]!.dialogue, /空白三つのセリフ/);
+});
+
 test("doFlat: // after closing quote is not 名前「」 sugar", () => {
   // docs/spec/01-core.md + glossary コメントアウト（行頭だけ）
   // Sugar requires the line to end at 」. Trailing // after the quote is leftover dialogue.
@@ -1670,7 +1701,7 @@ test("glossary: 取り込みの三段階 — machine vs human boundary", () => {
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
   const section = glossary.slice(
     glossary.indexOf("## 取り込みの三段階"),
-    glossary.indexOf("## 記号の呼び名"),
+    glossary.indexOf("## 速記の橋渡し"),
   );
   assert.match(section, /機械変換/);
   assert.match(section, /人手/);
@@ -1720,6 +1751,107 @@ test("glossary: 取り込みの三段階 — machine vs human boundary", () => {
   const glossaryWont = glossary.slice(glossary.indexOf("## 採用しない"));
   assert.match(glossaryWont, /カット表の Markdown／CSV/);
   assert.match(backlog, /カット表の Markdown／CSV/);
+});
+
+test("glossary: 速記の橋渡し — tab / 4 spaces are core DoFlat, not --compat", () => {
+  // docs/spec/05-glossary.md「速記の橋渡し（かぎかっこ・タブ・空白4つ）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 速記の橋渡し"),
+    glossary.indexOf("## 記号の呼び名"),
+  );
+  assert.match(section, /空白4つ/);
+  assert.match(section, /タブ/);
+  assert.match(section, /DoFlat/);
+  assert.match(section, /--compat/);
+  assert.match(section, /空白3つ/);
+  assert.match(section, /混ぜて/);
+
+  const before = readFileSync(join(root, "examples/audio/mes-import-before.mes"), "utf8");
+  const mid = readFileSync(join(root, "examples/audio/mes-import-compat-only.mes"), "utf8");
+  const after = readFileSync(join(root, "examples/audio/mes-import-after.mes"), "utf8");
+  assert.match(before, /にか {4}二年ぶりかな。/);
+  assert.match(mid, /にか {4}二年ぶりかな。/);
+  assert.match(after, /にか {4}二年ぶりかな。/);
+  assert.equal(rewriteMesCompat(before), mid);
+
+  const fourLine = before.split("\n").find((l) => l.includes("二年ぶりかな"))!;
+  const spaces = fourLine.match(/^にか( +)二年ぶりかな。$/)?.[1] ?? "";
+  assert.equal(spaces.length, 4, "import samples must use exactly 4 spaces");
+
+  const rewritten = rewriteMesCompat(before);
+  assert.match(rewritten, /にか {4}二年ぶりかな。/);
+  const medo = parseMesLang(rewritten);
+  const nika = medo.body.sections.flatMap((s) => s.pieces).find((p) => p.dialogue.includes("二年ぶりかな"));
+  assert.equal(firstCharacter(nika!)?.value, "にか");
+  assert.equal(nika!.dialogue, "二年ぶりかな。");
+
+  const afterMedo = parseMesLang(after);
+  const afterNika = afterMedo.body.sections.flatMap((s) => s.pieces).find((p) => p.dialogue.includes("二年ぶりかな"));
+  assert.equal(firstCharacter(afterNika!)?.value, "にか");
+  assert.match(after, /@にか/);
+  assert.match(after, /こいと「それにしても久しぶりですね。」/);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, /空白4つ/);
+  assert.match(core, /速記の橋渡しかぎかっこタブ空白4つまぎらわしいことば/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /速記の橋渡しはコア/);
+  assert.match(compat, /速記の橋渡しかぎかっこタブ空白4つまぎらわしいことば/);
+  assert.match(compat, /にか    二年ぶりかな。/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /速記の橋渡し/);
+  assert.match(overview, /空白4つ/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /速記の橋渡しかぎかっこタブ空白4つまぎらわしいことば/);
+
+  const decorators = readFileSync(join(root, "docs/spec/02-decorators.md"), "utf8");
+  assert.match(decorators, /速記の橋渡しかぎかっこタブ空白4つまぎらわしいことば/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const basics = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basics, /空白4つ/);
+  assert.match(basics, /--compat は触らない/);
+  const importHelp = guide.slice(
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+    guide.indexOf("### アニメ字コンテ起こし"),
+  );
+  assert.match(importHelp, /空白4つ/);
+  assert.match(importHelp, /速記の橋渡しかぎかっこタブ空白4つまぎらわしいことば/);
+  const gap = guide.slice(
+    guide.indexOf("### 不足情報の洗い出し"),
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+  );
+  assert.match(gap, /空白4つ/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /空白4つ/);
+  assert.match(audioReadme, /速記の橋渡しかぎかっこタブ空白4つまぎらわしいことば/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /速記の橋渡し/);
+
+  const adr0006 = readFileSync(join(root, "docs/decisions/0006-mes-compat-import.md"), "utf8");
+  assert.match(adr0006, /空白4つ/);
+  assert.match(adr0006, /2026-09-07/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.90/);
+  assert.match(changelog, /速記の橋渡し/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /速記の橋渡しはコア/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /速記の橋渡し/);
+  assert.match(backlog, /水曜向け/);
 });
 
 test("examples/manga/station-name.mes parses frames", () => {
@@ -2399,7 +2531,7 @@ test("AI ガイド: 音声台本化／原稿生成にヘッダーの縁（profil
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
   const importStages = glossary.slice(
     glossary.indexOf("## 取り込みの三段階"),
-    glossary.indexOf("## 記号の呼び名"),
+    glossary.indexOf("## 速記の橋渡し"),
   );
   assert.match(importStages, /ヘッダーの縁/);
   assert.match(importStages, /profile/);
