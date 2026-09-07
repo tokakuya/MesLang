@@ -754,7 +754,7 @@ test("glossary: 全角／半角の行頭記号 are the same kinds (rawMark kept)
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
   const section = glossary.slice(
     glossary.indexOf("## 全角／半角の行頭記号"),
-    glossary.indexOf("## おすすめの属性キー"),
+    glossary.indexOf("## 速記の空白"),
   );
   assert.match(section, /同じ意味/);
   assert.match(section, /％/);
@@ -1976,6 +1976,135 @@ test("glossary: コマ・構図と属性 — speaker keys stay on @, not % or ^"
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /コマ・構図と属性/);
   assert.match(backlog, /水曜向け/);
+});
+
+test("glossary: 速記の空白 — halfwidth 4 spaces / tab sugar; ideographic space does not", () => {
+  // docs/spec/05-glossary.md「速記の空白（半角と全角）（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 速記の空白"),
+    glossary.indexOf("## おすすめの属性キー"),
+  );
+  assert.match(section, /速記の空白/);
+  assert.match(section, /半角/);
+  assert.match(section, /全角空白/);
+  assert.match(section, /糖衣しない/);
+  assert.match(section, /タブ/);
+  assert.match(section, /--compat/);
+  assert.match(section, /mes-import/);
+
+  const ideo = "\u3000".repeat(4);
+  const ascii4 = "    ";
+  const tabbed = doFlat("にか\t二年ぶりかな。\n");
+  assert.match(tabbed, /^@にか$/m);
+  assert.match(tabbed, /^二年ぶりかな。$/m);
+
+  const sp4 = doFlat(`にか${ascii4}二年ぶりかな。\n`);
+  assert.match(sp4, /^@にか$/m);
+  assert.match(sp4, /^二年ぶりかな。$/m);
+
+  const ideoFlat = doFlat(`こいと${ideo}二年ぶりですね。\n`);
+  assert.doesNotMatch(ideoFlat, /^@こいと$/m);
+  assert.match(ideoFlat, new RegExp(`^こいと${ideo}二年ぶりですね。$`, "m"));
+
+  const ideoMedo = parseMesLang(`こいと${ideo}二年ぶりですね。\n`);
+  const ideoPiece = ideoMedo.body.sections[0]!.pieces[0]!;
+  assert.equal(firstCharacter(ideoPiece), undefined);
+  assert.equal(ideoPiece.dialogue, `こいと${ideo}二年ぶりですね。`);
+
+  const asciiMedo = parseMesLang(`にか${ascii4}二年ぶりかな。\n`);
+  assert.equal(firstCharacter(asciiMedo.body.sections[0]!.pieces[0]!)?.value, "にか");
+  assert.equal(asciiMedo.body.sections[0]!.pieces[0]!.dialogue, "二年ぶりかな。");
+
+  for (const rel of [
+    "examples/audio/mes-import-before.mes",
+    "examples/audio/mes-import-compat-only.mes",
+    "examples/audio/mes-import-after.mes",
+  ]) {
+    const text = readFileSync(join(root, rel), "utf8");
+    const sample = text.split("\n").find((l) => l.includes("二年ぶりですね"));
+    assert.ok(sample, `${rel} should keep the ideographic-space line`);
+    assert.equal([...sample!].filter((c) => c === "\u3000").length, 4);
+    const source = rel.endsWith("before.mes") ? rewriteMesCompat(text) : text;
+    assert.match(source, /二年ぶりですね/);
+    const medo = parseMesLang(source);
+    const piece = medo.body.sections.flatMap((s) => s.pieces).find((p) => p.dialogue.includes("二年ぶりですね"));
+    assert.ok(piece, `${rel} should parse the ideographic-space line as dialogue`);
+    assert.equal(firstCharacter(piece!), undefined, `${rel} must not sugar ideographic spaces into @`);
+  }
+
+  const before = readFileSync(join(root, "examples/audio/mes-import-before.mes"), "utf8");
+  const mid = readFileSync(join(root, "examples/audio/mes-import-compat-only.mes"), "utf8");
+  assert.equal(rewriteMesCompat(before), mid);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, /全角空白/);
+  assert.match(core, /糖衣しない/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /速記の空白は半角だけ/);
+  assert.match(compat, /全角では糖衣しない/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /速記の空白/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /全角空白では糖衣しません/);
+
+  const decorators = readFileSync(join(root, "docs/spec/02-decorators.md"), "utf8");
+  assert.match(decorators, /全角空白では糖衣しません/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const basics = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basics, /全角空白では糖衣しない/);
+
+  const audioWrite = guide.slice(
+    guide.indexOf("### 音声原稿を書かせるとき"),
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+  );
+  assert.match(audioWrite, /全角空白では糖衣しない/);
+
+  const gap = guide.slice(
+    guide.indexOf("### 不足情報の洗い出し"),
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+  );
+  assert.match(gap, /全角空白/);
+
+  const importHelp = guide.slice(
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+    guide.indexOf("### アニメ字コンテ起こし"),
+  );
+  assert.match(importHelp, /全角空白では糖衣しない/);
+  assert.match(importHelp, /速記の空白半角と全角まぎらわしいことば/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /速記の空白半角と全角まぎらわしいことば/);
+  assert.match(audioReadme, /全角空白では糖衣しません/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /速記の空白（半角と全角）/);
+
+  const adr0006 = readFileSync(join(root, "docs/decisions/0006-mes-compat-import.md"), "utf8");
+  assert.match(adr0006, /全角空白では糖衣しない/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.91/);
+  assert.match(changelog, /速記の空白/);
+  assert.match(changelog, /全角空白では糖衣しない/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /全角空白では糖衣しない/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /速記の空白（半角と全角）/);
+  assert.match(backlog, /水曜向け/);
+  const glossaryWont = glossary.slice(glossary.indexOf("## 採用しない"));
+  assert.match(glossaryWont, /全角空白4つを半角空白4つと同じ速記にすること/);
+  assert.match(backlog, /全角空白4つを半角空白4つと同じ速記にすること/);
 });
 
 test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () => {
