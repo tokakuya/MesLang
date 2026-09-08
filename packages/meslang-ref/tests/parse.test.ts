@@ -1859,7 +1859,7 @@ test("glossary: コマ・構図と属性 — speaker keys stay on @, not % or ^"
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
   const section = glossary.slice(
     glossary.indexOf("## コマ・構図と属性"),
-    glossary.indexOf("## タイミングとビート"),
+    glossary.indexOf("## コマ番号とコマのメモ"),
   );
   assert.match(section, /コマ・構図と属性/);
   assert.match(section, /話者の属性/);
@@ -1978,6 +1978,130 @@ test("glossary: コマ・構図と属性 — speaker keys stay on @, not % or ^"
   assert.match(backlog, /水曜向け/);
 });
 
+test("glossary: コマ番号とコマのメモ — % body can be a memo, composition stays on ^", () => {
+  // docs/spec/05-glossary.md「コマ番号とコマのメモ（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## コマ番号とコマのメモ"),
+    glossary.indexOf("## タイミングとビート"),
+  );
+  assert.match(section, /コマ番号とコマのメモ/);
+  assert.match(section, /番号は必須ではありません/);
+  assert.match(section, /%改札/);
+  assert.match(section, /silent-panels/);
+  assert.match(section, /構図は `\^`/);
+  assert.match(section, /状況は `#`/);
+  assert.match(section, /コマ・構図と属性/);
+
+  const memo = parseMesLang(`profile: manga
+----
+%改札
+^俯瞰 横長フル
+#夕方の改札。人波だけ。だれの顔もまだ見えない
+`);
+  const memoPiece = memo.body.sections[0]!.pieces[0]!;
+  const memoFrame = memoPiece.decorators.find((d) => d.kind === "frame")!;
+  const memoCam = memoPiece.decorators.find((d) => d.kind === "camera")!;
+  assert.equal(memoFrame.value, "改札");
+  assert.equal(Object.keys(memoFrame.attrs).length, 0);
+  assert.match(memoCam.value, /俯瞰/);
+  assert.equal(memoCam.attrs["メモ"], undefined);
+
+  const attrPitfall = parseMesLang(`profile: manga
+----
+%1 :メモ 改札
+^俯瞰
+#改札前
+`);
+  const attrPiece = attrPitfall.body.sections[0]!.pieces[0]!;
+  const attrFrame = attrPiece.decorators.find((d) => d.kind === "frame")!;
+  assert.equal(attrFrame.value, "1");
+  assert.equal(attrFrame.attrs["メモ"], "改札");
+
+  const compositionPitfall = parseMesLang(`profile: manga
+----
+%俯瞰
+#改札前
+`);
+  const compPiece = compositionPitfall.body.sections[0]!.pieces[0]!;
+  const compFrame = compPiece.decorators.find((d) => d.kind === "frame")!;
+  assert.equal(compFrame.value, "俯瞰");
+  assert.equal(compPiece.decorators.some((d) => d.kind === "camera"), false);
+
+  const silent = parseMesLang(readFileSync(join(root, "examples/manga/silent-panels.mes"), "utf8"));
+  const first = silent.body.sections[0]!.pieces[0]!;
+  assert.ok(first.decorators.some((d) => d.kind === "frame" && d.value === "改札"));
+  assert.ok(first.decorators.some((d) => d.kind === "camera" && d.value.includes("俯瞰")));
+  assert.equal(first.dialogue.trim(), "");
+  const second = silent.body.sections[0]!.pieces[1]!;
+  assert.ok(second.decorators.some((d) => d.kind === "frame" && d.value === "2"));
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /コマ番号と短いメモ/);
+  assert.match(profiles, /NG: 構図を % に書く/);
+  assert.match(profiles, /NG: ラベルを属性にする/);
+  assert.match(profiles, /%改札/);
+
+  const decorators = readFileSync(join(root, "docs/spec/02-decorators.md"), "utf8");
+  assert.match(decorators, /コマ番号とコマのメモ/);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, /コマ番号とコマのメモ/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /コマ番号とコマのメモ/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  assert.match(guide, /コマ番号とコマのメモ/);
+
+  const basics = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basics, /コマ番号とコマのメモ/);
+  assert.match(basics, /%改札/);
+
+  const nameRaising = guide.slice(
+    guide.indexOf("### 漫画ネーム起こし"),
+    guide.indexOf("### 漫画参考画像"),
+  );
+  assert.match(nameRaising, /コマ番号とコマのメモ/);
+  assert.match(nameRaising, /%改札/);
+
+  const mangaWrite = guide.slice(
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+    guide.indexOf("### 不足情報の洗い出し"),
+  );
+  assert.match(mangaWrite, /コマ番号とコマのメモ/);
+  assert.match(mangaWrite, /数字必須ではない/);
+
+  const gap = guide.slice(
+    guide.indexOf("### 不足情報の洗い出し"),
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+  );
+  assert.match(gap, /%改札/);
+  assert.match(gap, /コマ番号とコマのメモ/);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, /コマ番号とコマのメモまぎらわしいことば/);
+  assert.match(mangaReadme, /%改札/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /コマ番号とコマのメモ/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.92/);
+  assert.match(changelog, /コマ番号とコマのメモ/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /コマ番号とコマのメモ/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /コマ番号とコマのメモ/);
+  assert.match(backlog, /水曜向け/);
+});
+
 test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () => {
   const text = readFileSync(join(root, "examples/manga/silent-panels.mes"), "utf8");
   const medo = parseMesLang(text);
@@ -1992,6 +2116,11 @@ test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () 
     assert.ok(p.decorators.some((d) => d.kind === "camera"));
   }
   const findBeat = pieces[5]!;
+  const first = pieces[0]!;
+  assert.ok(first.decorators.some((d) => d.kind === "frame" && d.value === "改札"));
+  assert.ok(
+    first.decorators.some((d) => d.kind === "camera" && d.value.includes("俯瞰")),
+  );
   assert.ok(findBeat.decorators.some((d) => d.kind === "frame" && d.value === "6"));
   assert.ok(
     findBeat.decorators.some(
@@ -2194,6 +2323,7 @@ test("AI ネーム起こしガイド: cafe-pose %8–%10 / silent-panels %7–%8
 
   const silent = parseMesLang(readFileSync(join(root, "examples/manga/silent-panels.mes"), "utf8"));
   const silentPieces = silent.body.sections[0]!.pieces;
+  assert.ok(silentPieces[0]!.decorators.some((d) => d.kind === "frame" && d.value === "改札"));
   const silentEye = silentPieces[6]!;
   assert.ok(silentEye.decorators.some((d) => d.kind === "frame" && d.value === "7"));
   assert.ok(
