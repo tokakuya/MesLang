@@ -1978,6 +1978,160 @@ test("glossary: コマ・構図と属性 — speaker keys stay on @, not % or ^"
   assert.match(backlog, /水曜向け/);
 });
 
+test("glossary: コマ記号の位置 — % and ^ may follow dialogue in the same piece", () => {
+  // docs/spec/05-glossary.md「コマ記号の位置（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## コマ記号の位置"),
+    glossary.indexOf("## タイミングとビート"),
+  );
+  assert.match(section, /コマ記号の位置/);
+  assert.match(section, /あと置き/);
+  assert.match(section, /station-two-pages/);
+  assert.match(section, /空行のあとの `%` は新しいコマ/);
+  assert.match(section, /コマ・構図と属性/);
+
+  const ok = parseMesLang(`profile: manga
+----
+@にか :表情 苦笑い :姿勢 肩をすくめる
+……歩調、合わせとこ
+%6
+^にか横顔 1/3コマ
+#後ろ姿のあと、小さなつぶやきだけ置く
+`);
+  const okPiece = ok.body.sections[0]!.pieces[0]!;
+  assert.equal(ok.body.sections[0]!.pieces.length, 1);
+  assert.match(okPiece.dialogue, /歩調、合わせとこ/);
+  const okFrame = okPiece.decorators.find((d) => d.kind === "frame")!;
+  const okCam = okPiece.decorators.find((d) => d.kind === "camera")!;
+  const okCh = firstCharacter(okPiece)!;
+  assert.equal(okFrame.value, "6");
+  assert.equal(okFrame.attrs["表情"], undefined);
+  assert.match(okCam.value, /1\/3コマ/);
+  assert.equal(okCam.attrs["表情"], undefined);
+  assert.equal(okCh.attrs["表情"], "苦笑い");
+  assert.equal(okCh.attrs["姿勢"], "肩をすくめる");
+  assert.deepEqual(
+    okPiece.decorators.map((d) => d.kind),
+    ["character", "frame", "camera", "comment"],
+  );
+
+  const pitfall = parseMesLang(`profile: manga
+----
+@にか
+……歩調、合わせとこ
+^にか横顔 :表情 苦笑い
+%6
+`);
+  const pitfallPiece = pitfall.body.sections[0]!.pieces[0]!;
+  const pitCam = pitfallPiece.decorators.find((d) => d.kind === "camera")!;
+  const pitCh = firstCharacter(pitfallPiece)!;
+  assert.equal(pitCam.attrs["表情"], "苦笑い");
+  assert.equal(pitCh.attrs["表情"], undefined);
+
+  const newPanel = parseMesLang(`profile: manga
+----
+@にか
+あ
+
+%6
+^寄り
+@こいと
+い
+`);
+  const newPieces = newPanel.body.sections[0]!.pieces;
+  assert.equal(newPieces.length, 2);
+  assert.equal(newPieces[0]!.decorators.some((d) => d.kind === "frame"), false);
+  assert.ok(newPieces[1]!.decorators.some((d) => d.kind === "frame" && d.value === "6"));
+
+  const twoPages = parseMesLang(
+    readFileSync(join(root, "examples/manga/station-two-pages.mes"), "utf8"),
+  );
+  const page2 = twoPages.body.sections[1]!.pieces;
+  const pct6 = page2.find((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "6"),
+  )!;
+  assert.match(pct6.dialogue, /歩調、合わせとこ/);
+  assert.ok(
+    pct6.decorators.some(
+      (d) => d.kind === "camera" && d.value.includes("にか横顔") && d.value.includes("1/3コマ"),
+    ),
+  );
+  const pct6Ch = firstCharacter(pct6)!;
+  assert.equal(pct6Ch.attrs["表情"], "苦笑い");
+  assert.equal(
+    pct6.decorators.find((d) => d.kind === "frame")!.attrs["表情"],
+    undefined,
+  );
+  assert.equal(
+    pct6.decorators.find((d) => d.kind === "camera")!.attrs["表情"],
+    undefined,
+  );
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /同じピースなら、コマ記号はセリフのあとでも/);
+  assert.match(profiles, /NG: あと置きの \^ に表情が付く/);
+
+  const philosophy = readFileSync(join(root, "docs/philosophy.md"), "utf8");
+  assert.match(philosophy, /コマ記号の位置/);
+
+  const decorators = readFileSync(join(root, "docs/spec/02-decorators.md"), "utf8");
+  assert.match(decorators, /コマ記号の位置/);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, /コマ記号の位置/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /コマ記号の位置/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  assert.match(guide, /コマ記号の位置/);
+
+  const basics = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basics, /コマ記号の位置/);
+
+  const nameRaising = guide.slice(
+    guide.indexOf("### 漫画ネーム起こし"),
+    guide.indexOf("### 漫画参考画像"),
+  );
+  assert.match(nameRaising, /コマ記号の位置/);
+  assert.match(nameRaising, /station-two-pages\.mes/);
+
+  const mangaWrite = guide.slice(
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+    guide.indexOf("### 不足情報の洗い出し"),
+  );
+  assert.match(mangaWrite, /コマ記号の位置/);
+
+  const gap = guide.slice(
+    guide.indexOf("### 不足情報の洗い出し"),
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+  );
+  assert.match(gap, /コマ記号の位置/);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, /コマ記号の位置まぎらわしいことば/);
+  assert.match(mangaReadme, /歩調、合わせとこ/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /コマ記号の位置/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.93/);
+  assert.match(changelog, /コマ記号の位置/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /コマ記号の位置/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /コマ記号の位置/);
+  assert.match(backlog, /水曜向け/);
+});
+
 test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () => {
   const text = readFileSync(join(root, "examples/manga/silent-panels.mes"), "utf8");
   const medo = parseMesLang(text);
@@ -2032,7 +2186,7 @@ test("examples/manga/station-two-pages.mes: == pages and % renumber", () => {
   const page1 = medo.body.sections[0]!.pieces;
   const page2 = medo.body.sections[1]!.pieces;
   assert.ok(page1.length >= 4);
-  assert.ok(page2.length >= 5);
+  assert.ok(page2.length >= 6);
   assert.ok(page1[0]!.decorators.some((d) => d.kind === "frame" && d.value === "1"));
   assert.ok(page2[0]!.decorators.some((d) => d.kind === "frame" && d.value === "1"));
   assert.ok(page2[0]!.decorators.some((d) => d.kind === "camera" && d.value.includes("改札を出て")));
@@ -2051,10 +2205,25 @@ test("examples/manga/station-two-pages.mes: == pages and % renumber", () => {
   assert.ok(
     silentBeat.decorators.some((d) => d.kind === "sound" && d.value.includes("歩行者信号")),
   );
+  const walkingAway = page2.find((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "5"),
+  )!;
+  assert.equal(walkingAway.dialogue.trim(), "");
+  assert.ok(walkingAway.decorators.some((d) => d.kind === "beat"));
   const last = page2[page2.length - 1]!;
-  assert.equal(last.dialogue.trim(), "");
-  assert.ok(last.decorators.some((d) => d.kind === "frame" && d.value === "5"));
-  assert.ok(last.decorators.some((d) => d.kind === "beat"));
+  assert.match(last.dialogue, /歩調、合わせとこ/);
+  assert.ok(last.decorators.some((d) => d.kind === "frame" && d.value === "6"));
+  assert.ok(
+    last.decorators.some((d) => d.kind === "camera" && d.value.includes("にか横顔") && d.value.includes("1/3コマ")),
+  );
+  const lastCh = firstCharacter(last)!;
+  assert.equal(lastCh.value, "にか");
+  assert.equal(lastCh.attrs["表情"], "苦笑い");
+  assert.equal(lastCh.attrs["姿勢"], "肩をすくめる");
+  assert.deepEqual(
+    last.decorators.map((d) => d.kind),
+    ["character", "frame", "camera", "comment"],
+  );
 });
 
 test("examples/manga/cafe-pose.mes: 表情 and 姿勢 on speakers", () => {
