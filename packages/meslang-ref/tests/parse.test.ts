@@ -553,6 +553,8 @@ test("glossary: Medo の形チェックの縁 — empty arrays and dialogue are 
   assert.match(section, /ヘッダーの縁/);
   assert.match(section, /`profile` なし/);
   assert.match(section, /`dialogue` キーなし/);
+  assert.match(section, /配列とオブジェクト/);
+  assert.match(section, /sections: \{\}/);
 
   const medoSchema = readFileSync(join(root, "schema/medo.schema.json"), "utf8");
   assert.match(medoSchema, /空の sections/);
@@ -561,6 +563,7 @@ test("glossary: Medo の形チェックの縁 — empty arrays and dialogue are 
   assert.match(medoSchema, /rawMark なし/);
   assert.match(medoSchema, /profile なし/);
   assert.match(medoSchema, /unknown/);
+  assert.match(medoSchema, /配列とオブジェクト/);
 
   const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
   assert.match(guide, /Medo の形チェックの縁/);
@@ -597,6 +600,8 @@ test("glossary: カット表の形チェックの縁 — empty cut id is valid",
   assert.match(section, /attrs/);
   assert.match(section, /空と欠け/);
   assert.match(section, /`cut` キーなし/);
+  assert.match(section, /配列とオブジェクト/);
+  assert.match(section, /cuts: \{\}/);
 
   const conteDoc = readFileSync(join(root, "docs/spec/07-conte-table.md"), "utf8");
   assert.match(conteDoc, /形チェックが見る縁/);
@@ -604,12 +609,15 @@ test("glossary: カット表の形チェックの縁 — empty cut id is valid",
   assert.match(conteDoc, /dialogues\[\]\.speaker/);
   assert.match(conteDoc, /`cut` キーなし/);
   assert.match(conteDoc, /`dialogues` キーなし/);
+  assert.match(conteDoc, /配列とオブジェクト/);
+  assert.match(conteDoc, /cuts: \{\}/);
 
   const conteSchema = readFileSync(join(root, "schema/conte-table.schema.json"), "utf8");
   assert.match(conteSchema, /番号なし/);
   assert.match(conteSchema, /空配列/);
   assert.match(conteSchema, /必須箱の欠け/);
   assert.match(conteSchema, /attrs/);
+  assert.match(conteSchema, /配列とオブジェクト/);
 
   const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
   assert.match(guide, /カット表の形チェックの縁/);
@@ -2168,11 +2176,13 @@ test("AI ネーム起こしガイド: cafe-pose %8–%10 / silent-panels %7–%8
   assert.match(nameRaising, /勝手にセリフを足さない/);
   assert.match(nameRaising, /空と欠け/);
   assert.match(nameRaising, /ヘッダーの縁/);
+  assert.match(nameRaising, /配列とオブジェクト/);
   assert.match(nameRaising, /medo-の形チェックの縁まぎらわしいことば/);
 
   const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
   assert.match(mangaReadme, /空と欠け/);
   assert.match(mangaReadme, /ヘッダーの縁/);
+  assert.match(mangaReadme, /配列とオブジェクト/);
 
   const cafe = parseMesLang(readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8"));
   const cafePieces = cafe.body.sections[0]!.pieces;
@@ -2271,6 +2281,7 @@ test("AI ガイド: カット表ひな形に番号なし行と形チェック結
   assert.match(shapeRead, /dialogues への attrs/);
   assert.match(shapeRead, /必須箱の欠け/);
   assert.match(shapeRead, /空と欠け/);
+  assert.match(shapeRead, /配列とオブジェクト/);
   assert.match(shapeRead, /提案:/);
   assert.match(shapeRead, /不足:/);
 });
@@ -2291,6 +2302,7 @@ test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先"
   );
   assert.match(practice, /空と欠け/);
   assert.match(practice, /ヘッダーの縁/);
+  assert.match(practice, /配列とオブジェクト/);
 
   const gap = guide.slice(
     guide.indexOf("### 不足情報の洗い出し"),
@@ -2319,6 +2331,7 @@ test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先"
   assert.match(medoRead, /profile: ""/);
   assert.match(medoRead, /提案:/);
   assert.match(medoRead, /不足:/);
+  assert.match(medoRead, /配列とオブジェクト/);
 
   const mangaWrite = guide.slice(
     guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
@@ -2331,6 +2344,7 @@ test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先"
   assert.match(compat, /Medo の形チェック結果の読み方/);
   assert.match(compat, /空と欠け/);
   assert.match(compat, /ヘッダーの縁/);
+  assert.match(compat, /配列とオブジェクト/);
 
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
   const shapeSection = glossary.slice(
@@ -2342,6 +2356,7 @@ test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先"
   assert.match(shapeSection, /Medo でよく迷う縁/);
   assert.match(shapeSection, /空と欠け/);
   assert.match(shapeSection, /ヘッダーの縁/);
+  assert.match(shapeSection, /配列とオブジェクト/);
 });
 
 test("AI ガイド: 音声台本化／原稿生成にヘッダーの縁（profile なしは誤りにしない）", () => {
@@ -2511,4 +2526,88 @@ test("AI ガイド: ひな形に見本の場面対応（番号は予約語では
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /日曜夜（2026-08-30）: AI ひな形を見本の場面対応/);
   assert.match(backlog, /水曜向け/);
+});
+
+test("glossary: 配列とオブジェクト — [] passes, {} in array slots does not", () => {
+  // docs/spec/05-glossary.md「配列とオブジェクト」（Medo／カット表の縁）
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const medoSection = glossary.slice(
+    glossary.indexOf("## Medo の形チェックの縁"),
+    glossary.indexOf("## カット表の形チェックの縁"),
+  );
+  assert.match(medoSection, /配列とオブジェクト/);
+  assert.match(medoSection, /sections: \[\]/);
+  assert.match(medoSection, /sections: \{\}/);
+  assert.match(medoSection, /body: \[\]/);
+  assert.match(medoSection, /attrs: \[\]/);
+
+  const conteSection = glossary.slice(
+    glossary.indexOf("## カット表の形チェックの縁"),
+    glossary.indexOf("## 記法"),
+  );
+  assert.match(conteSection, /配列とオブジェクト/);
+  assert.match(conteSection, /cuts: \{\}/);
+  assert.match(conteSection, /camera: \{\}/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /配列とオブジェクト/);
+
+  const readme = readFileSync(join(root, "README.md"), "utf8");
+  assert.match(readme, /配列とオブジェクト/);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, /配列とオブジェクト/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /配列とオブジェクト/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /配列とオブジェクト/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /配列とオブジェクト/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.95/);
+  assert.match(changelog, /配列とオブジェクト/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /配列とオブジェクト/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /配列とオブジェクト/);
+  assert.match(backlog, /水曜向け/);
+
+  const medoSchema = readFileSync(join(root, "schema/medo.schema.json"), "utf8");
+  assert.match(medoSchema, /配列とオブジェクト/);
+
+  const conteSchema = readFileSync(join(root, "schema/conte-table.schema.json"), "utf8");
+  assert.match(conteSchema, /配列とオブジェクト/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const practice = guide.slice(
+    guide.indexOf("## おすすめの実務の順番"),
+    guide.indexOf("## ツールと AI の役割分担"),
+  );
+  assert.match(practice, /配列とオブジェクト/);
+
+  const medoRead = guide.slice(
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+  );
+  assert.match(medoRead, /配列とオブジェクト/);
+  assert.match(medoRead, /配列箱への \{\}/);
+
+  const shapeRead = guide.slice(
+    guide.indexOf("### カット表の形チェック結果の読み方"),
+    guide.indexOf("### アニメ原稿を書かせるとき"),
+  );
+  assert.match(shapeRead, /配列とオブジェクト/);
+
+  const nameRaising = guide.slice(
+    guide.indexOf("### 漫画ネーム起こし"),
+    guide.indexOf("### 漫画参考画像"),
+  );
+  assert.match(nameRaising, /配列とオブジェクト/);
 });

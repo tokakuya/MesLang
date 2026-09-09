@@ -47,7 +47,7 @@ function requireArray(
 
 function checkStringArray(v: unknown, path: string, issues: ConteValidationIssue[]): void {
   if (!Array.isArray(v)) {
-    issues.push({ path, message: "must be an array of strings" });
+    issues.push({ path, message: "must be an array" });
     return;
   }
   v.forEach((item, i) => {
@@ -109,6 +109,7 @@ function checkCut(c: unknown, path: string, issues: ConteValidationIssue[]): voi
  * Lightweight shape check aligned with `schema/conte-table.schema.json`.
  * Keeps the reference package tiny (no schema library).
  * Empty values (`cut: ""` / `[]`) are valid; missing required keys are not.
+ * Array slots (`cuts` / `camera` / `dialogues`) reject `{}`; the root rejects arrays.
  */
 export function validateConteTable(data: unknown): ConteValidationIssue[] {
   const issues: ConteValidationIssue[] = [];

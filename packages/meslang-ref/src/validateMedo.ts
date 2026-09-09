@@ -120,6 +120,7 @@ function checkSection(s: unknown, path: string, issues: MedoValidationIssue[]): 
  * Lightweight shape check aligned with `schema/medo.schema.json`.
  * Avoids pulling in a schema library; keeps the reference package tiny.
  * Empty values (`""` / `[]` / `{}`) are valid; missing required keys are not.
+ * Array slots reject `{}`; object slots (`body` / `header` / `attrs`) reject `[]`.
  */
 export function validateMedo(data: unknown): MedoValidationIssue[] {
   const issues: MedoValidationIssue[] = [];

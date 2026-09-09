@@ -357,6 +357,79 @@ test("validateMedo header edges: missing profile ok, empty/unknown profile rejec
   );
 });
 
+test("validateMedo distinguishes empty arrays from objects in array slots (配列とオブジェクト)", () => {
+  assert.deepEqual(
+    validateMedo({
+      version: "medo/0.0",
+      header: {},
+      body: { sections: [] },
+    }),
+    [],
+  );
+
+  const objectSections = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: { sections: {} },
+  });
+  assert.ok(
+    objectSections.some((i) => i.path === "body.sections" && i.message.includes("must be an array")),
+  );
+
+  const arrayBody = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: [],
+  });
+  assert.ok(arrayBody.some((i) => i.path === "body" && i.message.includes("must be an object")));
+
+  const arrayHeader = validateMedo({
+    version: "medo/0.0",
+    header: [],
+    body: { sections: [] },
+  });
+  assert.ok(arrayHeader.some((i) => i.path === "header" && i.message.includes("must be an object")));
+
+  const objectDecorators = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [{ dialogue: "", decorators: {} }],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    objectDecorators.some(
+      (i) => i.path.includes("decorators") && i.message.includes("must be an array"),
+    ),
+  );
+
+  const arrayAttrs = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "",
+              decorators: [{ kind: "comment", rawMark: "#", value: "x", attrs: [] }],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    arrayAttrs.some((i) => i.path.includes("attrs") && i.message.includes("must be an object")),
+  );
+});
+
 test("validateMedo: cafe-pose / station-name %10 multi-speech fixtures stay valid", () => {
   const station = parseMesLang(readFileSync(join(root, "examples/manga/station-name.mes"), "utf8"));
   const cafe = parseMesLang(readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8"));
