@@ -357,6 +357,57 @@ test("validateMedo header edges: missing profile ok, empty/unknown profile rejec
   );
 });
 
+test("validateMedo distinguishes empty arrays from wrong-typed items (配列の中身)", () => {
+  assert.deepEqual(
+    validateMedo({
+      version: "medo/0.0",
+      header: {},
+      body: { sections: [] },
+    }),
+    [],
+  );
+
+  const stringSection = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: { sections: ["駅前"] },
+  });
+  assert.ok(
+    stringSection.some((i) => i.path.includes("sections[0]") && i.message.includes("must be an object")),
+  );
+  assert.equal(
+    stringSection.some((i) => i.message.includes("is required")),
+    false,
+  );
+
+  const stringPiece = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: { sections: [{ title: "", pieces: ["セリフ"] }] },
+  });
+  assert.ok(
+    stringPiece.some((i) => i.path.includes("pieces[0]") && i.message.includes("must be an object")),
+  );
+
+  const stringDecorator = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [{ dialogue: "", decorators: ["@にか"] }],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    stringDecorator.some(
+      (i) => i.path.includes("decorators[0]") && i.message.includes("must be an object"),
+    ),
+  );
+});
+
 test("validateMedo: cafe-pose / station-name %10 multi-speech fixtures stay valid", () => {
   const station = parseMesLang(readFileSync(join(root, "examples/manga/station-name.mes"), "utf8"));
   const cafe = parseMesLang(readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8"));
