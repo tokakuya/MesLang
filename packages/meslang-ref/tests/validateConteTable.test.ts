@@ -256,6 +256,56 @@ test("validateConteTable distinguishes empty cut id from missing cut key", () =>
   assert.ok(missingTitle.some((i) => i.path === "title" && i.message.includes("required")));
 });
 
+test("validateConteTable distinguishes empty arrays from wrong-typed items (配列の中身)", () => {
+  assert.deepEqual(
+    validateConteTable({
+      version: "conte-table/0.0",
+      title: "",
+      profile: "anime",
+      cuts: [],
+    }),
+    [],
+  );
+
+  const stringCut = validateConteTable({
+    version: "conte-table/0.0",
+    title: "",
+    profile: "anime",
+    cuts: ["CUT-1"],
+  });
+  assert.ok(
+    stringCut.some((i) => i.path === "cuts[0]" && i.message.includes("must be an object")),
+  );
+  assert.equal(
+    stringCut.some((i) => i.message.includes("is required")),
+    false,
+  );
+
+  const stringDialogue = validateConteTable({
+    version: "conte-table/0.0",
+    title: "t",
+    profile: "anime",
+    cuts: [
+      {
+        cut: "1",
+        camera: [],
+        timing: [],
+        action: [],
+        sound: [],
+        position: [],
+        beat: [],
+        ext: [],
+        dialogues: ["ねえ"],
+      },
+    ],
+  });
+  assert.ok(
+    stringDialogue.some(
+      (i) => i.path.includes("dialogues[0]") && i.message.includes("must be an object"),
+    ),
+  );
+});
+
 test("validateConteTable rejects non-string camera entry", () => {
   const issues = validateConteTable({
     version: "conte-table/0.0",
