@@ -157,7 +157,74 @@ test("validateConteTable rejects camera when not an array", () => {
       },
     ],
   });
-  assert.ok(issues.some((i) => i.path === "cuts[0].camera"));
+  assert.ok(issues.some((i) => i.path === "cuts[0].camera" && i.message.includes("must be an array")));
+});
+
+test("validateConteTable distinguishes empty arrays from objects in array slots (配列とオブジェクト)", () => {
+  assert.deepEqual(
+    validateConteTable({
+      version: "conte-table/0.0",
+      title: "",
+      profile: "anime",
+      cuts: [],
+    }),
+    [],
+  );
+
+  const objectCuts = validateConteTable({
+    version: "conte-table/0.0",
+    title: "",
+    profile: "anime",
+    cuts: {},
+  });
+  assert.ok(objectCuts.some((i) => i.path === "cuts" && i.message.includes("must be an array")));
+
+  const objectCamera = validateConteTable({
+    version: "conte-table/0.0",
+    title: "t",
+    profile: "anime",
+    cuts: [
+      {
+        cut: "1",
+        camera: {},
+        timing: [],
+        action: [],
+        sound: [],
+        position: [],
+        beat: [],
+        ext: [],
+        dialogues: [],
+      },
+    ],
+  });
+  assert.ok(
+    objectCamera.some((i) => i.path === "cuts[0].camera" && i.message.includes("must be an array")),
+  );
+
+  const objectDialogues = validateConteTable({
+    version: "conte-table/0.0",
+    title: "t",
+    profile: "anime",
+    cuts: [
+      {
+        cut: "1",
+        camera: [],
+        timing: [],
+        action: [],
+        sound: [],
+        position: [],
+        beat: [],
+        ext: [],
+        dialogues: {},
+      },
+    ],
+  });
+  assert.ok(
+    objectDialogues.some((i) => i.path.includes("dialogues") && i.message.includes("must be an array")),
+  );
+
+  const arrayRoot = validateConteTable([]);
+  assert.ok(arrayRoot.some((i) => i.message.includes("must be an object")));
 });
 
 test("validateConteTable rejects non-object root", () => {
