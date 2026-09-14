@@ -163,7 +163,7 @@ test("glossary: コメントアウトは行頭だけ — mid-line // stays", () 
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
   const section = glossary.slice(
     glossary.indexOf("## コメントアウト（行頭だけ）"),
-    glossary.indexOf("## 取り込みの三段階"),
+    glossary.indexOf("## セリフのかぎ"),
   );
   assert.match(section, /コメントアウト（行頭だけ）/);
   assert.match(section, /行頭/);
@@ -290,7 +290,7 @@ test("glossary: 閉じかぎのあとの // は糖衣しない — 0.0.79 sample
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
   const section = glossary.slice(
     glossary.indexOf("## コメントアウト（行頭だけ）"),
-    glossary.indexOf("## 取り込みの三段階"),
+    glossary.indexOf("## セリフのかぎ"),
   );
   assert.match(section, /閉じかぎ/);
   assert.match(section, /糖衣/);
@@ -2511,4 +2511,135 @@ test("AI ガイド: ひな形に見本の場面対応（番号は予約語では
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /日曜夜（2026-08-30）: AI ひな形を見本の場面対応/);
   assert.match(backlog, /水曜向け/);
+});
+
+test("glossary: セリフのかぎ — only corner quotes 「」 sugar to @", () => {
+  // docs/spec/05-glossary.md「セリフのかぎ（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## セリフのかぎ"),
+    glossary.indexOf("## 取り込みの三段階"),
+  );
+  assert.match(section, /セリフのかぎ/);
+  assert.match(section, /角かぎ/);
+  assert.match(section, /二重かぎ/);
+  assert.match(section, /話者名なし/);
+  assert.match(section, /かぎかっこ速記/);
+  assert.match(section, /--compat/);
+  assert.match(section, /二年ぶりだね/);
+
+  const corner = doFlat(`にか「あ、キタキタ。」`);
+  assert.match(corner, /^@にか$/m);
+  assert.match(corner, /^あ、キタキタ。$/m);
+
+  const double = doFlat(`にか『二年ぶりだね。』`);
+  assert.match(double, /にか『二年ぶりだね。』/);
+  assert.doesNotMatch(double, /@にか/);
+
+  const ascii = doFlat(`にか"hello"`);
+  assert.match(ascii, /にか"hello"/);
+  assert.doesNotMatch(ascii, /@にか/);
+
+  const half = doFlat(`にか｢あ。｣`);
+  assert.match(half, /にか｢あ。｣/);
+  assert.doesNotMatch(half, /@にか/);
+
+  const nameless = doFlat(`「あ、キタキタ。」`);
+  assert.match(nameless, /「あ、キタキタ。」/);
+  assert.doesNotMatch(nameless, /^@/m);
+
+  const doubleMedo = parseMesLang(`にか『二年ぶりだね。』`);
+  const doublePiece = doubleMedo.body.sections[0]!.pieces[0]!;
+  assert.equal(firstCharacter(doublePiece), undefined);
+  assert.equal(doublePiece.dialogue, "にか『二年ぶりだね。』");
+
+  const before = readFileSync(join(root, "examples/audio/mes-import-before.mes"), "utf8");
+  const mid = readFileSync(join(root, "examples/audio/mes-import-compat-only.mes"), "utf8");
+  const after = readFileSync(join(root, "examples/audio/mes-import-after.mes"), "utf8");
+  assert.match(before, /にか『二年ぶりだね。』/);
+  assert.match(mid, /にか『二年ぶりだね。』/);
+  assert.match(after, /にか『二年ぶりだね。』/);
+  assert.equal(rewriteMesCompat(before), mid);
+  assert.equal(rewriteMesCompat(before).includes("にか『二年ぶりだね。』"), true);
+
+  const midMedo = parseMesLang(mid);
+  const midDouble = midMedo.body.sections[0]!.pieces.find((p) => p.dialogue.includes("二年ぶりだね"));
+  assert.ok(midDouble);
+  assert.equal(firstCharacter(midDouble!), undefined);
+
+  const afterMedo = parseMesLang(after);
+  const afterDouble = afterMedo.body.sections[0]!.pieces.find((p) => p.dialogue.includes("二年ぶりだね"));
+  assert.ok(afterDouble);
+  assert.equal(firstCharacter(afterDouble!), undefined);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, /セリフのかぎまぎらわしいことば/);
+  assert.match(core, /名前『セリフ』/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /セリフのかぎまぎらわしいことば/);
+  assert.match(compat, /にか『二年ぶりだね。』/);
+  assert.match(compat, /糖衣しない/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /セリフのかぎ/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /セリフのかぎまぎらわしいことば/);
+
+  const decorators = readFileSync(join(root, "docs/spec/02-decorators.md"), "utf8");
+  assert.match(decorators, /セリフのかぎまぎらわしいことば/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const basics = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basics, /セリフのかぎ/);
+  assert.match(basics, /角かぎ/);
+
+  const audioWrite = guide.slice(
+    guide.indexOf("### 音声原稿を書かせるとき"),
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+  );
+  assert.match(audioWrite, /セリフのかぎ/);
+
+  const gap = guide.slice(
+    guide.indexOf("### 不足情報の洗い出し"),
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+  );
+  assert.match(gap, /セリフのかぎ/);
+
+  const importHelp = guide.slice(
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+    guide.indexOf("### アニメ字コンテ起こし"),
+  );
+  assert.match(importHelp, /セリフのかぎ/);
+  assert.match(importHelp, /『/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /セリフのかぎまぎらわしいことば/);
+  assert.match(audioReadme, /にか『二年ぶりだね。』/);
+
+  const adr0006 = readFileSync(join(root, "docs/decisions/0006-mes-compat-import.md"), "utf8");
+  assert.match(adr0006, /セリフのかぎは角かぎ/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /セリフのかぎ/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.96/);
+  assert.match(changelog, /セリフのかぎ/);
+  assert.match(changelog, /角かぎ/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /セリフのかぎは角かぎ/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /セリフのかぎ/);
+  assert.match(backlog, /水曜向け/);
+  const glossaryWont = glossary.slice(glossary.indexOf("## 採用しない"));
+  assert.match(glossaryWont, /『』/);
+  assert.match(backlog, /『』 \/ 半角｢｣ \/ ASCII/);
 });
