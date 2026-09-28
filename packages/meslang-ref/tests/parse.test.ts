@@ -359,6 +359,141 @@ test("glossary: 閉じかぎのあとの // は糖衣しない — 0.0.79 sample
   assert.match(backlog, /カット表の Markdown／CSV/);
 });
 
+test("doFlat: @名前「」 on the same line is not sugar", () => {
+  // docs/spec/01-core.md + glossary 糖衣と行頭記号
+  const mixed = doFlat(`@にか「記号と糖衣は混ぜない。」
+`);
+  assert.equal(mixed.trim(), `@にか「記号と糖衣は混ぜない。」`);
+
+  const medo = parseMesLang(`@にか「記号と糖衣は混ぜない。」
+`);
+  const piece = medo.body.sections[0]!.pieces[0]!;
+  assert.equal(firstCharacter(piece)?.value, "にか「記号と糖衣は混ぜない。」");
+  assert.equal(piece.dialogue, "");
+
+  const sugared = parseMesLang(`にか「記号と糖衣は混ぜない。」
+`);
+  const ok = sugared.body.sections[0]!.pieces[0]!;
+  assert.equal(firstCharacter(ok)?.value, "にか");
+  assert.equal(ok.dialogue, "記号と糖衣は混ぜない。");
+});
+
+test("rewriteMesCompat: ○名前「」 becomes comment, not speaker", () => {
+  const rewritten = rewriteMesCompat(`○にか「柱に混ぜない。」
+`);
+  assert.match(rewritten, /^#にか「柱に混ぜない。」$/m);
+  const medo = parseMesLang(rewritten);
+  const piece = medo.body.sections[0]!.pieces[0]!;
+  assert.equal(firstCharacter(piece), undefined);
+  assert.equal(piece.dialogue, "");
+  assert.equal(piece.decorators.find((d) => d.kind === "comment")?.value, "にか「柱に混ぜない。」");
+});
+
+test("glossary: 糖衣と行頭記号 — mix @ and 「」 does not sugar", () => {
+  // docs/spec/05-glossary.md「糖衣と行頭記号（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 糖衣と行頭記号"),
+    glossary.indexOf("## 取り込みの三段階"),
+  );
+  assert.match(section, /糖衣と行頭記号/);
+  assert.match(section, /行頭が名前/);
+  assert.match(section, /@にか「/);
+  assert.match(section, /○にか「/);
+  assert.match(section, /--compat/);
+  assert.match(section, /記号と糖衣は混ぜない/);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, /糖衣と行頭記号まぎらわしいことば/);
+  assert.match(core, /記号と糖衣の混ぜ/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /糖衣と行頭記号まぎらわしいことば/);
+  assert.match(compat, /@名前「セリフ」/);
+  assert.match(compat, /○名前「セリフ」/);
+  assert.match(compat, /同じ糖衣として扱うこと/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const basic = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basic, /行頭が名前のときだけ/);
+  assert.match(basic, /糖衣と行頭記号まぎらわしいことば/);
+
+  const importHelp = guide.slice(
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+    guide.indexOf("### アニメ字コンテ起こし"),
+  );
+  assert.match(importHelp, /同じ行へ混ぜると糖衣しない/);
+  assert.match(importHelp, /糖衣と行頭記号まぎらわしいことば/);
+
+  const gap = guide.slice(
+    guide.indexOf("### 不足情報の洗い出し"),
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+  );
+  assert.match(gap, /記号と糖衣を同じ行へ混ぜている/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /糖衣と行頭記号/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /糖衣と行頭記号まぎらわしいことば/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /糖衣と行頭記号まぎらわしいことば/);
+  assert.match(audioReadme, /記号と糖衣は混ぜない/);
+
+  const decorators = readFileSync(join(root, "docs/spec/02-decorators.md"), "utf8");
+  assert.match(decorators, /糖衣と行頭記号まぎらわしいことば/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /糖衣と行頭記号/);
+
+  const adr0006 = readFileSync(join(root, "docs/decisions/0006-mes-compat-import.md"), "utf8");
+  assert.match(adr0006, /@名前「」/);
+  assert.match(adr0006, /糖衣と行頭記号/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.97/);
+  assert.match(changelog, /糖衣と行頭記号/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /糖衣と行頭記号/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /糖衣と行頭記号/);
+  assert.match(backlog, /水曜向け/);
+  const glossaryWont = glossary.slice(glossary.indexOf("## 採用しない"));
+  assert.match(glossaryWont, /@名前「」/);
+  assert.match(backlog, /@名前「」/);
+  assert.match(backlog, /途中の `\/\/` を互換レイヤで削ること/);
+
+  const before = readFileSync(join(root, "examples/audio/mes-import-before.mes"), "utf8");
+  const mid = readFileSync(join(root, "examples/audio/mes-import-compat-only.mes"), "utf8");
+  const after = readFileSync(join(root, "examples/audio/mes-import-after.mes"), "utf8");
+  assert.equal(rewriteMesCompat(before), mid);
+  assert.match(before, /^@にか「記号と糖衣は混ぜない。」$/m);
+  assert.match(mid, /^@にか「記号と糖衣は混ぜない。」$/m);
+  assert.doesNotMatch(after, /@にか「記号と糖衣は混ぜない。」/);
+  assert.match(after, /^記号と糖衣は混ぜない。$/m);
+
+  const beforeMedo = parseMesLang(rewriteMesCompat(before));
+  const mixedPiece = beforeMedo.body.sections
+    .flatMap((s) => s.pieces)
+    .find((p) => firstCharacter(p)?.value?.includes("記号と糖衣は混ぜない"));
+  assert.ok(mixedPiece);
+  assert.equal(firstCharacter(mixedPiece!)?.value, "にか「記号と糖衣は混ぜない。」");
+  assert.equal(mixedPiece!.dialogue, "");
+
+  const afterMedo = parseMesLang(after);
+  const split = afterMedo.body.sections
+    .flatMap((s) => s.pieces)
+    .find((p) => p.dialogue === "記号と糖衣は混ぜない。");
+  assert.ok(split);
+  assert.equal(firstCharacter(split!)?.value, "にか");
+});
 
 test("header $key value form (Mes-style) and body $ sound stay distinct", () => {
   const medo = parseMesLang(`$title 駅前の二人
