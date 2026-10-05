@@ -1978,6 +1978,145 @@ test("glossary: コマ・構図と属性 — speaker keys stay on @, not % or ^"
   assert.match(backlog, /水曜向け/);
 });
 
+test("glossary: 音・声質と属性 — :声質 stays on @, not $ / ! / &", () => {
+  // docs/spec/05-glossary.md「音・声質と属性（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 音・声質と属性"),
+    glossary.indexOf("## 音の位置と話者の位置"),
+  );
+  assert.match(section, /音・声質と属性/);
+  assert.match(section, /声質は `@` へ/);
+  assert.match(section, /station\.mes/);
+  assert.match(section, /mes-import-after/);
+  assert.match(section, /属性のつき先/);
+  assert.match(section, /--compat/);
+
+  const pitfall = parseMesLang(`profile: audio
+----
+@にか
+$雑踏 :声質 ヒソヒソ
+!正面 :声質 ささやき
+&約2秒
+あ、キタキタ。
+`);
+  const pitfallPiece = pitfall.body.sections[0]!.pieces[0]!;
+  const sound = pitfallPiece.decorators.find((d) => d.kind === "sound")!;
+  const pos = pitfallPiece.decorators.find((d) => d.kind === "position")!;
+  const ch = firstCharacter(pitfallPiece)!;
+  assert.equal(sound.value, "雑踏");
+  assert.equal(sound.attrs["声質"], "ヒソヒソ");
+  assert.equal(pos.attrs["声質"], "ささやき");
+  assert.equal(ch.attrs["声質"], undefined);
+  assert.match(ch.value ?? "", /にか/);
+
+  const ok = parseMesLang(`profile: audio
+----
+@にか :声質 ヒソヒソ
+$雑踏
+!正面
+あ、キタキタ。
+`);
+  const okPiece = ok.body.sections[0]!.pieces[0]!;
+  const okSound = okPiece.decorators.find((d) => d.kind === "sound")!;
+  const okCh = firstCharacter(okPiece)!;
+  assert.equal(okSound.attrs["声質"], undefined);
+  assert.equal(okCh.attrs["声質"], "ヒソヒソ");
+
+  const station = parseMesLang(readFileSync(join(root, "examples/audio/station.mes"), "utf8"));
+  const after = parseMesLang(readFileSync(join(root, "examples/audio/mes-import-after.mes"), "utf8"));
+  for (const medo of [station, after]) {
+    for (const sec of medo.body.sections) {
+      for (const piece of sec.pieces) {
+        for (const d of piece.decorators) {
+          if (d.kind === "sound" || d.kind === "position" || d.kind === "timing") {
+            assert.equal(d.attrs["声質"], undefined);
+          }
+        }
+      }
+    }
+  }
+  const nikaVoice = station.body.sections
+    .find((s) => s.title === "改札を出て")!
+    .pieces.find((p) => p.dialogue.includes("やっと会えたな"))!;
+  assert.equal(firstCharacter(nikaVoice)!.attrs["声質"], "少し声を落として");
+  const afterNika = after.body.sections[0]!.pieces.find((p) => p.dialogue.includes("キタキタ"))!;
+  assert.equal(firstCharacter(afterNika)!.attrs["声質"], "ヒソヒソ");
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /声質を音に付けない/);
+  assert.match(profiles, /NG: 声質が \$ に付く/);
+
+  const decorators = readFileSync(join(root, "docs/spec/02-decorators.md"), "utf8");
+  assert.match(decorators, /話者の声には届きません/);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, /音・声質と属性/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /音・声質と属性/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /音・声質と属性/);
+  assert.match(compat, /@名前` の直後/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  assert.match(guide, /音・声質と属性/);
+  assert.match(guide, /\$ \/ ! \/ & に付けると音／位置／尺/);
+
+  const basics = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basics, /音・声質と属性/);
+
+  const audioWrite = guide.slice(
+    guide.indexOf("### 音声原稿を書かせるとき"),
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+  );
+  assert.match(audioWrite, /音・声質と属性/);
+  assert.match(audioWrite, /\$ \/ ! \/ & にも付けない/);
+
+  const audioScript = guide.slice(
+    guide.indexOf("### 音声台本化"),
+    guide.indexOf("### セリフ文字数の照合"),
+  );
+  assert.match(audioScript, /音・声質と属性/);
+
+  const gap = guide.slice(
+    guide.indexOf("### 不足情報の洗い出し"),
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+  );
+  assert.match(gap, /音・声質と属性/);
+  assert.match(gap, /:声質 が \$ や ! の直後/);
+
+  const importHelp = guide.slice(
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+    guide.indexOf("### アニメ字コンテ起こし"),
+  );
+  assert.match(importHelp, /音・声質と属性/);
+  assert.match(importHelp, /@話者 の直後へ/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /音声質と属性まぎらわしいことば/);
+  assert.match(audioReadme, /声質のつき先/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /音・声質と属性/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.98/);
+  assert.match(changelog, /音・声質と属性/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /音・声質と属性/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /音・声質と属性/);
+  assert.match(backlog, /水曜向け/);
+});
+
 test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () => {
   const text = readFileSync(join(root, "examples/manga/silent-panels.mes"), "utf8");
   const medo = parseMesLang(text);
