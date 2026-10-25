@@ -127,6 +127,14 @@ test("examples/audio mes-import before→after path", () => {
   const nikaYears = polished.body.sections[0]!.pieces.find((p) => p.dialogue.includes("二年ぶりかな"));
   assert.equal(firstCharacter(nikaYears!)?.value, "にか");
   assert.equal(nikaYears!.dialogue, "二年ぶりかな。");
+
+  const mixed = pieces.find((p) => firstCharacter(p)?.value?.includes("記号と糖衣は混ぜない"));
+  assert.ok(mixed);
+  assert.equal(firstCharacter(mixed!)?.value, "にか「記号と糖衣は混ぜない。」");
+  assert.equal(mixed!.dialogue, "");
+  const split = polished.body.sections[0]!.pieces.find((p) => p.dialogue === "記号と糖衣は混ぜない。");
+  assert.ok(split);
+  assert.equal(firstCharacter(split!)?.value, "にか");
 });
 
 test("mes-import-compat-only.mes matches rewriteMesCompat(before)", () => {
@@ -147,6 +155,7 @@ test("mes-import-compat-only.mes matches rewriteMesCompat(before)", () => {
   assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "timing" && d.value === "少し間を置いて")));
   assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "sound" && d.value === "雑踏 // 大きめ")));
   assert.ok(pieces.some((p) => p.dialogue.includes("// 旧メモ")));
+  assert.ok(pieces.some((p) => firstCharacter(p)?.value === "にか「記号と糖衣は混ぜない。」"));
   assert.equal(pieces.some((p) => p.decorators.some((d) => d.kind === "beat")), false);
 });
 
