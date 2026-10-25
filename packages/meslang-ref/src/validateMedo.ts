@@ -66,8 +66,10 @@ function checkDecorator(d: unknown, path: string, issues: MedoValidationIssue[])
   }
   if (!Object.hasOwn(d, "kind")) {
     issues.push({ path: `${path}.kind`, message: "kind is required" });
-  } else if (typeof d.kind !== "string" || !DECORATOR_KINDS.has(d.kind)) {
-    issues.push({ path: `${path}.kind`, message: `invalid kind: ${String(d.kind)}` });
+  } else if (typeof d.kind !== "string") {
+    issues.push({ path: `${path}.kind`, message: "kind must be a string" });
+  } else if (!DECORATOR_KINDS.has(d.kind)) {
+    issues.push({ path: `${path}.kind`, message: `invalid kind: ${d.kind}` });
   }
   requireString(d, "rawMark", path, issues);
   requireString(d, "value", path, issues);
@@ -122,6 +124,7 @@ function checkSection(s: unknown, path: string, issues: MedoValidationIssue[]): 
  * Empty values (`""` / `[]` / `{}`) are valid; missing required keys are not.
  * Attrs on any decorator kind (including frame/camera) are valid shape;
  * type mismatches (non-string dialogue, array attrs, numeric attr values) are not.
+ * `null` is a type mismatch (not missing).
  */
 export function validateMedo(data: unknown): MedoValidationIssue[] {
   const issues: MedoValidationIssue[] = [];
@@ -135,8 +138,10 @@ export function validateMedo(data: unknown): MedoValidationIssue[] {
   }
   if (!Object.hasOwn(data, "version")) {
     issues.push({ path: "version", message: "version is required" });
+  } else if (typeof data.version !== "string") {
+    issues.push({ path: "version", message: "version must be a string" });
   } else if (data.version !== "medo/0.0") {
-    issues.push({ path: "version", message: `expected "medo/0.0", got ${String(data.version)}` });
+    issues.push({ path: "version", message: `expected "medo/0.0", got ${data.version}` });
   }
   if (!Object.hasOwn(data, "header")) {
     issues.push({ path: "header", message: "header is required" });
