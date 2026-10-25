@@ -554,6 +554,9 @@ test("glossary: Medo の形チェックの縁 — empty arrays and dialogue are 
   assert.match(section, /ヘッダーの縁/);
   assert.match(section, /`profile` なし/);
   assert.match(section, /`dialogue` キーなし/);
+  assert.match(section, /つき先の良し悪しは見ない/);
+  assert.match(section, /型違い/);
+  assert.match(section, /コマ・構図と属性/);
 
   const medoSchema = readFileSync(join(root, "schema/medo.schema.json"), "utf8");
   assert.match(medoSchema, /空の sections/);
@@ -562,6 +565,8 @@ test("glossary: Medo の形チェックの縁 — empty arrays and dialogue are 
   assert.match(medoSchema, /rawMark なし/);
   assert.match(medoSchema, /profile なし/);
   assert.match(medoSchema, /unknown/);
+  assert.match(medoSchema, /つき先/);
+  assert.match(medoSchema, /型が違う/);
 
   const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
   assert.match(guide, /Medo の形チェックの縁/);
@@ -577,6 +582,8 @@ test("glossary: Medo の形チェックの縁 — empty arrays and dialogue are 
   assert.match(adrReadme, /Medo の形チェックの縁/);
 
   const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.81/);
+  assert.match(changelog, /つき先の良し悪し/);
   assert.match(changelog, /0\.0\.70/);
   assert.match(changelog, /0\.0\.69/);
   assert.match(changelog, /空と欠け|必須箱の欠け/);
@@ -598,6 +605,8 @@ test("glossary: カット表の形チェックの縁 — empty cut id is valid",
   assert.match(section, /attrs/);
   assert.match(section, /空と欠け/);
   assert.match(section, /`cut` キーなし/);
+  assert.match(section, /型違い/);
+  assert.match(section, /cut: 1/);
 
   const conteDoc = readFileSync(join(root, "docs/spec/07-conte-table.md"), "utf8");
   assert.match(conteDoc, /形チェックが見る縁/);
@@ -605,12 +614,15 @@ test("glossary: カット表の形チェックの縁 — empty cut id is valid",
   assert.match(conteDoc, /dialogues\[\]\.speaker/);
   assert.match(conteDoc, /`cut` キーなし/);
   assert.match(conteDoc, /`dialogues` キーなし/);
+  assert.match(conteDoc, /cut: 1/);
+  assert.match(conteDoc, /型違い/);
 
   const conteSchema = readFileSync(join(root, "schema/conte-table.schema.json"), "utf8");
   assert.match(conteSchema, /番号なし/);
   assert.match(conteSchema, /空配列/);
   assert.match(conteSchema, /必須箱の欠け/);
   assert.match(conteSchema, /attrs/);
+  assert.match(conteSchema, /型が違う/);
 
   const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
   assert.match(guide, /カット表の形チェックの縁/);
@@ -1446,6 +1458,7 @@ test("glossary: 見本の場面対応 — station vs cafe are different samples"
   assert.match(section, /予約語/);
   assert.match(section, /駅前とカフェは別見本/);
   assert.match(section, /任せたあと/);
+  assert.match(section, /任せたあとの無言/);
   assert.match(section, /注文を取る/);
   assert.match(section, /席について/);
   assert.match(section, /到着の拍/);
@@ -1471,6 +1484,14 @@ test("glossary: 見本の場面対応 — station vs cafe are different samples"
   assert.ok(cafeTen.decorators.some((d) => d.kind === "comment" && d.value.includes("注文を決める")));
   assert.ok(stationTen.decorators.some((d) => d.kind === "comment" && d.value.includes("席へ案内")));
   assert.equal(firstCharacter(takeOrder)?.value, "店員");
+  const cafeEleven = cafe.body.sections[0]!.pieces.find((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "11"),
+  )!;
+  assert.equal(firstCharacter(cafeEleven), undefined);
+  assert.equal(cafeEleven.dialogue.trim(), "");
+  assert.ok(
+    cafeEleven.decorators.some((d) => d.kind === "comment" && d.value.includes("店員はまだ来ない")),
+  );
   assert.equal(audio.body.sections[3]!.title, "店の前");
   assert.equal(audio.body.sections[4]!.title, "席について");
   assert.equal(audio.body.sections[5]!.title, "注文");
@@ -1868,6 +1889,8 @@ test("glossary: コマ・構図と属性 — speaker keys stay on @, not % or ^"
   assert.match(section, /cafe-pose/);
   assert.match(section, /station-name/);
   assert.match(section, /属性のつき先/);
+  assert.match(section, /形チェック/);
+  assert.match(section, /Medo の形チェックの縁/);
 
   const pitfall = parseMesLang(`profile: manga
 ----
@@ -1923,6 +1946,8 @@ test("glossary: コマ・構図と属性 — speaker keys stay on @, not % or ^"
 
   const decorators = readFileSync(join(root, "docs/spec/02-decorators.md"), "utf8");
   assert.match(decorators, /話者の顔・体には届きません/);
+  assert.match(decorators, /形チェック/);
+  assert.match(decorators, /箱が揃っていれば通ります/);
 
   const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
   assert.match(core, /コマ・構図と属性/);
@@ -1972,11 +1997,119 @@ test("glossary: コマ・構図と属性 — speaker keys stay on @, not % or ^"
 
   const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
   assert.match(roadmap, /コマ・構図と属性/);
-  assert.match(roadmap, /水曜向け/);
+  assert.match(roadmap, /木曜向け/);
 
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /コマ・構図と属性/);
+  assert.match(backlog, /木曜向け/);
+});
+
+test("glossary: コマ・構図と属性 — silent-panel faces stay in #; ^ stays on first piece", () => {
+  // docs/spec/05-glossary.md「コマ・構図と属性」の無言側（cafe-pose %11）
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## コマ・構図と属性"),
+    glossary.indexOf("## タイミングとビート"),
+  );
+  assert.match(section, /無言コマの顔/);
+  assert.match(section, /cafe-pose/);
+  assert.match(section, /%11/);
+  assert.match(section, /先頭ピース/);
+
+  const cafe = parseMesLang(readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8"));
+  const pieces = cafe.body.sections[0]!.pieces;
+  const silent = pieces.find((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "11"),
+  )!;
+  assert.equal(silent.dialogue.trim(), "");
+  assert.equal(firstCharacter(silent), undefined);
+  assert.ok(
+    silent.decorators.some(
+      (d) => d.kind === "comment" && d.value.includes("店員はまだ来ない"),
+    ),
+  );
+  assert.ok(silent.decorators.some((d) => d.kind === "comment" && d.value.includes("表情は #")));
+  const silentFrame = silent.decorators.find((d) => d.kind === "frame")!;
+  const silentCam = silent.decorators.find((d) => d.kind === "camera")!;
+  assert.equal(silentFrame.attrs["表情"], undefined);
+  assert.equal(silentCam.attrs["表情"], undefined);
+  assert.match(silentCam.value, /1\/3コマ/);
+
+  const decide = pieces.find((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "10"),
+  )!;
+  const decideIdx = pieces.indexOf(decide);
+  const decideSecond = pieces[decideIdx + 1]!;
+  assert.ok(decide.decorators.some((d) => d.kind === "camera"));
+  assert.equal(decideSecond.decorators.some((d) => d.kind === "camera"), false);
+  assert.equal(decideSecond.decorators.some((d) => d.kind === "frame"), false);
+
+  const pitfall = parseMesLang(`profile: manga
+----
+%11 :表情 ほっとした
+^二人横並び 1/3コマ
+#メニューを閉じたまま少し黙る
+`);
+  const pitfallPiece = pitfall.body.sections[0]!.pieces[0]!;
+  assert.equal(pitfallPiece.decorators.find((d) => d.kind === "frame")!.attrs["表情"], "ほっとした");
+  assert.equal(firstCharacter(pitfallPiece), undefined);
+
+  const repeatCaret = parseMesLang(`profile: manga
+----
+%10
+^二人横並び 1/2コマ
+@こいと :表情 にやり
+じゃあ、ショートケーキ二つで
+
+^にか寄り
+@にか :表情 ほっとした
+……それでいい
+`);
+  const repeatPieces = repeatCaret.body.sections[0]!.pieces;
+  assert.ok(repeatPieces[0]!.decorators.some((d) => d.kind === "camera"));
+  assert.ok(repeatPieces[1]!.decorators.some((d) => d.kind === "camera"));
+  assert.equal(repeatPieces[1]!.decorators.some((d) => d.kind === "frame"), false);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /話者がいないのに表情を % に付ける/);
+  assert.match(profiles, /続きピースにも \^ を振る/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  assert.match(guide, /無言コマの顔は #/);
+  assert.match(guide, /任せたあとの無言/);
+
+  const mangaWrite = guide.slice(
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+    guide.indexOf("### 不足情報の洗い出し"),
+  );
+  assert.match(mangaWrite, /cafe-pose %11/);
+  assert.match(mangaWrite, /無言コマの顔は #/);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, /任せたあとの無言/);
+  assert.match(mangaReadme, /店員はまだ来ない/);
+
+  const correspondence = glossary.slice(
+    glossary.indexOf("## 見本の場面対応"),
+    glossary.indexOf("## 到着の拍"),
+  );
+  assert.match(correspondence, /任せたあとの無言/);
+  assert.match(correspondence, /cafe-pose の `%11` を駅前の「注文を取る」と呼ぶ/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.81/);
+  assert.match(changelog, /任せたあとの無言/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /火曜夜: cafe-pose に `%11`/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /cafe-pose `%11`/);
   assert.match(backlog, /水曜向け/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /任せたあとの無言/);
 });
 
 test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () => {
@@ -2065,7 +2198,7 @@ test("examples/manga/cafe-pose.mes: 表情 and 姿勢 on speakers", () => {
   assert.equal(medo.header.title, "カフェ・表情と姿勢の練習");
   assert.equal(medo.body.sections[0]!.title, "1ページ");
   const pieces = medo.body.sections[0]!.pieces;
-  assert.ok(pieces.length >= 11);
+  assert.ok(pieces.length >= 12);
   const withAttrs = pieces
     .map((p) => firstCharacter(p))
     .filter((ch): ch is NonNullable<typeof ch> => ch != null && Object.keys(ch.attrs).length > 0);
@@ -2111,6 +2244,26 @@ test("examples/manga/cafe-pose.mes: 表情 and 姿勢 on speakers", () => {
   assert.equal(firstCharacter(orderReply)!.value, "にか");
   assert.equal(firstCharacter(orderReply)!.attrs["吹き出し"], undefined);
   assert.match(orderReply.dialogue, /それでいい/);
+  const silentAfter = pieces.find((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "11"),
+  )!;
+  assert.equal(silentAfter.dialogue.trim(), "");
+  assert.equal(firstCharacter(silentAfter), undefined);
+  assert.ok(
+    silentAfter.decorators.some(
+      (d) => d.kind === "camera" && d.value.includes("1/3コマ"),
+    ),
+  );
+  assert.ok(
+    silentAfter.decorators.some(
+      (d) => d.kind === "comment" && d.value.includes("店員はまだ来ない"),
+    ),
+  );
+  assert.ok(silentAfter.decorators.some((d) => d.kind === "beat"));
+  const silentFrame = silentAfter.decorators.find((d) => d.kind === "frame")!;
+  const silentCam = silentAfter.decorators.find((d) => d.kind === "camera")!;
+  assert.equal(silentFrame.attrs["表情"], undefined);
+  assert.equal(silentCam.attrs["表情"], undefined);
 });
 
 test("manga: :吹き出し and 3rd bracket land on the same key", () => {
@@ -2132,7 +2285,7 @@ test("manga: :吹き出し and 3rd bracket land on the same key", () => {
   assert.deepEqual(a.attrs, b.attrs);
 });
 
-test("AI ネーム起こしガイド: cafe-pose %8–%10 / silent-panels %7–%8 fixtures stay linked", () => {
+test("AI ネーム起こしガイド: cafe-pose %8–%11 / silent-panels %7–%8 fixtures stay linked", () => {
   const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
   const nameRaising = guide.slice(
     guide.indexOf("### 漫画ネーム起こし"),
@@ -2143,8 +2296,10 @@ test("AI ネーム起こしガイド: cafe-pose %8–%10 / silent-panels %7–%8
   assert.match(nameRaising, /%8/);
   assert.match(nameRaising, /%9/);
   assert.match(nameRaising, /%10/);
+  assert.match(nameRaising, /%11/);
   assert.match(nameRaising, /ふつうのセリフに戻る/);
   assert.match(nameRaising, /任せたあと/);
+  assert.match(nameRaising, /任せたあとの無言/);
   assert.match(nameRaising, /silent-panels\.mes/);
   assert.match(nameRaising, /%7/);
   assert.match(nameRaising, /声を出す直前/);
@@ -2192,6 +2347,16 @@ test("AI ネーム起こしガイド: cafe-pose %8–%10 / silent-panels %7–%8
   assert.match(cafeOrder.dialogue, /ショートケーキ/);
   const cafeOrderIdx = cafePieces.indexOf(cafeOrder);
   assert.match(cafePieces[cafeOrderIdx + 1]!.dialogue, /それでいい/);
+  const cafeSilent = cafePieces.find((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "11"),
+  )!;
+  assert.equal(cafeSilent.dialogue.trim(), "");
+  assert.equal(firstCharacter(cafeSilent), undefined);
+  assert.ok(
+    cafeSilent.decorators.some(
+      (d) => d.kind === "comment" && d.value.includes("店員はまだ来ない"),
+    ),
+  );
 
   const silent = parseMesLang(readFileSync(join(root, "examples/manga/silent-panels.mes"), "utf8"));
   const silentPieces = silent.body.sections[0]!.pieces;
@@ -2272,6 +2437,7 @@ test("AI ガイド: カット表ひな形に番号なし行と形チェック結
   assert.match(shapeRead, /dialogues への attrs/);
   assert.match(shapeRead, /必須箱の欠け/);
   assert.match(shapeRead, /空と欠け/);
+  assert.match(shapeRead, /型違い/);
   assert.match(shapeRead, /提案:/);
   assert.match(shapeRead, /不足:/);
 });
@@ -2318,6 +2484,8 @@ test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先"
   assert.match(medoRead, /空と欠け/);
   assert.match(medoRead, /ヘッダーの縁/);
   assert.match(medoRead, /profile: ""/);
+  assert.match(medoRead, /つき先の良し悪しは見ない/);
+  assert.match(medoRead, /型違い/);
   assert.match(medoRead, /提案:/);
   assert.match(medoRead, /不足:/);
 
@@ -2332,6 +2500,8 @@ test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先"
   assert.match(compat, /Medo の形チェック結果の読み方/);
   assert.match(compat, /空と欠け/);
   assert.match(compat, /ヘッダーの縁/);
+  assert.match(compat, /つき先の良し悪し/);
+  assert.match(compat, /型違い/);
 
   const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
   const shapeSection = glossary.slice(
@@ -2343,6 +2513,8 @@ test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先"
   assert.match(shapeSection, /Medo でよく迷う縁/);
   assert.match(shapeSection, /空と欠け/);
   assert.match(shapeSection, /ヘッダーの縁/);
+  assert.match(shapeSection, /つき先の良し悪しは見ない/);
+  assert.match(shapeSection, /型違い/);
 });
 
 test("AI ガイド: 音声台本化／原稿生成にヘッダーの縁（profile なしは誤りにしない）", () => {
@@ -2471,6 +2643,7 @@ test("AI ガイド: ひな形に見本の場面対応（番号は予約語では
   assert.match(mangaWritePrompt, /見本の場面対応/);
   assert.match(mangaWritePrompt, /予約語ではない/);
   assert.match(mangaWritePrompt, /cafe-pose %10/);
+  assert.match(mangaWritePrompt, /cafe-pose %11/);
 
   const gap = guide.slice(
     guide.indexOf("### 不足情報の洗い出し"),
@@ -2511,6 +2684,103 @@ test("AI ガイド: ひな形に見本の場面対応（番号は予約語では
 
   const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
   assert.match(backlog, /日曜夜（2026-08-30）: AI ひな形を見本の場面対応/);
+  assert.match(backlog, /水曜向け/);
+});
+
+test("glossary: null は欠けではない（型違い）", () => {
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const medoSection = glossary.slice(
+    glossary.indexOf("## Medo の形チェックの縁"),
+    glossary.indexOf("## カット表の形チェックの縁"),
+  );
+  assert.match(medoSection, /null と欠け/);
+  assert.match(medoSection, /dialogue: null/);
+  assert.match(medoSection, /must be a string/);
+  assert.match(medoSection, /is required/);
+  assert.match(medoSection, /は欠けではない（型違い）/);
+  assert.match(medoSection, /profile: null/);
+
+  const conteSection = glossary.slice(
+    glossary.indexOf("## カット表の形チェックの縁"),
+    glossary.indexOf("## 記法"),
+  );
+  assert.match(conteSection, /null と欠け/);
+  assert.match(conteSection, /cut: null/);
+  assert.match(conteSection, /camera: null/);
+
+  const shapeIntro = glossary.slice(
+    glossary.indexOf("## 形チェックと目視"),
+    glossary.indexOf("## Medo の形チェックの縁"),
+  );
+  assert.match(shapeIntro, /null と欠け/);
+
+  const medoSchema = readFileSync(join(root, "schema/medo.schema.json"), "utf8");
+  assert.match(medoSchema, /null は欠けではない/);
+  assert.match(medoSchema, /dialogue: null/);
+  assert.match(medoSchema, /profile: null/);
+
+  const conteSchema = readFileSync(join(root, "schema/conte-table.schema.json"), "utf8");
+  assert.match(conteSchema, /null は欠けではない/);
+  assert.match(conteSchema, /cut: null/);
+  assert.match(conteSchema, /camera: null/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const practice = guide.slice(
+    guide.indexOf("## おすすめの実務の順番"),
+    guide.indexOf("## ツールと AI の役割分担"),
+  );
+  assert.match(practice, /null と欠け/);
+
+  const medoRead = guide.slice(
+    guide.indexOf("### Medo の形チェック結果の読み方"),
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+  );
+  const medoPrompt = medoRead.slice(medoRead.indexOf("```"), medoRead.indexOf("```", medoRead.indexOf("```") + 3));
+  assert.match(medoPrompt, /null と欠け/);
+  assert.match(medoPrompt, /dialogue: null/);
+  assert.match(medoPrompt, /kind: null/);
+  assert.match(medoRead, /null と欠け/);
+
+  const conteRead = guide.slice(
+    guide.indexOf("### カット表の形チェック結果の読み方"),
+    guide.indexOf("### アニメ原稿を書かせるとき"),
+  );
+  assert.match(conteRead, /null と欠け/);
+  assert.match(conteRead, /cut: null/);
+  assert.match(conteRead, /camera: \[null\]/);
+
+  const conteDoc = readFileSync(join(root, "docs/spec/07-conte-table.md"), "utf8");
+  assert.match(conteDoc, /cut: null/);
+  assert.match(conteDoc, /camera: \[null\]/);
+  assert.match(conteDoc, /欠けではない/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /null と欠け/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /null と欠け/);
+
+  const readme = readFileSync(join(root, "README.md"), "utf8");
+  assert.match(readme, /null/);
+  assert.match(readme, /型違い/);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, /null と欠け/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /null と欠け/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.82/);
+  assert.match(changelog, /null と欠け/);
+  assert.match(changelog, /must be a string/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /null と欠け/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /null と欠け/);
   assert.match(backlog, /水曜向け/);
 });
 
