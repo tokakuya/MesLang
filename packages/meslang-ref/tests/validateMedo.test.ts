@@ -301,6 +301,136 @@ test("validateMedo distinguishes empty values from missing required keys", () =>
   assert.ok(missingBody.some((i) => i.path === "body" && i.message.includes("required")));
 });
 
+test("validateMedo treats null as type mismatch, not missing", () => {
+  const nullDialogue = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [{ dialogue: null, decorators: [] }],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    nullDialogue.some((i) => i.path.includes("dialogue") && i.message.includes("must be a string")),
+  );
+  assert.equal(
+    nullDialogue.some((i) => i.path.includes("dialogue") && i.message.includes("required")),
+    false,
+  );
+
+  const nullDecorators = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [{ title: "", pieces: [{ dialogue: "", decorators: null }] }],
+    },
+  });
+  assert.ok(
+    nullDecorators.some(
+      (i) => i.path.includes("decorators") && i.message.includes("must be an array"),
+    ),
+  );
+  assert.equal(
+    nullDecorators.some(
+      (i) => i.path.includes("decorators") && i.message.includes("required"),
+    ),
+    false,
+  );
+
+  const nullInArray = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [{ title: "", pieces: [{ dialogue: "", decorators: [null] }] }],
+    },
+  });
+  assert.ok(nullInArray.some((i) => i.message.includes("decorator must be an object")));
+
+  const nullKind = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "",
+              decorators: [{ kind: null, rawMark: "#", value: "x", attrs: {} }],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    nullKind.some((i) => i.path.includes("kind") && i.message.includes("must be a string")),
+  );
+  assert.equal(nullKind.some((i) => i.message.includes("invalid kind")), false);
+
+  const nullVersion = validateMedo({
+    version: null,
+    header: {},
+    body: { sections: [] },
+  });
+  assert.ok(
+    nullVersion.some((i) => i.path === "version" && i.message.includes("must be a string")),
+  );
+  assert.equal(
+    nullVersion.some((i) => i.path === "version" && i.message.includes("required")),
+    false,
+  );
+
+  const nullHeader = validateMedo({
+    version: "medo/0.0",
+    header: null,
+    body: { sections: [] },
+  });
+  assert.ok(
+    nullHeader.some((i) => i.path === "header" && i.message.includes("must be an object")),
+  );
+
+  const nullProfile = validateMedo({
+    version: "medo/0.0",
+    header: { profile: null },
+    body: { sections: [] },
+  });
+  assert.ok(nullProfile.some((i) => i.path === "header.profile"));
+  assert.equal(
+    nullProfile.some((i) => i.path === "header.profile" && i.message.includes("required")),
+    false,
+  );
+
+  const nullAttrs = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "",
+              decorators: [{ kind: "comment", rawMark: "#", value: "x", attrs: null }],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    nullAttrs.some((i) => i.path.includes("attrs") && i.message.includes("must be an object")),
+  );
+  assert.equal(
+    nullAttrs.some((i) => i.path.includes("attrs") && i.message.includes("required")),
+    false,
+  );
+});
+
 test("validateMedo header edges: missing profile ok, empty/unknown profile rejected, extra string keys ok", () => {
   assert.deepEqual(
     validateMedo({
@@ -357,6 +487,130 @@ test("validateMedo header edges: missing profile ok, empty/unknown profile rejec
   );
 });
 
+test("validateMedo distinguishes empty arrays from wrong-typed items (配列の中身)", () => {
+  assert.deepEqual(
+    validateMedo({
+      version: "medo/0.0",
+      header: {},
+      body: { sections: [] },
+    }),
+    [],
+  );
+
+  const stringSection = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: { sections: ["駅前"] },
+  });
+  assert.ok(
+    stringSection.some((i) => i.path.includes("sections[0]") && i.message.includes("must be an object")),
+  );
+  assert.equal(
+    stringSection.some((i) => i.message.includes("is required")),
+    false,
+  );
+
+  const stringPiece = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: { sections: [{ title: "", pieces: ["セリフ"] }] },
+  });
+  assert.ok(
+    stringPiece.some((i) => i.path.includes("pieces[0]") && i.message.includes("must be an object")),
+  );
+
+  const stringDecorator = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [{ dialogue: "", decorators: ["@にか"] }],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    stringDecorator.some(
+      (i) => i.path.includes("decorators[0]") && i.message.includes("must be an object"),
+    ),
+  );
+});
+
+test("validateMedo distinguishes empty arrays from objects in array slots (配列とオブジェクト)", () => {
+  assert.deepEqual(
+    validateMedo({
+      version: "medo/0.0",
+      header: {},
+      body: { sections: [] },
+    }),
+    [],
+  );
+
+  const objectSections = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: { sections: {} },
+  });
+  assert.ok(
+    objectSections.some((i) => i.path === "body.sections" && i.message.includes("must be an array")),
+  );
+
+  const arrayBody = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: [],
+  });
+  assert.ok(arrayBody.some((i) => i.path === "body" && i.message.includes("must be an object")));
+
+  const arrayHeader = validateMedo({
+    version: "medo/0.0",
+    header: [],
+    body: { sections: [] },
+  });
+  assert.ok(arrayHeader.some((i) => i.path === "header" && i.message.includes("must be an object")));
+
+  const objectDecorators = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [{ dialogue: "", decorators: {} }],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    objectDecorators.some(
+      (i) => i.path.includes("decorators") && i.message.includes("must be an array"),
+    ),
+  );
+
+  const arrayAttrs = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "",
+              decorators: [{ kind: "comment", rawMark: "#", value: "x", attrs: [] }],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    arrayAttrs.some((i) => i.path.includes("attrs") && i.message.includes("must be an object")),
+  );
+});
+
 test("validateMedo: cafe-pose / station-name %10 multi-speech fixtures stay valid", () => {
   const station = parseMesLang(readFileSync(join(root, "examples/manga/station-name.mes"), "utf8"));
   const cafe = parseMesLang(readFileSync(join(root, "examples/manga/cafe-pose.mes"), "utf8"));
@@ -410,6 +664,25 @@ test("validateMedo: cafe-pose / station-name %10 multi-speech fixtures stay vali
   assert.match(stationOrderThird.dialogue, /注文まで来たか/);
   assert.equal(firstCharacter(stationPieces[station11]!)?.attrs["吹き出し"], undefined);
 
+  const station12 = stationPieces.findIndex((p) =>
+    p.decorators.some((d) => d.kind === "frame" && d.value === "12"),
+  );
+  assert.ok(station12 >= 0);
+  const stationServeSecond = stationPieces[station12 + 1]!;
+  const stationServeThird = stationPieces[station12 + 2]!;
+  assert.equal(
+    stationServeSecond.decorators.some((d) => d.kind === "frame"),
+    false,
+  );
+  assert.equal(
+    stationServeThird.decorators.some((d) => d.kind === "frame"),
+    false,
+  );
+  assert.match(stationPieces[station12]!.dialogue, /お待たせしました/);
+  assert.match(stationServeSecond.dialogue, /匂いまで同じ/);
+  assert.match(stationServeThird.dialogue, /現物まで来たか/);
+  assert.equal(firstCharacter(stationPieces[station12]!)?.attrs["吹き出し"], undefined);
+
   // Hand-shaped slice of the %10 pair still passes (empty attrs / multi-piece)
   const sliceIssues = validateMedo({
     version: "medo/0.0",
@@ -449,6 +722,107 @@ test("? ext decorators parse as kind ext with rawMark", () => {
   );
 });
 
+test("validateMedo accepts attrs on frame/camera (shape does not judge attachment)", () => {
+  const medo = parseMesLang(`profile: manga
+----
+%2 :表情 焦り
+^にかバストアップ :姿勢 前のめり
+@にか
+待たせたな……！
+`);
+  assertValidMedo(medo);
+  const piece = medo.body.sections[0]!.pieces[0]!;
+  const frame = piece.decorators.find((d) => d.kind === "frame")!;
+  const camera = piece.decorators.find((d) => d.kind === "camera")!;
+  const ch = firstCharacter(piece)!;
+  assert.equal(frame.attrs["表情"], "焦り");
+  assert.equal(camera.attrs["姿勢"], "前のめり");
+  assert.equal(ch.attrs["表情"], undefined);
+
+  const hand = validateMedo({
+    version: "medo/0.0",
+    header: { profile: "manga", raw: "" },
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "待たせたな……！",
+              decorators: [
+                { kind: "frame", rawMark: "%", value: "2", attrs: { 表情: "焦り" } },
+                { kind: "character", rawMark: "@", value: "にか", attrs: {} },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.deepEqual(hand, []);
+});
+
+test("validateMedo rejects type mismatches (distinct from missing keys and extra keys)", () => {
+  const dialogueNumber = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [{ title: "", pieces: [{ dialogue: 1, decorators: [] }] }],
+    },
+  });
+  assert.ok(
+    dialogueNumber.some((i) => i.path.includes("dialogue") && i.message.includes("must be a string")),
+  );
+  assert.equal(
+    dialogueNumber.some((i) => i.path.includes("dialogue") && i.message.includes("required")),
+    false,
+  );
+
+  const attrsArray = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "",
+              decorators: [{ kind: "character", rawMark: "@", value: "にか", attrs: [] }],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    attrsArray.some((i) => i.path.includes("attrs") && i.message.includes("must be an object")),
+  );
+
+  const attrNumber = validateMedo({
+    version: "medo/0.0",
+    header: {},
+    body: {
+      sections: [
+        {
+          title: "",
+          pieces: [
+            {
+              dialogue: "",
+              decorators: [
+                { kind: "character", rawMark: "@", value: "にか", attrs: { 表情: 1 } },
+              ],
+            },
+          ],
+        },
+      ],
+    },
+  });
+  assert.ok(
+    attrNumber.some((i) => i.path.includes("attrs.表情") && i.message.includes("must be strings")),
+  );
+});
+
 test("examples/animation/station-conte.mes: cuts, timing, and ? ext notes", () => {
   const text = readFileSync(join(root, "examples/animation/station-conte.mes"), "utf8");
   const medo = parseMesLang(text);
@@ -462,4 +836,12 @@ test("examples/animation/station-conte.mes: cuts, timing, and ? ext notes", () =
   assert.ok(exts.some((d) => d.value.includes("layout")));
   assert.ok(exts.some((d) => d.value.includes("bg")));
   assert.ok(pieces.some((p) => p.decorators.some((d) => d.kind === "timing")));
+});
+
+test("validateMedo accepts dialogue-only manuscript (原稿の必須 is nearly zero)", () => {
+  const medo = parseMesLang("待たせたな……！\n");
+  assertValidMedo(medo);
+  const piece = medo.body.sections[0]!.pieces[0]!;
+  assert.equal(piece.dialogue, "待たせたな……！");
+  assert.deepEqual(piece.decorators, []);
 });
