@@ -3648,6 +3648,152 @@ $雑踏
   assert.match(backlog, /水曜向け/);
 });
 
+test("glossary: ピースをまたがない — speaker and sound stay on their piece", () => {
+  // docs/spec/05-glossary.md「ピースをまたがない（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## ピースをまたがない"),
+    glossary.indexOf("## `#` まわり"),
+  );
+  assert.match(section, /ピースをまたがない/);
+  assert.match(section, /話者なしのピース/);
+  assert.match(section, /音メモはピースごと/);
+  assert.match(section, /\$BGM 夕方の駅（続く）/);
+  assert.match(section, /\$BGM 夕方の駅（止む）/);
+  assert.match(section, /--compat/);
+  assert.match(section, /カット表が前のカットへ足す/);
+
+  const glossaryWont = glossary.slice(glossary.indexOf("## 採用しない"));
+  assert.match(glossaryWont, /前のピースの話者や音を自動で引き継ぐ/);
+
+  const sameThenNext = parseMesLang(`profile: audio
+----
+@にか
+$BGM 夕方の駅（控えめ）
+待たせたな。
+今日は奢る。
+
+海鮮丼にしよう。
+`);
+  const pieces = sameThenNext.body.sections[0]!.pieces;
+  assert.equal(pieces.length, 2);
+  const first = pieces[0]!;
+  assert.equal(firstCharacter(first)?.value, "にか");
+  assert.match(first.decorators.find((d) => d.kind === "sound")?.value ?? "", /夕方の駅（控えめ）/);
+  assert.equal(first.dialogue, "待たせたな。\n今日は奢る。");
+  const second = pieces[1]!;
+  assert.equal(firstCharacter(second), undefined);
+  assert.equal(second.decorators.find((d) => d.kind === "sound"), undefined);
+  assert.equal(second.dialogue, "海鮮丼にしよう。");
+
+  const continued = parseMesLang(`profile: audio
+----
+@にか
+$BGM 夕方の駅（続く）
+海鮮丼にしよう。
+
+$BGM 夕方の駅（止む）
+#店を出る
+`);
+  const contPieces = continued.body.sections[0]!.pieces;
+  assert.equal(firstCharacter(contPieces[0]!)?.value, "にか");
+  assert.match(contPieces[0]!.decorators.find((d) => d.kind === "sound")?.value ?? "", /続く/);
+  assert.equal(firstCharacter(contPieces[1]!), undefined);
+  assert.match(contPieces[1]!.decorators.find((d) => d.kind === "sound")?.value ?? "", /止む/);
+  assert.ok(contPieces[1]!.decorators.some((d) => d.kind === "comment" && d.value.includes("店を出る")));
+
+  const old = `○駅前
+$BGM 夕方の駅
+にか「あ、キタキタ。」
+
+二年ぶりかな。
+`;
+  const rewritten = rewriteMesCompat(old);
+  assert.match(rewritten, /^#駅前/m);
+  assert.match(rewritten, /\$BGM 夕方の駅/);
+  assert.doesNotMatch(rewritten, /@にか/);
+  const imported = parseMesLang(rewritten);
+  const importedPieces = imported.body.sections[0]!.pieces;
+  assert.equal(importedPieces.length, 2);
+  assert.equal(firstCharacter(importedPieces[0]!)?.value, "にか");
+  assert.match(importedPieces[0]!.dialogue, /あ、キタキタ/);
+  assert.ok(importedPieces[0]!.decorators.some((d) => d.kind === "comment" && d.value === "駅前"));
+  assert.match(importedPieces[0]!.decorators.find((d) => d.kind === "sound")?.value ?? "", /夕方の駅/);
+  assert.equal(firstCharacter(importedPieces[1]!), undefined);
+  assert.equal(importedPieces[1]!.dialogue, "二年ぶりかな。");
+  assert.equal(importedPieces[1]!.decorators.find((d) => d.kind === "sound"), undefined);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, /ピースをまたがない/);
+
+  const decorators = readFileSync(join(root, "docs/spec/02-decorators.md"), "utf8");
+  assert.match(decorators, /ピースをまたがない/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /話者と音は、そのピースだけ/);
+  assert.match(profiles, /\$BGM 夕方の駅（止む）/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /ピースをまたがない/);
+  assert.match(overview, /自動で引き継ぐこと/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const basics = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basics, /ピースをまたがない/);
+  assert.match(basics, /\$BGM …（続く）/);
+
+  const audioScript = guide.slice(
+    guide.indexOf("### 音声台本化"),
+    guide.indexOf("### セリフ文字数の照合"),
+  );
+  assert.match(audioScript, /ピースをまたがない/);
+  assert.match(audioScript, /前の話者で埋めない/);
+
+  const audioWrite = guide.slice(
+    guide.indexOf("### 音声原稿を書かせるとき"),
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+  );
+  assert.match(audioWrite, /ピースをまたがない/);
+  assert.match(audioWrite, /\$BGM …（続く）/);
+
+  const importHelp = guide.slice(
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+    guide.indexOf("### アニメ字コンテ起こし"),
+  );
+  assert.match(importHelp, /ピースをまたがない/);
+  assert.match(importHelp, /--compat もコピーしない/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /前のピースからコピーしない/);
+
+  const conte = readFileSync(join(root, "docs/spec/07-conte-table.md"), "utf8");
+  assert.match(conte, /ピースをまたがない/);
+  assert.match(conte, /コピーする規則ではありません/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /ピースをまたがないまぎらわしいことば/);
+  assert.match(audioReadme, /\$BGM 夕方の駅（止む）/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /ピースをまたがない/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.99/);
+  assert.match(changelog, /ピースをまたがない/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /ピースをまたがない/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /ピースをまたがない/);
+  assert.match(backlog, /前のピースの話者や音を自動で引き継ぐ/);
+  assert.match(backlog, /水曜向け/);
+});
+
 test("examples/manga/silent-panels.mes: dialogue-less frames under == page", () => {
   const text = readFileSync(join(root, "examples/manga/silent-panels.mes"), "utf8");
   const medo = parseMesLang(text);
