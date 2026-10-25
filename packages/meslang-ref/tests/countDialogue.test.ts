@@ -37,6 +37,27 @@ test("countDialogueChars aggregates by speaker", () => {
   assert.equal(none.chars, 5);
 });
 
+test("$ignore_char does not drop punctuation; default speaker stays empty", () => {
+  // docs/spec/05-glossary.md「既定の話者は埋めない」
+  const medo = parseMesLang(`$default_charactor_name=にか
+$ignore_char=。、
+----
+こんにちは。
+
+@こいと
+はい
+`);
+  const counts = countDialogueChars(medo);
+  assert.equal(dialogueCharLength("こんにちは。"), 6);
+  assert.equal(counts.total, 6 + 2);
+  const none = counts.bySpeaker.find((s) => s.speaker === "")!;
+  const nika = counts.bySpeaker.find((s) => s.speaker === "にか");
+  const koito = counts.bySpeaker.find((s) => s.speaker === "こいと")!;
+  assert.equal(none.chars, 6);
+  assert.equal(nika, undefined);
+  assert.equal(koito.chars, 2);
+});
+
 test("examples/audio/station.mes dialogue count is stable and positive", () => {
   const text = readFileSync(join(root, "examples/audio/station.mes"), "utf8");
   const counts = countDialogueChars(parseMesLang(text));

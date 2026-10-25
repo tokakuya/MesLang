@@ -67,6 +67,23 @@ function splitHeaderBody(text: string): { headerRaw: string; body: string } {
   };
 }
 
+/**
+ * Header `$key value` or halfwidth `$key=value` / `$key = value`.
+ * Stored as a memo only — does not fill a default speaker, remap marks,
+ * or change dialogue counts (glossary: 既定の話者は埋めない).
+ * Fullwidth `＝` is not a separator.
+ */
+function parseDollarHeaderLine(line: string): { key: string; value: string } | null {
+  if (!line.startsWith("$")) return null;
+  const rest = line.slice(1).trim();
+  const m = /^([^\s=]+)\s*(?:=\s*|\s+)(.+)$/.exec(rest);
+  if (!m) return null;
+  const key = m[1]!;
+  const value = m[2]!.trim();
+  if (!key || !value) return null;
+  return { key, value };
+}
+
 function parseHeader(headerRaw: string): Record<string, string> {
   const header: Record<string, string> = { raw: headerRaw };
   for (const line of headerRaw.split("\n")) {
@@ -74,10 +91,9 @@ function parseHeader(headerRaw: string): Record<string, string> {
     if (!t || t.startsWith("//")) continue;
     const m = /^([A-Za-z_][\w-]*|[\u3040-\u30ff\u4e00-\u9fff]+)\s*[:：]\s*(.+)$/.exec(t);
     if (m) header[m[1]!] = m[2]!.trim();
-    else if (t.startsWith("$")) {
-      const rest = t.slice(1).trim();
-      const sp = rest.indexOf(" ");
-      if (sp > 0) header[rest.slice(0, sp)] = rest.slice(sp + 1).trim();
+    else {
+      const dollar = parseDollarHeaderLine(t);
+      if (dollar) header[dollar.key] = dollar.value;
     }
   }
   if (!header.profile) header.profile = "audio";

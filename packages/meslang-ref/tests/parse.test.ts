@@ -529,6 +529,139 @@ test("glossary: 糖衣と行頭記号 — mix @ and 「」 does not sugar", () =
   assert.equal(firstCharacter(split!)?.value, "にか");
 });
 
+test("header $key=value is a memo: no default speaker, no mark remap", () => {
+  // docs/spec/05-glossary.md「既定の話者は埋めない」
+  const src = `$default_charactor_name=にか
+$deco_charactor=★
+$ignore_char=。、
+$title=駅前の二人
+----
+こんにちは。
+
+★にか
+★の行はセリフのまま
+
+@こいと
+はい。
+`;
+  const rewritten = rewriteMesCompat(src);
+  assert.equal(rewritten, src.replace(/\r\n/g, "\n"));
+
+  const medo = parseMesLang(src);
+  assert.equal(medo.header.title, "駅前の二人");
+  assert.equal(medo.header.default_charactor_name, "にか");
+  assert.equal(medo.header.deco_charactor, "★");
+  assert.equal(medo.header.ignore_char, "。、");
+  assert.equal(medo.header.profile, "audio");
+
+  const pieces = medo.body.sections[0]!.pieces;
+  assert.equal(pieces.length, 3);
+  assert.equal(firstCharacter(pieces[0]!), undefined);
+  assert.equal(pieces[0]!.dialogue, "こんにちは。");
+  assert.equal(firstCharacter(pieces[1]!), undefined);
+  assert.match(pieces[1]!.dialogue, /★にか/);
+  assert.equal(firstCharacter(pieces[2]!)?.value, "こいと");
+  assert.equal(pieces[2]!.dialogue, "はい。");
+
+  const spaced = parseMesLang(`$default_charactor_name = にか
+----
+こんにちは
+`);
+  assert.equal(spaced.header.default_charactor_name, "にか");
+  assert.equal(firstCharacter(spaced.body.sections[0]!.pieces[0]!), undefined);
+
+  const fullwidth = parseMesLang(`$title＝駅前
+----
+セリフ
+`);
+  assert.equal(fullwidth.header.title, undefined);
+  assert.equal(fullwidth.header.profile, "audio");
+  assert.equal(firstCharacter(fullwidth.body.sections[0]!.pieces[0]!), undefined);
+});
+
+test("glossary: 既定の話者は埋めない — header settings stay memos", () => {
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 既定の話者は埋めない"),
+    glossary.indexOf("## 音の位置と話者の位置"),
+  );
+  assert.match(section, /default_charactor_name/);
+  assert.match(section, /deco_charactor/);
+  assert.match(section, /ignore_char/);
+  assert.match(section, /埋め/);
+  assert.match(section, /＝/);
+  assert.match(section, /ADR 0009/);
+
+  const glossaryWont = glossary.slice(glossary.indexOf("## 採用しない"));
+  assert.match(glossaryWont, /既定話者で、話者のないピースを埋めること/);
+  assert.match(glossaryWont, /行頭記号を入れ替えること/);
+  assert.match(glossaryWont, /\$ignore_char` でセリフ集計から句読点/);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, /\$key=value/);
+  assert.match(core, /既定の話者は埋めない/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /default_charactor_name/);
+  assert.match(compat, /既定の話者は埋めない/);
+  assert.match(compat, /ADR 0009/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /既定の話者は埋めない/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const basics = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basics, /既定の話者は埋めない/);
+  assert.match(basics, /\$ignore_char/);
+  const audioScript = guide.slice(guide.indexOf("### 音声台本化"), guide.indexOf("### セリフ文字数の照合"));
+  assert.match(audioScript, /既定の話者は埋めない/);
+  const count = guide.slice(guide.indexOf("### セリフ文字数の照合"), guide.indexOf("### 音声原稿を書かせるとき"));
+  assert.match(count, /\$ignore_char/);
+  assert.match(count, /既定の話者は埋めない/);
+  const audioWrite = guide.slice(guide.indexOf("### 音声原稿を書かせるとき"), guide.indexOf("### 漫画ネーム原稿を書かせるとき"));
+  assert.match(audioWrite, /既定の話者は埋めない/);
+  const gap = guide.slice(guide.indexOf("### 不足情報の洗い出し"), guide.indexOf("### Medo の形チェック結果の読み方"));
+  assert.match(gap, /既定の話者は埋めない/);
+  const importHelp = guide.slice(guide.indexOf("### 旧 Mes 取り込みの手伝い"), guide.indexOf("### アニメ字コンテ起こし"));
+  assert.match(importHelp, /既定の話者は埋めない/);
+  assert.match(importHelp, /--compat は触らない/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /既定の話者は埋めない/);
+  assert.match(audioReadme, /\$ignore_char/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /既定の話者は埋めない/);
+
+  const adr = readFileSync(join(root, "docs/decisions/0009-header-settings-are-memos.md"), "utf8");
+  assert.match(adr, /Accepted/);
+  assert.match(adr, /default_charactor_name/);
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /0009/);
+  assert.match(adrReadme, /既定の話者は埋めない/);
+  const adr0006 = readFileSync(join(root, "docs/decisions/0006-mes-compat-import.md"), "utf8");
+  assert.match(adr0006, /ADR 0009/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.100/);
+  assert.match(changelog, /既定の話者は埋めない/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /既定の話者は埋めない/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /既定の話者は埋めない/);
+  assert.match(backlog, /水曜向け/);
+  assert.match(backlog, /\$default_charactor_name/);
+  assert.match(backlog, /\$deco_charactor/);
+  assert.match(backlog, /\$ignore_char` でセリフ集計から句読点/);
+  assert.match(backlog, /カット表の Markdown／CSV/);
+});
+
 test("header $key value form (Mes-style) and body $ sound stay distinct", () => {
   const medo = parseMesLang(`$title 駅前の二人
 $profile audio
