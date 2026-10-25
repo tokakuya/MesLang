@@ -585,8 +585,10 @@ test("glossary: Medo の形チェックの縁 — empty arrays and dialogue are 
   assert.match(section, /コマとピース/);
   assert.match(section, /空と欠け/);
   assert.match(section, /ヘッダーの縁/);
+  assert.match(section, /配列の中身/);
   assert.match(section, /`profile` なし/);
   assert.match(section, /`dialogue` キーなし/);
+  assert.match(section, /sections: \["駅前"\]/);
   assert.match(section, /つき先の良し悪しは見ない/);
   assert.match(section, /型違い/);
   assert.match(section, /コマ・構図と属性/);
@@ -600,6 +602,7 @@ test("glossary: Medo の形チェックの縁 — empty arrays and dialogue are 
   assert.match(medoSchema, /unknown/);
   assert.match(medoSchema, /つき先/);
   assert.match(medoSchema, /型が違う/);
+  assert.match(medoSchema, /配列の中身/);
 
   const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
   assert.match(guide, /Medo の形チェックの縁/);
@@ -640,6 +643,8 @@ test("glossary: カット表の形チェックの縁 — empty cut id is valid",
   assert.match(section, /`cut` キーなし/);
   assert.match(section, /型違い/);
   assert.match(section, /cut: 1/);
+  assert.match(section, /配列の中身/);
+  assert.match(section, /cuts: \["CUT-1"\]/);
 
   const conteDoc = readFileSync(join(root, "docs/spec/07-conte-table.md"), "utf8");
   assert.match(conteDoc, /形チェックが見る縁/);
@@ -649,6 +654,8 @@ test("glossary: カット表の形チェックの縁 — empty cut id is valid",
   assert.match(conteDoc, /`dialogues` キーなし/);
   assert.match(conteDoc, /cut: 1/);
   assert.match(conteDoc, /型違い/);
+  assert.match(conteDoc, /cuts: \["CUT-1"\]/);
+  assert.match(conteDoc, /配列の中身/);
 
   const conteSchema = readFileSync(join(root, "schema/conte-table.schema.json"), "utf8");
   assert.match(conteSchema, /番号なし/);
@@ -656,6 +663,7 @@ test("glossary: カット表の形チェックの縁 — empty cut id is valid",
   assert.match(conteSchema, /必須箱の欠け/);
   assert.match(conteSchema, /attrs/);
   assert.match(conteSchema, /型が違う/);
+  assert.match(conteSchema, /配列の中身/);
 
   const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
   assert.match(guide, /カット表の形チェックの縁/);
@@ -3707,6 +3715,8 @@ test("AI ガイド: カット表ひな形に番号なし行と形チェック結
   assert.match(shapeRead, /必須箱の欠け/);
   assert.match(shapeRead, /空と欠け/);
   assert.match(shapeRead, /型違い/);
+  assert.match(shapeRead, /配列の中身/);
+  assert.match(shapeRead, /cuts: \["CUT-1"\]/);
   assert.match(shapeRead, /提案:/);
   assert.match(shapeRead, /不足:/);
 });
@@ -3752,6 +3762,8 @@ test("AI ガイド: Medo 形チェック結果の読み方と属性のつき先"
   assert.match(medoRead, /profile なし/);
   assert.match(medoRead, /空と欠け/);
   assert.match(medoRead, /ヘッダーの縁/);
+  assert.match(medoRead, /配列の中身/);
+  assert.match(medoRead, /sections: \["駅前"\]/);
   assert.match(medoRead, /profile: ""/);
   assert.match(medoRead, /つき先の良し悪しは見ない/);
   assert.match(medoRead, /型違い/);
@@ -4476,3 +4488,67 @@ test("glossary: 行の種類と属性の続き — leading : without decorator i
   assert.match(backlog, /日曜夜（2026-09-06）: 用語集「行の種類と属性の続き」/);
   assert.match(backlog, /水曜向け/);
 });
+
+test("glossary: 配列の中身 — empty arrays pass, wrong item types do not", () => {
+  // docs/spec/05-glossary.md「配列の中身」（Medo／カット表の縁）
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const medoSection = glossary.slice(
+    glossary.indexOf("## Medo の形チェックの縁"),
+    glossary.indexOf("## カット表の形チェックの縁"),
+  );
+  assert.match(medoSection, /配列の中身/);
+  assert.match(medoSection, /sections: \["駅前"\]/);
+  assert.match(medoSection, /空配列と同じく、中身が文字列でも通る/);
+
+  const conteSection = glossary.slice(
+    glossary.indexOf("## カット表の形チェックの縁"),
+    glossary.indexOf("## 記法"),
+  );
+  assert.match(conteSection, /配列の中身/);
+  assert.match(conteSection, /cuts: \["CUT-1"\]/);
+  assert.match(conteSection, /camera: \[1\]/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /配列の中身/);
+
+  const readme = readFileSync(join(root, "README.md"), "utf8");
+  assert.match(readme, /配列の中身/);
+
+  const mangaReadme = readFileSync(join(root, "examples/manga/README.md"), "utf8");
+  assert.match(mangaReadme, /配列の中身/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /配列の中身/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /配列の中身/);
+
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /配列の中身/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.94/);
+  assert.match(changelog, /配列の中身/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /配列の中身/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /配列の中身/);
+  assert.match(backlog, /水曜向け/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const practice = guide.slice(
+    guide.indexOf("## おすすめの実務の順番"),
+    guide.indexOf("## ツールと AI の役割分担"),
+  );
+  assert.match(practice, /配列の中身/);
+
+  const nameRaising = guide.slice(
+    guide.indexOf("### 漫画ネーム起こし"),
+    guide.indexOf("### 音声台本化"),
+  );
+  assert.match(nameRaising, /配列の中身/);
+});
+

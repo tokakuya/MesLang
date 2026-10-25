@@ -125,6 +125,7 @@ function checkSection(s: unknown, path: string, issues: MedoValidationIssue[]): 
  * Attrs on any decorator kind (including frame/camera) are valid shape;
  * type mismatches (non-string dialogue, array attrs, numeric attr values) are not.
  * `null` is a type mismatch (not missing).
+ * Array items must still be the right box (section / piece / decorator objects).
  */
 export function validateMedo(data: unknown): MedoValidationIssue[] {
   const issues: MedoValidationIssue[] = [];

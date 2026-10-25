@@ -256,32 +256,6 @@ test("validateConteTable distinguishes empty cut id from missing cut key", () =>
   assert.ok(missingTitle.some((i) => i.path === "title" && i.message.includes("required")));
 });
 
-test("validateConteTable rejects type mismatch for cut (number vs empty string)", () => {
-  const issues = validateConteTable({
-    version: "conte-table/0.0",
-    title: "",
-    profile: "anime",
-    cuts: [
-      {
-        cut: 1,
-        camera: [],
-        timing: [],
-        action: [],
-        sound: [],
-        position: [],
-        beat: [],
-        ext: [],
-        dialogues: [],
-      },
-    ],
-  });
-  assert.ok(issues.some((i) => i.path === "cuts[0].cut" && i.message.includes("must be a string")));
-  assert.equal(
-    issues.some((i) => i.path === "cuts[0].cut" && i.message.includes("required")),
-    false,
-  );
-});
-
 test("validateConteTable treats null as type mismatch, not missing", () => {
   const nullCut = validateConteTable({
     version: "conte-table/0.0",
@@ -405,6 +379,56 @@ test("validateConteTable treats null as type mismatch, not missing", () => {
     ],
   });
   assert.ok(nullDialogue.some((i) => i.message.includes("dialogue must be an object")));
+});
+
+test("validateConteTable rejects -typed items (配列の中身)", () => {
+  assert.deepEqual(
+    validateConteTable({
+      version: "conte-table/0.0",
+      title: "",
+      profile: "anime",
+      cuts: [],
+    }),
+    [],
+  );
+
+  const stringCut = validateConteTable({
+    version: "conte-table/0.0",
+    title: "",
+    profile: "anime",
+    cuts: ["CUT-1"],
+  });
+  assert.ok(
+    stringCut.some((i) => i.path === "cuts[0]" && i.message.includes("must be an object")),
+  );
+  assert.equal(
+    stringCut.some((i) => i.message.includes("is required")),
+    false,
+  );
+
+  const stringDialogue = validateConteTable({
+    version: "conte-table/0.0",
+    title: "t",
+    profile: "anime",
+    cuts: [
+      {
+        cut: "1",
+        camera: [],
+        timing: [],
+        action: [],
+        sound: [],
+        position: [],
+        beat: [],
+        ext: [],
+        dialogues: ["ねえ"],
+      },
+    ],
+  });
+  assert.ok(
+    stringDialogue.some(
+      (i) => i.path.includes("dialogues[0]") && i.message.includes("must be an object"),
+    ),
+  );
 });
 
 test("validateConteTable rejects non-string camera entry", () => {
