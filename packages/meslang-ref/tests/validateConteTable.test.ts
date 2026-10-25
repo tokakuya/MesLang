@@ -256,11 +256,6 @@ test("validateConteTable distinguishes empty cut id from missing cut key", () =>
   assert.ok(missingTitle.some((i) => i.path === "title" && i.message.includes("required")));
 });
 
-test("validateConteTable distinguishes empath === "cuts[0].cut" && i.message.includes("required")),
-    false,
-  );
-});
-
 test("validateConteTable treats null as type mismatch, not missing", () => {
   const nullCut = validateConteTable({
     version: "conte-table/0.0",
@@ -340,7 +335,16 @@ test("validateConteTable treats null as type mismatch, not missing", () => {
     profile: "anime",
     cuts: null,
   });
-  assert.ok(nullCuts.some((i) => i.path === "cuts" && i.message.includes("must be an arrays from wronge.includes("cut must be an object")));
+  assert.ok(nullCuts.some((i) => i.path === "cuts" && i.message.includes("must be an array")));
+  assert.equal(nullCuts.some((i) => i.path === "cuts" && i.message.includes("required")), false);
+
+  const nullCutObject = validateConteTable({
+    version: "conte-table/0.0",
+    title: "",
+    profile: "anime",
+    cuts: [null],
+  });
+  assert.ok(nullCutObject.some((i) => i.message.includes("cut must be an object")));
 
   const nullVersion = validateConteTable({
     version: null,
