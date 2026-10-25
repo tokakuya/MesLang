@@ -8,7 +8,6 @@ import { rewriteMesCompat } from "../src/mesCompat.ts";
 import { validateMedo } from "../src/validateMedo.ts";
 import { toConteTable } from "../src/conteTable.ts";
 import { validateConteTable } from "../src/validateConteTable.ts";
-import { validateMedo } from "../src/validateMedo.ts";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..");
 
