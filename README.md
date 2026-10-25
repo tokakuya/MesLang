@@ -50,7 +50,7 @@ $雑踏のざわめき
 - `#` … ト書き・状況
 - `$` … 音のこと
 - `!` … 音の位置や空間
-- `:key value` … 表情などの属性（キャラ名はそのまま）
+- `:key value` … 表情などの属性（直前の記号へ。行頭だけだとセリフに残る）
 - 空行で **ピース**（ひとまとまり）を区切ります
 
 漫画では `%`（コマ）なども使います → [メディアプロファイル](docs/spec/03-media-profiles.md)  
@@ -87,7 +87,8 @@ node --experimental-strip-types src/cli.ts --conte --validate ../../examples/ani
 node --experimental-strip-types src/cli.ts --compat --validate ../../examples/audio/mes-import-before.mes  # 旧 Mes 柱→# のあと Medo 形チェック
 ```
 
-`--validate` は、出てきた JSON の **箱の名前と型**（`version` や `rawMark` など）が揃っているかだけを見ます。話の良し悪しは見ません。  
+`--validate` は、出てきた JSON の **箱の名前と型**（`version` や `rawMark` など）が揃っているかだけを見ます。話の良し悪しや、属性がどの記号に付いたかや、属性がだれに付いたか（つき先）は見ません（通った＝つき先が正しい、ではない）。空文字とキーなしは別、手組みの `null` は欠けではなく型違いです。  
+セリフだけの原稿でも、箱が揃っていれば通ります。人が書く必須と、箱の必須は別です → [用語集](docs/spec/05-glossary.md#原稿の必須と箱の必須まぎらわしいことば)。空配列は通りますが、`sections: ["駅前"]` のように中身の型が違うと弾きます（[配列の中身](docs/spec/05-glossary.md#medo-の形チェックの縁まぎらわしいことば)）。空の `[]` は通りますが、配列の箱に `{}` を置くと弾きます（[配列とオブジェクト](docs/spec/05-glossary.md#medo-の形チェックの縁まぎらわしいことば)）。  
 取り込み直後の JSON を目で見る手順は、[旧 Mes 取り込みガイドの「取り込み後 Medo の目視」](docs/spec/06-mes-compat.md#取り込み後-medo-の目視任意) にあります。ことばの整理は [用語集の形チェックと目視](docs/spec/05-glossary.md#形チェックと目視まぎらわしいことば) です。
 
 ## 旧 Mes との関係
