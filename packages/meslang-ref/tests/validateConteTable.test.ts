@@ -256,6 +256,32 @@ test("validateConteTable distinguishes empty cut id from missing cut key", () =>
   assert.ok(missingTitle.some((i) => i.path === "title" && i.message.includes("required")));
 });
 
+test("validateConteTable rejects type mismatch for cut (number vs empty string)", () => {
+  const issues = validateConteTable({
+    version: "conte-table/0.0",
+    title: "",
+    profile: "anime",
+    cuts: [
+      {
+        cut: 1,
+        camera: [],
+        timing: [],
+        action: [],
+        sound: [],
+        position: [],
+        beat: [],
+        ext: [],
+        dialogues: [],
+      },
+    ],
+  });
+  assert.ok(issues.some((i) => i.path === "cuts[0].cut" && i.message.includes("must be a string")));
+  assert.equal(
+    issues.some((i) => i.path === "cuts[0].cut" && i.message.includes("required")),
+    false,
+  );
+});
+
 test("validateConteTable rejects non-string camera entry", () => {
   const issues = validateConteTable({
     version: "conte-table/0.0",
