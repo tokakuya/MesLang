@@ -47,7 +47,7 @@ function requireArray(
 
 function checkStringArray(v: unknown, path: string, issues: ConteValidationIssue[]): void {
   if (!Array.isArray(v)) {
-    issues.push({ path, message: "must be an array of strings" });
+    issues.push({ path, message: "must be an array" });
     return;
   }
   v.forEach((item, i) => {
@@ -112,6 +112,7 @@ function checkCut(c: unknown, path: string, issues: ConteValidationIssue[]): voi
  * Type mismatches (`cut: 1`, `camera` as a string) are rejected separately.
  * `null` is a type mismatch (not missing).
  * Array items must still be the right box (cut / dialogue objects, string camera entries).
+ * Array slots (`cuts` / `camera` / `dialogues`) reject `{}`; the root rejects arrays.
  */
 export function validateConteTable(data: unknown): ConteValidationIssue[] {
   const issues: ConteValidationIssue[] = [];

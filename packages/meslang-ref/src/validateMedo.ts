@@ -126,6 +126,7 @@ function checkSection(s: unknown, path: string, issues: MedoValidationIssue[]): 
  * type mismatches (non-string dialogue, array attrs, numeric attr values) are not.
  * `null` is a type mismatch (not missing).
  * Array items must still be the right box (section / piece / decorator objects).
+ * Array slots reject `{}`; object slots (`body` / `header` / `attrs`) reject `[]`.
  */
 export function validateMedo(data: unknown): MedoValidationIssue[] {
   const issues: MedoValidationIssue[] = [];
