@@ -120,6 +120,13 @@ test("examples/audio mes-import before→after path", () => {
   assert.equal(firstCharacter(reunion!)?.value, "こいと");
   assert.ok(reunion!.decorators.some((d) => d.kind === "sound" && d.value.includes("呼びかける声")));
   assert.ok(reunion!.decorators.some((d) => d.kind === "position" && d.value === "右寄り"));
+  // 空白4つ is core DoFlat, not --compat. Samples keep にか    二年ぶりかな。
+  assert.match(before, /にか {4}二年ぶりかな。/);
+  assert.match(afterRewrite, /にか {4}二年ぶりかな。/);
+  assert.match(after, /にか {4}二年ぶりかな。/);
+  const nikaYears = polished.body.sections[0]!.pieces.find((p) => p.dialogue.includes("二年ぶりかな"));
+  assert.equal(firstCharacter(nikaYears!)?.value, "にか");
+  assert.equal(nikaYears!.dialogue, "二年ぶりかな。");
 });
 
 test("mes-import-compat-only.mes matches rewriteMesCompat(before)", () => {
