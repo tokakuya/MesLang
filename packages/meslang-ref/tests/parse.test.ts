@@ -5335,3 +5335,172 @@ test("glossary: セリフのかぎ — only corner quotes 「」 sugar to @", ()
   assert.match(glossaryWont, /『』/);
   assert.match(backlog, /『』 \/ 半角｢｣ \/ ASCII/);
 });
+
+test("glossary: 境目はハイフン4つ — only four ASCII hyphens split the header", () => {
+  // docs/spec/05-glossary.md「境目はハイフン4つ（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## 境目はハイフン4つ"),
+    glossary.indexOf("## 音・声質と属性"),
+  );
+  assert.match(section, /境目はハイフン4つ/);
+  assert.match(section, /title 駅前/);
+  assert.match(section, /通った＝境目があった、ではない/);
+  assert.match(section, /--compat/);
+  assert.match(section, /2本目はセリフ/);
+  assert.doesNotMatch(section, /## ピースをまたがない/);
+
+  const glossaryWont = glossary.slice(glossary.indexOf("## 採用しない"));
+  assert.match(glossaryWont, /境目の無い原稿へ `----` を足すこと/);
+
+  const ok = parseMesLang(`$title 駅前
+----
+@にか
+こんにちは
+`);
+  assert.equal(ok.header.title, "駅前");
+  assert.equal(ok.body.sections[0]!.pieces[0]!.dialogue, "こんにちは");
+  assert.equal(firstCharacter(ok.body.sections[0]!.pieces[0]!)?.value, "にか");
+
+  const trailed = parseMesLang(`$title 駅前
+----  
+@にか
+こんにちは
+`);
+  assert.equal(trailed.header.title, "駅前");
+
+  const missing = parseMesLang(`$title 駅前
+$default_charactor_name=にか
+こんにちは
+`);
+  assert.equal(missing.header.title, undefined);
+  assert.equal(missing.header.default_charactor_name, undefined);
+  assert.equal(missing.header.profile, "audio");
+  const missPiece = missing.body.sections[0]!.pieces[0]!;
+  assert.deepEqual(
+    missPiece.decorators.filter((d) => d.kind === "sound").map((d) => d.value),
+    ["title 駅前", "default_charactor_name=にか"],
+  );
+  assert.equal(missPiece.dialogue, "こんにちは");
+  assert.equal(firstCharacter(missPiece), undefined);
+  assert.deepEqual(validateMedo(missing), []);
+
+  for (const line of ["---", "-----", "－－－－", "――――", " ----"]) {
+    const medo = parseMesLang(`$title 駅前
+${line}
+@にか
+こんにちは
+`);
+    assert.equal(medo.header.title, undefined, line);
+    const piece = medo.body.sections[0]!.pieces[0]!;
+    assert.equal(piece.decorators.find((d) => d.kind === "sound")?.value, "title 駅前", line);
+    assert.match(piece.dialogue, /こんにちは/, line);
+  }
+
+  const later = parseMesLang(`$title 駅前
+---
+----
+@にか
+こんにちは
+`);
+  assert.equal(later.header.title, "駅前");
+  assert.equal(later.body.sections[0]!.pieces[0]!.dialogue, "こんにちは");
+  assert.doesNotMatch(later.header.raw, /こんにちは/);
+  assert.match(later.header.raw, /---/);
+
+  const second = parseMesLang(`title: 駅前
+----
+@にか
+こんにちは。
+
+----
+
+@こいと
+はい。
+`);
+  assert.equal(second.header.title, "駅前");
+  const pieces = second.body.sections[0]!.pieces;
+  assert.equal(pieces.length, 3);
+  assert.equal(pieces[1]!.dialogue, "----");
+  assert.equal(pieces[1]!.decorators.length, 0);
+  assert.equal(firstCharacter(pieces[2]!)?.value, "こいと");
+
+  const samePiece = parseMesLang(`title: 駅前
+----
+@にか
+こんにちは。
+----
+`);
+  assert.equal(samePiece.body.sections[0]!.pieces[0]!.dialogue, "こんにちは。\n----");
+
+  const bare = `$title 駅前
+---
+@にか
+こんにちは
+`;
+  assert.equal(rewriteMesCompat(bare), bare);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, /境目はハイフン4つ/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /### 境目はハイフン4つ/);
+  assert.match(compat, /通った＝境目があった、ではない/);
+  assert.match(compat, /--compat` は境目を足しません/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /境目はハイフン4つ/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const basics = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basics, /境目はハイフン4つ/);
+  assert.match(basics, /通った＝境目があった、ではない/);
+
+  const audioScript = guide.slice(
+    guide.indexOf("### 音声台本化"),
+    guide.indexOf("### セリフ文字数の照合"),
+  );
+  assert.match(audioScript, /境目はハイフン4つ/);
+
+  const audioWrite = guide.slice(
+    guide.indexOf("### 音声原稿を書かせるとき"),
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+  );
+  assert.match(audioWrite, /境目はハイフン4つ/);
+
+  const importHelp = guide.slice(
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+    guide.indexOf("### アニメ字コンテ起こし"),
+  );
+  assert.match(importHelp, /境目はハイフン4つ/);
+  assert.match(importHelp, /--compat は触らない/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /境目はハイフン4つまぎらわしいことば/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /境目はハイフン4つ/);
+
+  const adr = readFileSync(join(root, "docs/decisions/0009-header-settings-are-memos.md"), "utf8");
+  assert.match(adr, /境目はハイフン4つ/);
+  const adr0006 = readFileSync(join(root, "docs/decisions/0006-mes-compat-import.md"), "utf8");
+  assert.match(adr0006, /境目はハイフン4つ/);
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /境目はハイフン4つ/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.101/);
+  assert.match(changelog, /境目はハイフン4つ/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /境目はハイフン4つ/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /境目はハイフン4つ/);
+  assert.match(backlog, /境目の無い原稿へ `----` を足すこと/);
+  assert.match(backlog, /水曜向け/);
+});
