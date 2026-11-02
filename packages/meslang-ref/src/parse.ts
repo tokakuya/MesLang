@@ -4,7 +4,8 @@ import type { Attrs, Decorator, Medo, Piece, Section } from "./types.ts";
 export { bracketKeyAt, resolveBracketKeys } from "./bracketKeys.ts";
 
 const HEADER_DELIM = /^----\s*$/;
-const SECTION_RE = /^==\s*(.*)$/;
+/** Exactly two ASCII `=`. A third `=` (`===`) is dialogue, not a heading. */
+const SECTION_RE = /^==(?!=)(.*)$/;
 const BRACKET_RE = /\[([^\]]+)\]/g;
 const SUGAR_DIALOGUE_RE = /^(.*?)[「]([\s\S]*?)[」]\s*$/;
 const SUGAR_TAB_RE = /^(.*?)\t(.*)$/;
@@ -31,7 +32,8 @@ export function doFlat(text: string): string {
         !trimmed ||
         trimmed.startsWith("//") ||
         DECORATOR_MARKS.has(trimmed[0]!) ||
-        trimmed.startsWith("==") ||
+        // `==` / `===` / indented ` ==` are not dialogue sugar (glossary: セクションはイコール2つ).
+        trimmed.trim().startsWith("==") ||
         HEADER_DELIM.test(trimmed)
       ) {
         return line;
@@ -55,6 +57,13 @@ export function doFlat(text: string): string {
       return line;
     })
     .join("\n");
+}
+
+/** Section title, or null when the line is not a heading. Empty string is a real heading. */
+function sectionTitle(line: string): string | null {
+  const m = SECTION_RE.exec(line.trim());
+  if (!m) return null;
+  return (m[1] ?? "").trim();
 }
 
 function splitHeaderBody(text: string): { headerRaw: string; body: string } {
@@ -223,34 +232,28 @@ export function parseMesLang(input: string): Medo {
 
   const sections: Section[] = [];
   let current: Section = { title: "", pieces: [] };
+  // title "" is both "no heading yet" and "a heading whose name is empty".
+  // sectionOpen keeps a bare `==` from disappearing into the untitled start.
+  let sectionOpen = false;
 
-  // Process body while honoring section lines; pieces are blank-line separated
-  // Strategy: split by pieces first is wrong when == is inside. Scan lines into buffers.
+  // Process body while honoring section lines; pieces are blank-line separated.
+  // A `==` line opens a section only at a piece boundary (buf empty). Mid-piece
+  // `==` stays dialogue — do not invent the blank line (glossary: セクションはイコール2つ).
   const lines = normalizeNewlines(body).split("\n");
   let buf: string[] = [];
+
+  const openSection = (title: string) => {
+    if (sectionOpen || current.pieces.length > 0 || current.title) {
+      sections.push(current);
+    }
+    current = { title, pieces: [] };
+    sectionOpen = true;
+  };
 
   const flushPieceBuf = () => {
     const block = buf.join("\n").trim();
     buf = [];
     if (!block) return;
-    // block may contain section line at start
-    const blockLines = block.split("\n");
-    let i = 0;
-    while (i < blockLines.length) {
-      const sec = SECTION_RE.exec(blockLines[i]!.trim());
-      if (sec && i === 0) {
-        if (current.pieces.length > 0 || current.title) sections.push(current);
-        current = { title: sec[1]!.trim(), pieces: [] };
-        i++;
-        const rest = blockLines.slice(i).join("\n").trim();
-        if (rest) {
-          const piece = parsePiece(rest, bracketKeys);
-          if (piece) current.pieces.push(piece);
-        }
-        return;
-      }
-      break;
-    }
     const piece = parsePiece(block, bracketKeys);
     if (piece) current.pieces.push(piece);
   };
@@ -260,16 +263,19 @@ export function parseMesLang(input: string): Medo {
       flushPieceBuf();
       continue;
     }
-    const sec = SECTION_RE.exec(line.trim());
-    if (sec && buf.length === 0) {
-      if (current.pieces.length > 0 || current.title) sections.push(current);
-      current = { title: sec[1]!.trim(), pieces: [] };
-      continue;
+    // Row-start // is not a line for section boundaries (parsePiece drops it too).
+    if (line.trimEnd().startsWith("//")) continue;
+    if (buf.length === 0) {
+      const title = sectionTitle(line);
+      if (title !== null) {
+        openSection(title);
+        continue;
+      }
     }
     buf.push(line);
   }
   flushPieceBuf();
-  if (current.pieces.length > 0 || current.title || sections.length === 0) {
+  if (sectionOpen || current.pieces.length > 0 || current.title || sections.length === 0) {
     sections.push(current);
   }
 
