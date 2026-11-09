@@ -5711,3 +5711,181 @@ $title 駅前
   assert.match(backlog, /全角の `＝＝` を `==` に直すこと/);
   assert.match(backlog, /水曜向け/);
 });
+
+test("glossary: ヘッダーのドル記号 — fullwidth dollar is a memo, colon is not", () => {
+  // docs/spec/05-glossary.md「ヘッダーのドル記号（まぎらわしいことば）」
+  const glossary = readFileSync(join(root, "docs/spec/05-glossary.md"), "utf8");
+  const section = glossary.slice(
+    glossary.indexOf("## ヘッダーのドル記号"),
+    glossary.indexOf("## 境目はハイフン4つ"),
+  );
+  assert.match(section, /ヘッダーのドル記号/);
+  assert.match(section, /通った＝題名が読めた、ではない/);
+  assert.match(section, /--compat/);
+  assert.match(section, /全角ドル/);
+  assert.match(section, /title:` というキーにもしない/);
+  assert.doesNotMatch(section, /## 既定の話者は埋めない/);
+  assert.doesNotMatch(section, /## 境目はハイフン4つ/);
+
+  const glossaryWont = glossary.slice(glossary.indexOf("## 採用しない"));
+  assert.match(glossaryWont, /ドルを残した `\$title: 駅前` を変数にすること/);
+
+  const half = parseMesLang(`$title 駅前
+----
+あ
+`);
+  assert.equal(half.header.title, "駅前");
+
+  const spacedMark = parseMesLang(`$ title 駅前
+----
+あ
+`);
+  assert.equal(spacedMark.header.title, "駅前");
+
+  const indented = parseMesLang(`  $title 駅前
+----
+あ
+`);
+  assert.equal(indented.header.title, "駅前");
+
+  const full = parseMesLang(`＄title 駅前
+----
+＄雑踏
+`);
+  assert.equal(full.header.title, "駅前");
+  assert.equal(full.header["title:"], undefined);
+  const fullSound = full.body.sections[0]!.pieces[0]!.decorators.find((d) => d.kind === "sound");
+  assert.equal(fullSound?.rawMark, "＄");
+  assert.equal(fullSound?.value, "雑踏");
+
+  const fullEq = parseMesLang(`＄title=駅前
+----
+あ
+`);
+  assert.equal(fullEq.header.title, "駅前");
+
+  const eqSpace = parseMesLang(`$title = 駅前:補足
+----
+あ
+`);
+  assert.equal(eqSpace.header.title, "駅前:補足");
+
+  const plainColon = parseMesLang(`title: 駅前
+title： 改札
+----
+あ
+`);
+  assert.equal(plainColon.header.title, "改札");
+
+  for (const line of ["$title: 駅前", "$title:駅前", "$title： 駅前", "$title：駅前", "$title : 駅前", "＄title: 駅前", "$title＝駅前"]) {
+    const medo = parseMesLang(`${line}\n----\nこんにちは\n`);
+    assert.equal(medo.header.title, undefined, line);
+    assert.equal(medo.header["title:"], undefined, line);
+    assert.equal(medo.header["title："], undefined, line);
+    assert.match(medo.header.raw, line.includes("＄") ? /＄title/ : /\$title/, line);
+    assert.equal(medo.header.profile, "audio", line);
+    assert.equal(medo.body.sections[0]!.pieces[0]!.dialogue, "こんにちは", line);
+    assert.deepEqual(validateMedo(medo), [], line);
+  }
+
+  const compatSrc = "＄scene 改札\n$note: コロンは区切りにしない\n";
+  assert.equal(rewriteMesCompat(compatSrc), compatSrc);
+
+  const before = readFileSync(join(root, "examples/audio/mes-import-before.mes"), "utf8");
+  const mid = readFileSync(join(root, "examples/audio/mes-import-compat-only.mes"), "utf8");
+  const after = readFileSync(join(root, "examples/audio/mes-import-after.mes"), "utf8");
+  assert.equal(rewriteMesCompat(before), mid);
+  assert.match(before, /^＄scene 改札$/m);
+  assert.match(before, /^\$note: コロンは区切りにしない$/m);
+  assert.match(mid, /^＄scene 改札$/m);
+  assert.match(after, /^scene: 改札$/m);
+  assert.match(after, /^note: コロンは区切りにしない$/m);
+  assert.doesNotMatch(after, /\$note:/);
+
+  const beforeMedo = parseMesLang(before);
+  assert.equal(beforeMedo.header.title, "駅前（取り込み前）");
+  assert.equal(beforeMedo.header.scene, "改札");
+  assert.equal(beforeMedo.header.note, undefined);
+  assert.equal(beforeMedo.header["note:"], undefined);
+  assert.match(beforeMedo.header.raw, /\$note: コロンは区切りにしない/);
+  assert.deepEqual(validateMedo(beforeMedo), []);
+
+  const afterMedo = parseMesLang(after);
+  assert.equal(afterMedo.header.scene, "改札");
+  assert.equal(afterMedo.header.note, "コロンは区切りにしない");
+  assert.deepEqual(validateMedo(afterMedo), []);
+
+  const core = readFileSync(join(root, "docs/spec/01-core.md"), "utf8");
+  assert.match(core, /ヘッダーのドル記号/);
+  assert.match(core, /通った＝題名が読めた、ではない/);
+
+  const compat = readFileSync(join(root, "docs/spec/06-mes-compat.md"), "utf8");
+  assert.match(compat, /### ヘッダーのドル記号/);
+  assert.match(compat, /通った＝題名が読めた、ではない/);
+  assert.match(compat, /--compat` は全角ドルを半角に揃えません/);
+
+  const profiles = readFileSync(join(root, "docs/spec/03-media-profiles.md"), "utf8");
+  assert.match(profiles, /ヘッダーのドル記号/);
+
+  const guide = readFileSync(join(root, "docs/spec/04-ai-reading.md"), "utf8");
+  const basics = guide.slice(
+    guide.indexOf("## 読み手（AI）への基本指示"),
+    guide.indexOf("## 著者側の書き方"),
+  );
+  assert.match(basics, /ヘッダーのドル記号/);
+  assert.match(basics, /通った＝題名が読めた、ではない/);
+
+  const audioScript = guide.slice(
+    guide.indexOf("### 音声台本化"),
+    guide.indexOf("### セリフ文字数の照合"),
+  );
+  assert.match(audioScript, /ヘッダーのドル記号/);
+  assert.match(audioScript, /通った＝題名が読めた、ではない/);
+
+  const audioWrite = guide.slice(
+    guide.indexOf("### 音声原稿を書かせるとき"),
+    guide.indexOf("### 漫画ネーム原稿を書かせるとき"),
+  );
+  assert.match(audioWrite, /ヘッダーのドル記号/);
+
+  const importHelp = guide.slice(
+    guide.indexOf("### 旧 Mes 取り込みの手伝い"),
+    guide.indexOf("### アニメ字コンテ起こし"),
+  );
+  assert.match(importHelp, /ヘッダーのドル記号/);
+  assert.match(importHelp, /--compat は触らない/);
+  assert.match(importHelp, /通った＝題名が読めた、ではない/);
+
+  const audioReadme = readFileSync(join(root, "examples/audio/README.md"), "utf8");
+  assert.match(audioReadme, /ヘッダーのドル記号まぎらわしいことば/);
+  assert.match(audioReadme, /通った＝題名が読めた、ではない/);
+
+  const overview = readFileSync(join(root, "docs/spec/00-overview.md"), "utf8");
+  assert.match(overview, /ヘッダーのドル記号/);
+
+  const adr = readFileSync(join(root, "docs/decisions/0011-header-dollar-mark.md"), "utf8");
+  assert.match(adr, /ヘッダーのドル記号は半角も全角も/);
+  assert.match(adr, /Accepted/);
+  assert.match(adr, /通った＝題名が読めた、ではない/);
+  const adr0009 = readFileSync(join(root, "docs/decisions/0009-header-settings-are-memos.md"), "utf8");
+  assert.match(adr0009, /ADR 0011/);
+  assert.match(adr0009, /ヘッダーのドル記号/);
+  const adr0006 = readFileSync(join(root, "docs/decisions/0006-mes-compat-import.md"), "utf8");
+  assert.match(adr0006, /ヘッダーのドル記号/);
+  const adrReadme = readFileSync(join(root, "docs/decisions/README.md"), "utf8");
+  assert.match(adrReadme, /0011/);
+  assert.match(adrReadme, /ヘッダーのドル記号/);
+
+  const changelog = readFileSync(join(root, "CHANGELOG.md"), "utf8");
+  assert.match(changelog, /0\.0\.103/);
+  assert.match(changelog, /ヘッダーのドル記号/);
+
+  const roadmap = readFileSync(join(root, "docs/roadmap.md"), "utf8");
+  assert.match(roadmap, /ヘッダーのドル記号/);
+  assert.match(roadmap, /水曜向け/);
+
+  const backlog = readFileSync(join(root, "automation/backlog.md"), "utf8");
+  assert.match(backlog, /ヘッダーのドル記号/);
+  assert.match(backlog, /ドルを残した `\$title: 駅前` を変数にすること/);
+  assert.match(backlog, /水曜向け/);
+});

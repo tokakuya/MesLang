@@ -77,19 +77,24 @@ function splitHeaderBody(text: string): { headerRaw: string; body: string } {
 }
 
 /**
- * Header `$key value` or halfwidth `$key=value` / `$key = value`.
+ * Header `$key value`, fullwidth `＄key value`, or halfwidth `$key=value`.
+ * Both dollar marks are the same variable mark (glossary: ヘッダーのドル記号).
  * Stored as a memo only — does not fill a default speaker, remap marks,
  * or change dialogue counts (glossary: 既定の話者は埋めない).
- * Fullwidth `＝` is not a separator.
+ * Fullwidth `＝` is not a separator. Colon (`:` / `：`) is not a `$` separator:
+ * `$title: 駅前` is not a variable and is not stored under the key `title:`.
  */
+const HEADER_DOLLAR_RE = /^[$＄]/;
+
 function parseDollarHeaderLine(line: string): { key: string; value: string } | null {
-  if (!line.startsWith("$")) return null;
+  if (!HEADER_DOLLAR_RE.test(line)) return null;
   const rest = line.slice(1).trim();
-  const m = /^([^\s=]+)\s*(?:=\s*|\s+)(.+)$/.exec(rest);
+  const m = /^([^\s=:：]+)\s*(?:=\s*|\s+)(.+)$/.exec(rest);
   if (!m) return null;
   const key = m[1]!;
   const value = m[2]!.trim();
-  if (!key || !value) return null;
+  // `$title : 駅前` would otherwise match as value ": 駅前". Colon is not a separator.
+  if (!key || !value || value.startsWith(":") || value.startsWith("：")) return null;
   return { key, value };
 }
 
